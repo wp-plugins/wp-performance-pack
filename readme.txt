@@ -46,7 +46,7 @@ originating backend pages and requests from frontend pages.
 
 == Screenshots ==
 
-Benchmark screenshots will follow.
+1. MO-Dynamic benchmark: Comparing fresh WordPress 3.8.1 installtion (plain) and a "complex" installation (22 active plugins) using default MO implementation (*DE / MO* and *EN / MO*) and MO-Dynamic (*DE / MO-Dynamic* and *EN / MO-Dynamic*). Tested with (*DE...*) and without (*EN...*) translating using XDebug. Results are executiuon time in ms. The benchmarks show usage of MO-Dynamic improves performance when translating a blog and doesn't really impact it, when not.
 
 == Installation ==
 

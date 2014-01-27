@@ -24,6 +24,7 @@ class MO_item {
 class MO_dynamic extends Gettext_Translations {
 	var $_nplurals = 2;
 	var $MOs;
+	private $translations = array();
 
 	function __construct() {
 		$this->MOs = array();
@@ -138,144 +139,143 @@ class MO_dynamic extends Gettext_Translations {
 		return true;
 	}
 
-	static function &make_entry( $original, $translation ) {
-		$entry = new Translation_Entry ();
-		
-		// look for context
-		$idx = strpos( $original, 4 );
-		if ( $idx !== false ) {
-			if ( $idx < strlen( $original ) - 1 ) {
-				$entry->context = substr( $original, 0, $idx);
-				$original = substr( $original, $idx + 1 );
+	private function search_translation ($key) {
+		for ( $j = 0, $max = count ( $this->MOs ); $j < $max; $j++ ) {
+			$moitem = $this->MOs[$j];
+			if ( $moitem->reader == NULL ) {
+				if ( !$this->import_from_reader( $moitem ) ) {
+					// Error reading MO file, so delete it from MO list to prevent subsequent access
+					unset( $this->MOs[$j] );
+					return false;
+				}
 			}
-		}
 
-		// look for plural original
-		$idx = strpos( $original, 0 );
-		if ( $idx !== false ) {
-			$entry->singular = substr( $original, 0, $idx );
-			if ( $idx < strlen( $original ) - 1) {
-				$entry->is_plural = true;
-				$entry->plural = substr( $original, $idx + 1 );
-			}
-		} else {
-			$entry->singular = $original;
-		}
-
-		// plural translations are also separated by \0
-		$idx = strpos( $translation, 0 );
-		if ( $idx === false ) {
-			$entry->translations[] = $translation;
-		} else {
-			$entry->translations[] = substr( $translation, 0, $idx );
-			$entry->translations[] = substr( $translation, $idx + 1 );
-		}
-		return $entry;
-	}
-
-	function update_entry ( &$entry, $mo_original, $translation ) {
-		// singular and context are already set, as these form the key which is used for search
-		
-		// look for plural original
-		$idx = strpos( $mo_original, 0 );
-		if ( $idx !== false && $idx < strlen( $mo_original ) - 1 ) {
-			$entry->is_plural = true;
-			$entry->plural = substr( $mo_original, $idx + 1 );
-		}
-
-		// plural translations are also separated by \0
-		$idx = strpos( $translation, 0 );
-		if ( $idx === false ) {
-			$entry->translations[] = $translation;
-		} else {
-			$entry->translations[] = substr( $translation, 0, $idx );
-			if ( $idx < strlen ( $translation ) - 1 ) {
-				$entry->translations[] = substr( $translation, $idx + 1 );
-			}
-		}
-	}
-
-	function translate_entry( &$entry ) {
-		$key = $entry->key();
-		if ( isset( $this->entries[$key] ) ) {
-			return $this->entries[$key];
-		} else {
-			for ( $j = 0, $max = count ( $this->MOs ); $j < $max; $j++ ) {
-				$moitem = $this->MOs[$j];
-				if ( $moitem->reader == NULL ) {
-					if ( !$this->import_from_reader( $moitem ) ) {
-						// Error reading MO file, so delete it from MO list to prevent subsequent access
-						unset( $this->MOs[$j] );
-						return false;
+			// binary search for matching originals entry
+			$left = 0;
+			$right = $moitem->total-1;
+			while ( $left <= $right ) {
+				$pivot = $left + (int) ( ( $right - $left ) / 2 );
+				$pos = $pivot * 2;
+				if ( isset( $moitem->originals[$pivot] ) ) {
+					$mo_original = $moitem->originals[$pivot];
+				} else {
+					// read and "cache" original string to improve performance of subsequent searches
+					if ( $moitem->originals_table[$pos] > 0 ) {
+						$moitem->reader->seekto( $moitem->originals_table[$pos+1] );
+						$mo_original = $moitem->reader->read( $moitem->originals_table[$pos] );
+					} else {
+						$mo_original = '';
 					}
+					$moitem->originals[$pivot] = $mo_original;
 				}
 
-				// binary search for matching originals entry
-				$left = 0;
-				$right = $moitem->total-1;
-				while ( $left <= $right ) {
-					$pivot = $left + (int) ( ( $right - $left ) / 2 );
-					$pos = $pivot * 2;
-					if ( isset( $moitem->originals[$pivot] ) ) {
-						$mo_original = $moitem->originals[$pivot];
-					} else {
-						// read and "cache" original string to improve performance of subsequent searches
-						if ( $moitem->originals_table[$pos] > 0 ) {
-							$moitem->reader->seekto( $moitem->originals_table[$pos+1] );
-							$mo_original = $moitem->reader->read( $moitem->originals_table[$pos] );
-						} else {
-							$mo_original = '';
-						}
-						$moitem->originals[$pivot] = $mo_original;
+				$i = strpos( $mo_original, 0 );
+				if ( $i !== false ) {
+					$original = substr( $mo_original, 0, $i );
+				} else {
+					$original = $mo_original;
+				}
+
+				$cmpval = strcmp( $key, $original );
+				if ( $cmpval === 0 ) {
+					// key found
+
+					// read translation string
+					$moitem->reader->seekto( $moitem->translations_table[$pos+1] );
+					$translation = $moitem->reader->read( $moitem->translations_table[$pos] );
+
+					$this->translations[$key] = $translation;
+
+					if ( $j > 0 ) {
+						// Assuming frequent subsequent translations from the same file resort MOs by access time to avoid unnecessary in the wrong files.
+						$moitem->last_access=time();
+						usort( $this->MOs, function ($a, $b) {return ($b->last_access - $a->last_access);} );
 					}
 
-					$i = strpos( $mo_original, 0 );
-					if ( $i !== false ) {
-						$original = substr( $mo_original, 0, $i );
-					} else {
-						$original = $mo_original;
-					}
-
-					$cmpval = strcmp( $key, $original );
-					if ( $cmpval === 0 ) {
-						// If key was found create a new translation entry.
-						
-						// read translation string
-						$moitem->reader->seekto( $moitem->translations_table[$pos+1] );
-						$translation = $moitem->reader->read( $moitem->translations_table[$pos] );
-
-						//$newentry = &$this->make_entry( $mo_original, $translation );
-						//$this->entries[$key] = &$newentry;
-						$this->update_entry( $entry, $mo_original, $translation );
-						$this->entries[$key] = &$entry;
-
-						if ( $j > 0 ) {
-							// Assuming frequent subsequent translations from the same file resort MOs by access time to avoid unnecessary in the wrong files.
-							$moitem->last_access=time();
-							usort( $this->MOs, function ($a, $b) {return ($b->last_access - $a->last_access);} );
-						}
-
-						//return $newentry;
-						return $entry;
-					} else if ( $cmpval < 0 ) {
-						$right = $pivot - 1;
-					} else { // if ($cmpval>0) 
-						$left = $pivot + 1;
-					}
+					return $translation;
+				} else if ( $cmpval < 0 ) {
+					$right = $pivot - 1;
+				} else { // if ($cmpval>0) 
+					$left = $pivot + 1;
 				}
 			}
 		}
-		
-		// No translation found. Create dummy entry to prevent repeated searches for the missing translation
-		$translation = $entry->singular;
-		if ( $entry->plural ) {
-			$translation .= chr(0).$entry->plural;
-		}
-		$this->update_entry ( $entry, $key, $translation);
-		$this->entries[$key] = &$entry;
-		return true;
+		// key not found
+		return false;
 	}
-	
+
+	function translate ($singular, $context = null) {
+		if ( strlen( $singular ) == 0 ) return $singular;
+		
+		if ( $context == NULL ) {
+			$s = $singular;
+		} else {
+			$s = $context . chr(4) . $singular;
+		}
+
+		if ( isset( $this->translations[$s] ) ) {
+			$t = $this->translations[$s];
+		} else {
+			$t = $this->search_translation( $s );
+		}
+		
+		if ( $t !== false ) {
+			$i = strpos( $t, 0 );
+			if ( $i !== false ) {
+				return substr( $t, 0, $i );
+			} else {
+				return $t;
+			}
+		} else {
+			if ( $context == NULL ) {
+				$this->translations[$s] = $context . chr(4) . $singular;
+			} else {
+				$this->translations[$s] = $singular;
+			}
+			return $singular;
+		}
+	}
+
+	function translate_plural ($singular, $plural, $count, $context = null) {
+		if ( strlen( $singular ) == 0 ) return $singular;
+
+		// Get the "default" return-value
+		$default = ($count == 1 ? $singular : $plural);
+
+		if ( $context == NULL ) {
+			$s = $singular;
+		} else {
+			$s = $context . chr(4) . $singular;
+		}
+
+		if ( isset( $this->translations[$s] ) ) {
+			$t = $this->translations[$s];
+		} else {
+			$t = $this->search_translation( $s );
+		}
+		
+		if ( $t !== false ) {
+			$i = strpos( $t, 0 );
+			if ( $i !== false ) {
+				if ( $count == 1 ) {
+					return substr ( $t, 0, $i );
+				} else {
+					// only one plural form is assumed - needs improvement
+					return substr( $t, $i+1 );
+				}
+			} else {
+				return $default;
+			}
+		} else {
+			if ( $context == NULL ) {
+				$this->translations[$s] = $context . chr(4) . $singular . chr(0) . $plural;
+			} else {
+				$this->translations[$s] = $singular . chr(0) . $plural;
+			}
+			return $default;
+		}
+	}
+
 	function merge_with( &$other ) {
 		foreach( $other->entries as $entry ) {
 			$this->entries[$entry->key()] = $entry;

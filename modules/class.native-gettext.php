@@ -208,7 +208,7 @@
      **/
     function import_from_file ($filename) {
       // Make sure that the locale is set correctly in environment
-      global $locale;
+      $locale=get_locale();
       
       putenv ('LC_ALL=' . $locale);
       setlocale (LC_ALL, $locale);

@@ -72,12 +72,17 @@ For native gettext support:
 
 * installed gettext extension
 * languages folder must be writeable
-* required locale must be available
 
 = Limitations =
 MO-Dynamic doesn't implement any saving related methods from the *Translations* base class. It's a read only implementation.
 
 == Changelog ==
+
+= 0.2.1 =
+
+* MO-Dynamic bugfix - empty string got translated to headers
+* possible native gettext multisite fix - using get_locale instead of global $locale
+* MO-Dynamic tweaking
 
 = 0.2 =
 

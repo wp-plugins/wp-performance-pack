@@ -9,7 +9,7 @@ function load_textdomain_override( $retval, $domain, $mofile ) {
 	} else {
 		do_action( 'load_textdomain', $domain, $mofile );
 		$mofile = apply_filters( 'load_textdomain_mofile', $mofile, $domain );
-		
+
 		if ( isset( $l10n[$domain] ) ) {
 			$mo = $l10n[$domain];
 			if ( $mo instanceof MO_dynamic && $mo->Mo_file_loaded( $mofile ) ) {
@@ -19,7 +19,7 @@ function load_textdomain_override( $retval, $domain, $mofile ) {
 		if ( !is_readable( $mofile ) ) {
 			return false;
 		}
-		
+
 		if ($wp_performance_pack->options['use_native_gettext'] && extension_loaded( 'gettext' )) {
 			require_once(sprintf( "%s/class.native-gettext.php", dirname( __FILE__ ) ) );
 			$mo = new Translate_GetText_Native ();

@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://www.bjoernahrens.de
 	Description: A collection of performance optimizations for WordPress
-	Version: 0.1 
+	Version: 0.2
 	Author: Bj&ouml;rn Ahrens
 	Author URI: http://www.bjoernahrens.de
 	License: GPL2 or later
@@ -30,6 +30,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			'use_mo_dynamic' => true,
 			'use_jit_localize' => false,
 			'disable_backend_translation' => false,
+			'use_native_gettext' => false,
 		);
 
 		public $options = NULL;
@@ -65,6 +66,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 
 		public function options_do_page() {
 			$this->load_options();
+			global $wp_version;
 			?>
 			<div class="wrap">
 				<h2>WP Performance Pack Options</h2>
@@ -73,13 +75,18 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 					<table class="form-table">
 						<tr valign="top"><th scope="row">Translation related</th>
 							<td>
-								<input type="checkbox" name="<?php echo self::$options_name?>[use_mo_dynamic]" value="true" <?php echo $this->options['use_mo_dynamic'] == true ? 'checked="checked"' : '';?>/> Use MO-Dynamic <br/>
+								<input type="checkbox" name="<?php echo self::$options_name;?>[use_mo_dynamic]" value="true" <?php echo $this->options['use_mo_dynamic'] == true ? 'checked="checked"' : '';?>/> Use MO-Dynamic <br/>
 								<p><i>Texts will get translated on demand. Reduces memory consumption and speeds up page load on non englisch WordPress installations. Translation files will be loaded only when needed and only required strings will be translated. The default MO class loads all translations on startup</i></p>
 								<br/>
-								<?php /* <input type="checkbox" name="<?php echo self::$options_name?>[use_jit_localize]" value="true" <?php echo $this->options['use_jit_localize'] == true ? 'checked="checked"' : '';?>/> Use JIT localize <br/>
-								<p><b>Not implemented!</b><i></i></p>
-								<br/> */ ?>
-								<input type="checkbox" name="<?php echo self::$options_name?>[disable_backend_translation]" value="true" <?php echo $this->options['disable_backend_translation'] == true ? 'checked="checked"' : '';?>/> Disable backend translation <br/>
+								<input type="checkbox" name="<?php echo self::$options_name;?>[use_native_gettext]" value="true" <?php echo ( $this->options['use_native_gettext'] && extension_loaded( 'gettext' ) ) == true ? 'checked="checked" ' : ' '; echo extension_loaded( 'gettext' ) == false ? 'disabled="true"' : ''; ?>/> Use native gettext</input>
+								<p>Gettext extension is <b><?php if ( !extension_loaded( 'gettext' ) ) : ?>not <?php endif; ?>available</b>!</p>
+								<p><i>Use native gettext implementation for translations. The fastest and most memory efficient method for translations. Requires gettext extension to be installed. <b>Native gettext overrides MO-Dynamic if both are enabled.</b></i></p>
+								<br/>
+								<input type="checkbox" name="<?php echo self::$options_name;?>[use_jit_localize]" value="true" <?php echo ( $this->options['use_jit_localize'] && in_array( $wp_version, array ( '3.6', '3.8.1' ) ) ) ? 'checked="checked" ' : ' '; echo !in_array( $wp_version, array( '3.6', '3.8.1' ) ) ? 'disabled="true"' : '';?>/> Use JIT localize <br/>
+								<p><b>As for now only implemented for WordPress versions 3.6 and 3.8.1</b> because of differences in wp_default_scripts (which gets overridden by this feature) between versions.</p>
+								<p><i>Just in time localization of scripts. By default WordPress localizes all default scripts at each request. Enabling this option will call wp_localize_script at wp_print_scripts only for enqueued scripts. This improves performance even if WordPress is not translated, but has the biggest impact when using MO-Dynamic.</i></p>
+								<br/>
+								<input type="checkbox" name="<?php echo self::$options_name;?>[disable_backend_translation]" value="true" <?php echo $this->options['disable_backend_translation'] == true ? 'checked="checked"' : '';?>/> Disable backend translation <br/>
 								<p><i>Disables translation of backend texts. Even using MO-Dynamic translation is still very time consuming. The WordPress Dashboard has much more texts to translate. So disabling backend translation can speed up working with wordpress significantly, if you don't mind working with the english interface. <b>AJAX requests on backend pages will still be translated, as I haven't figured out how to distinguish requests originating backend pages and requests from frontend pages.</b></i></p>
 								<br/>
 							</td>
@@ -103,20 +110,20 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			}
 
 			$this->load_options();
+			global $wp_version;
 
 			// load modules
-			if ( $this->options['use_mo_dynamic'] ) {
-				include( sprintf( "%s/modules/mo-dynamic.php", dirname( __FILE__ ) ) );
+			if ( $this->options['use_mo_dynamic'] || ( $this->options['use_native_gettext'] && extension_loaded( 'gettext' ) ) ) {
+				include( sprintf( "%s/modules/override-textdomain.php", dirname( __FILE__ ) ) );
 			} else if ( $this->options['disable_backend_translation'] ) {
 				include( sprintf( "%s/modules/disable-backend.php", dirname( __FILE__ ) ) );
 			}
 
-
-			if ( $this->options['use_jit_localize'] ) {
-				//include( sprintf( "%s/modules/jit-localize.php", dirname( __FILE__ ) ) );
+			if ( $this->options['use_jit_localize'] && in_array( $wp_version, array( '3.6', '3.8.1' ) ) ) {
+				include( sprintf( "%s/modules/jit-localize.php", dirname( __FILE__ ) ) );
 			}
 		}
-		
+
 		/**
 		 * Make sure WPPP is loaded as first plugin. Important for e.g. usage of dynamic MOs with all text domains.
 		 */

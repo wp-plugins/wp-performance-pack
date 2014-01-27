@@ -1,6 +1,6 @@
 === WP Performance Pack ===
-Contributors: greencp
-Tags: performance, i18n, translation, i10n, mo
+Contributors: greencp, linushoppe
+Tags: performance, i18n, translation, i10n, mo, gettext, localize
 Requires at least: 3.0
 Tested up to: 3.8.1
 Stable tag: trunk
@@ -31,22 +31,33 @@ reduce execution time. Furthermore it doesn't load the complete translations int
 This on demand translation is more expensive than translations on fully loaded mo files but the performance
 gain by not loading and parsing the complete file outweighs this.
 
+**Use of native gettext if available**
+
+There is probably no faster way for translations than using the native gettext implementation. This requires 
+the php_gettext extension to be installed on the server. Version 0.2 supports the use of native gettext if it is 
+available. This is implemented using *Bernd Holzmuellers* [Translate_GetText_Native](http://oss.tiggerswelt.net/wordpress/3.3.1/)
+implementation (slightly modified). For now WPPP only checks if the gettext extension is available, which might 
+not suffice to use native gettext. Further checks will follow.
+
 **Disable backend translation while maintaining frontend translations.**
 
 Speed up the backend by disabling dashboard-translations. Useful if you don't mind using an english backend.
 AJAX requests on backend pages will still be translated, as I haven't figured out how to distinguish requests 
 originating backend pages and requests from frontend pages.
 
+
+**Just in time localization**
+
+Localization of scripts only if needed to reduce unnecessary translations. Currently requires WordPress version 3.6 or 3.8.1.
+
 = Planned future features =
 
-* JIT localization to reduce number of possibly unnecessary translation calls (of which there are quite a few in wordpress core).
-* Optional use of native gettext implementation if available.
 * Caching using WP_Object_Cache.
 * much more...
 
 == Screenshots ==
 
-1. MO-Dynamic benchmark: Comparing fresh WordPress 3.8.1 installtion (plain) and a "complex" installation (22 active plugins) using default MO implementation (*DE / MO* and *EN / MO*) and MO-Dynamic (*DE / MO-Dynamic* and *EN / MO-Dynamic*). Tested with (*DE...*) and without (*EN...*) translating using XDebug. Results are executiuon time in ms. The benchmarks show usage of MO-Dynamic improves performance when translating a blog and doesn't really impact it, when not.
+1. MO-Dynamic benchmark: Comparing fresh WordPress 3.8.1 installtion (plain) and a "complex" installation (22 active plugins) using default MO implementation (*DE / MO* and *EN / MO*) and MO-Dynamic (*DE / MO-Dynamic* and *EN / MO-Dynamic*). Tested with (*DE...*) and without (*EN...*) translating using XDebug. Results are executiuon time in ms. The benchmarks show usage of MO-Dynamic improves performance when translating a blog and doesn't really impact it, when not. (Benchmarked version: 0.1)
 
 == Installation ==
 
@@ -57,10 +68,22 @@ Download, install and activate. Usage of MO-Dynamic is enabled by default.
 = Requirements =
 PHP 5.3.0 required
 
+For native gettext support:
+
+* installed gettext extension
+* languages folder must be writeable
+* required locale must be available
+
 = Limitations =
 MO-Dynamic doesn't implement any saving related methods from the *Translations* base class. It's a read only implementation.
 
 == Changelog ==
 
+= 0.2 =
+
+* added native gettext support using *Bernd Holzmuellers* [Translate_GetText_Native](http://oss.tiggerswelt.net/wordpress/3.3.1/) implementation 
+* Just in time script localization (WP 3.6 and 3.8.1 supported)
+
 = 0.1 =
-Initial release
+
+* Initial release

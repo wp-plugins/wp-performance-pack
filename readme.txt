@@ -66,6 +66,7 @@ Download, install and activate. Usage of MO-Dynamic is enabled by default.
 == Frequently Asked Questions ==
 
 = Requirements =
+
 PHP 5.3.0 required
 
 For native gettext support:
@@ -78,16 +79,21 @@ MO-Dynamic doesn't implement any saving related methods from the *Translations* 
 
 == Changelog ==
 
+= 0.2.2 =
+
+* [general] bugfix in form validation
+* [native gettext] test if *putenv* is disabled
+
 = 0.2.1 =
 
-* MO-Dynamic bugfix - empty string got translated to headers
-* possible native gettext multisite fix - using get_locale instead of global $locale
-* MO-Dynamic tweaking
+* [MO-Dynamic] bugfix - empty string got translated to headers
+* [MO-Dynamic] performance tweaking
+* [native gettext] possible multisite fix - using get_locale instead of global $locale
 
 = 0.2 =
 
-* added native gettext support using *Bernd Holzmuellers* [Translate_GetText_Native](http://oss.tiggerswelt.net/wordpress/3.3.1/) implementation 
-* Just in time script localization (WP 3.6 and 3.8.1 supported)
+* [general] added native gettext support using *Bernd Holzmuellers* [Translate_GetText_Native](http://oss.tiggerswelt.net/wordpress/3.3.1/) implementation 
+* [general] Just in time script localization (WP 3.6 and 3.8.1 supported)
 
 = 0.1 =
 

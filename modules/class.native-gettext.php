@@ -200,6 +200,17 @@
     }
     // }}}
     
+	static function isAvailable($func) {
+		if (ini_get('safe_mode')) return false;
+		$disabled = ini_get('disable_functions');
+		if ($disabled) {
+			$disabled = explode(',', $disabled);
+			$disabled = array_map('trim', $disabled);
+			return !in_array($func, $disabled);
+		}
+		return true;
+	}
+	
     // {{{ import_from_file
     /**
      * Fills up with the entries from MO file $filename
@@ -210,7 +221,9 @@
       // Make sure that the locale is set correctly in environment
       $locale=get_locale();
       
-      putenv ('LC_ALL=' . $locale);
+	  if ( self::isAvailable( 'putenv' ) ) {
+		putenv ('LC_ALL=' . $locale);
+	  }
       setlocale (LC_ALL, $locale);
       
       // Retrive MD5-hash of the file

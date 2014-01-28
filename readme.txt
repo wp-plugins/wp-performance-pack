@@ -65,6 +65,10 @@ Download, install and activate. Usage of MO-Dynamic is enabled by default.
 
 == Frequently Asked Questions ==
 
+= Known issues =
+
+* JIT localize seems to be the cause for quite some problems. As of now, use at own risk! I'm working on it...
+
 = Requirements =
 
 PHP 5.3.0 required

@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://www.bjoernahrens.de
 	Description: A collection of performance optimizations for WordPress
-	Version: 0.2.4
+	Version: 0.2.4.1
 	Author: Bj&ouml;rn Ahrens
 	Author URI: http://www.bjoernahrens.de
 	License: GPL2 or later

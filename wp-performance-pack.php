@@ -143,6 +143,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 		
 		public static function activate() { 
 			update_option( self::$options_name, self::$options_default );
+			self::plugin_load_first();
 		}
 		
 		public static function deactivate() { 

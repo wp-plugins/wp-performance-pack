@@ -13,7 +13,7 @@
  * @since 0.2.3
  */
  
-class LabelsObject implements ArrayAccess {
+class LabelsObject implements ArrayAccess, Iterator {
 
 	private $input = array();
 	private $output = array();
@@ -29,7 +29,9 @@ class LabelsObject implements ArrayAccess {
 			$this->merge( $params[0] );
 		}
 	}
-	
+
+	/* ArrayAccess methods */
+
 	public function offsetExists ( $offset ) {
 		return ( isset( $this->input[$offset] ) || isset( $this->output[$offset] ) );
 	}
@@ -43,7 +45,7 @@ class LabelsObject implements ArrayAccess {
 			if ( is_string( $this->input[$offset] ) ) {
 				$func = $this->default_translate_func;
 				$this->output[$offset] = $func ( $this->input[$offset] );
-				unset( $this->input[$offset] );
+				$this->input[$offset] = NULL;
 			} else {
 				$func = reset ( $this->input[$offset] );
 				if ( isset( $this->input[$offset][1] ) && is_array( $this->input[$offset][1] ) ) {
@@ -59,10 +61,14 @@ class LabelsObject implements ArrayAccess {
 					// array ( function ) / array ( 'func' => closure )
 					$this->output[$offset] = $func ();
 				}
-				unset( $this->input[$offset] );
+				$this->input[$offset] = NULL;
 			}
 		}
-		return $this->output[$offset];
+		
+		if (isset ($this->output[$offset]))
+			return $this->output[$offset];
+		else
+			return NULL;
 	}
 
 	public function offsetSet ( $offset , $value ) {
@@ -74,6 +80,7 @@ class LabelsObject implements ArrayAccess {
 			$this->input[$offset] = $value;
 		} else {
 			// else store $value directly as value for this offset
+			$this->input[$offset] = NULL;
 			$this->output[$offset] = $value;
 		}
 	}
@@ -86,6 +93,30 @@ class LabelsObject implements ArrayAccess {
 	public function __get( $name ) {
 		return $this->offsetGet( $name );
 	}
+
+	/* Iterator methods */
+
+	public function current () {
+		return$this->offsetGet(key($this->input));
+	}
+
+	public function key () {
+		return key($this->input);
+	}
+
+	public function next () {
+		next($this->input);
+	}
+
+	public function rewind () {
+		reset($this->input);
+	}
+
+	public function valid () {
+		return $this->current()!=false;
+	}
+
+	/* Other methos */
 
 	public function merge ( $labels ) {
 		if ( $labels instanceof LabelsObject ) {

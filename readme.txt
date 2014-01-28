@@ -79,6 +79,10 @@ MO-Dynamic doesn't implement any saving related methods from the *Translations* 
 
 == Changelog ==
 
+= 0.2.4 =
+
+* [jit] bugfixs in LabelsObject and WP_Scripts_override
+
 = 0.2.3 =
 
 * [jit] complete rework of JIT localize - it shouldn't break scripts anymore

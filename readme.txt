@@ -57,17 +57,13 @@ Localization of scripts only if needed to reduce unnecessary translations. Curre
 
 == Screenshots ==
 
-1. MO-Dynamic benchmark: Comparing fresh WordPress 3.8.1 installtion (plain) and a "complex" installation (22 active plugins) using default MO implementation (*DE / MO* and *EN / MO*) and MO-Dynamic (*DE / MO-Dynamic* and *EN / MO-Dynamic*). Tested with (*DE...*) and without (*EN...*) translating using XDebug. Results are executiuon time in ms. The benchmarks show usage of MO-Dynamic improves performance when translating a blog and doesn't really impact it, when not. (Benchmarked version: 0.1)
+1. MO-Dynamic benchmark: Comparing front page of a "fresh" WordPress 3.8.1 installation (plain) and a "complex" installation (22 active plugins) using default MO implementation (*DE / MO* and *EN / MO*) and MO-Dynamic (*DE / MO-Dynamic* and *EN / MO-Dynamic*). Tested with (*DE...*) and without (*EN...*) translating using XDebug. Results are executiuon time in ms. The benchmarks show usage of MO-Dynamic improves performance when translating a blog and doesn't really impact it, when not. (Benchmarked version: 0.1)
 
 == Installation ==
 
 Download, install and activate. Usage of MO-Dynamic is enabled by default.
 
 == Frequently Asked Questions ==
-
-= Known issues =
-
-* JIT localize seems to be the cause for quite some problems. As of now, use at own risk! I'm working on it...
 
 = Requirements =
 
@@ -82,6 +78,11 @@ For native gettext support:
 MO-Dynamic doesn't implement any saving related methods from the *Translations* base class. It's a read only implementation.
 
 == Changelog ==
+
+= 0.2.3 =
+
+* [jit] complete rework of JIT localize - it shouldn't break scripts anymore
+* [general] bugfix in changing plugin load order (WPPP has to be the first plugin to be loaded)
 
 = 0.2.2 =
 

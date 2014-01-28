@@ -1,5 +1,11 @@
 <?php
-
+/**
+ * Activate override textdomain
+ *
+ * @author Björn Ahrens
+ * @since 0.1
+ */
+ 
 function load_textdomain_override( $retval, $domain, $mofile ) {
 	global $l10n, $wp_performance_pack;
 
@@ -40,5 +46,4 @@ function load_textdomain_override( $retval, $domain, $mofile ) {
 }
 
 add_filter( 'override_load_textdomain', 'load_textdomain_override', 0, 3 );
-
 ?>

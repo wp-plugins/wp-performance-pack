@@ -1,4 +1,10 @@
 <?php
+/**
+ * Dynamic loading and parsing of MO files
+ *
+ * @author Björn Ahrens
+ * @since 0.1
+ */
 
 /**
  * Class holds information about a single MO file

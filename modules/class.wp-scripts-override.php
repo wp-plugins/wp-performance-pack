@@ -48,7 +48,7 @@ class WP_Scripts_Override extends WP_Scripts {
 		}
 
 		if ( $l10n instanceof LabelsObject ) {
-			$jit_i10n = array();
+			$jit_l10n = array();
 			foreach ( $l10n as $key => $value ) {
 				if ( !is_scalar($value) )
 					$jit_l10n[$key] = $value;

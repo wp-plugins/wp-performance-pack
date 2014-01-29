@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://www.bjoernahrens.de
 	Description: A collection of performance optimizations for WordPress
-	Version: 0.3
+	Version: 0.3.0.1
 	Author: Bj&ouml;rn Ahrens
 	Author URI: http://www.bjoernahrens.de
 	License: GPL2 or later
@@ -85,8 +85,8 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			?>
 			<div class="wrap">
 				<h2>WP Performance Pack Options</h2>
-					<form action="<?php echo network_admin_url('settings.php?page=wppp_options_page&action=update_wppp'); ?>" method="post">
 				<?php if ( $this->is_network ) : ?>
+					<form action="<?php echo network_admin_url('settings.php?page=wppp_options_page&action=update_wppp'); ?>" method="post">
 						<?php wp_nonce_field( 'update_wppp', 'wppp_nonce' ); ?>
 				<?php else : ?>
 					<form method="post" action="options.php">

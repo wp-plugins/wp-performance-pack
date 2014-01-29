@@ -48,12 +48,7 @@ originating backend pages and requests from frontend pages.
 
 **Just in time localization**
 
-Localization of scripts only if needed to reduce unnecessary translations. Currently requires WordPress version 3.6 or 3.8.1.
-
-= Planned future features =
-
-* Caching using WP_Object_Cache.
-* much more...
+Localization of scripts only if needed to reduce unnecessary translations. Currently requires WordPress version 3.8.1.
 
 == Screenshots ==
 
@@ -75,9 +70,18 @@ For native gettext support:
 * languages folder must be writeable
 
 = Limitations =
+
 MO-Dynamic doesn't implement any saving related methods from the *Translations* base class. It's a read only implementation.
 
+= Multisite support =
+
+When installed network wide only the network admin can see and edit WPPP options.
+
 == Changelog ==
+
+= 0.3 =
+
+* [general] added multisite support (network installation)
 
 = 0.2.4 =
 

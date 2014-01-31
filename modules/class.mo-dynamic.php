@@ -85,7 +85,11 @@ class MO_dynamic extends Gettext_Translations {
 		}
 
 		$moitem->total = $total;
-		$moitem->originals = new SplFixedArray ( $total );
+		if ( class_exists( 'SplFixedArray' ) ) {
+			$moitem->originals = new SplFixedArray ( $total );
+		} else {
+			$moitem->originals = array();
+		}
 		$moitem->originals_offset = $originals_lenghts_addr;
 		$moitem->translations_offset = $translations_lenghts_addr;
 
@@ -102,7 +106,11 @@ class MO_dynamic extends Gettext_Translations {
 		if ( $moitem->reader->strlen( $str ) != $originals_lengths_length ) {
 			return false;
 		}
-		$moitem->originals_table = SplFixedArray::fromArray( unpack ( $endian.($total * 2), $str ), false );
+		if ( class_exists ( 'SplFixedArray' ) ) {
+			$moitem->originals_table = SplFixedArray::fromArray( unpack ( $endian.($total * 2), $str ), false );
+		} else {
+			$moitem->originals_table = unpack ( $endian.($total * 2), $str );
+		}
 
 		// read translations' indices
 		$translations_lenghts_length = $hash_addr - $translations_lenghts_addr;
@@ -114,7 +122,11 @@ class MO_dynamic extends Gettext_Translations {
 		if ( $moitem->reader->strlen( $str ) != $translations_lenghts_length ) {
 			return false;
 		}
-		$moitem->translations_table = SplFixedArray::fromArray( unpack ( $endian.($total * 2), $str ), false );
+		if ( class_exists ( 'SplFixedArray' ) ) {
+			$moitem->translations_table = SplFixedArray::fromArray( unpack ( $endian.($total * 2), $str ), false );
+		} else {
+			$moitem->translations_table = unpack ( $endian.($total * 2), $str );
+		}
 
 		// read headers
 		for ( $i = 0, $max = $total * 2; $i < $max; $i+=2 ) {

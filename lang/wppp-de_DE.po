@@ -1,0 +1,208 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WP Performance Pack\n"
+"POT-Creation-Date: 2014-01-31 16:46+0100\n"
+"PO-Revision-Date: 2014-01-31 16:53+0100\n"
+"Last-Translator: Björn Ahrens <bjoern@ahrens.net>\n"
+"Language-Team:  <bjoern@ahrens.net>\n"
+"Language: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.7\n"
+"X-Poedit-KeywordsList: __:1,2t;_e:1,2t\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: ..\n"
+
+#: ../admin/admin-options.php:24 ../admin/admin-options.php:30
+msgid "WP Performance Pack"
+msgstr "WP Performance Pack"
+
+#: ../admin/admin-options.php:24 ../admin/admin-options.php:30
+msgid "Performance Pack"
+msgstr "Performance Pack"
+
+#: ../admin/admin-options.php:57
+msgid ""
+"<p>WP Performance Pack is intended to be a collection of performance "
+"optimizations for WordPress which don't need patching of core files. As of "
+"now it features options to improve performance of translated WordPress "
+"installations.</p>"
+msgstr ""
+"<p>WP Performance Pack ist eine Sammlung von Optimierungen für WordPress, "
+"für die die WordPress-Dateien nicht verändert werden müssen. Derzeit umfasst "
+"WPPP Funktionen zum Beschelunigen von übersetzten WordPress-Blogs.</p>"
+
+#: ../admin/admin-options.php:62
+msgid "MO-Dynamic"
+msgstr "MO-Dynamic"
+
+#: ../admin/admin-options.php:63
+msgid ""
+"<p><strong>Dynamic loading of translation files, only loading and "
+"translating used strings.</strong></p><p>Improves performance and reduces "
+"memory consumption. The default WordPress <em>MO</em> implementation loads "
+"the complete MO files (e.g. when loaded via <code>load_textdomain</code>) "
+"into memory. As a result translation of individual strings is quite fast, "
+"but loading times and memory consumption are high. Most of the time only a "
+"few strings from a mo file are required within a single page request. "
+"Activating translation almost doubles execution time in a typical WordPress "
+"installation.</p><p>WPPP uses MO-Dynamic, a complete rewrite of the <em>MO</"
+"em> implementation, to speed up translations. .mo files are only loaded if "
+"needed. On installations with many translated plugins this alone can "
+"dramatically reduce execution time. It doesn't load the complete "
+"translations into memory, only required ones. This on demand translation is "
+"more expensive than translations on fully loaded .mo files but the "
+"performance gain by not loading and parsing the complete file outweighs this."
+"</p>"
+msgstr ""
+"<p><strong>Laden und Übersetzen von Texten nur be Bedarf.</strong></"
+"p><p>Verbessert Geschwindigtkeit und Speicherverbrauch. Die Standard-MO-"
+"Implementierung von WordPress lädt immer die kompletten Übersetzungsdateien "
+"(.mo) in den Speicher, egal ob diese benötigt werden, oder nicht. So ist "
+"zwar das Übersetzen einzelner Texte schnell, aber das Laden der Daten "
+"benötigt sehr viel Zeit und Speicher. Eine normale WordPress-Installation "
+"mit aktivierter Übersetzung ist nur gut halb so schnell wie ohne.</p><p>MO-"
+"Dynamic ist eine komplette Neuimplementierung der MO-Klasse. "
+"Übersetzungsdateien werden nur bei Bedarf geladen und es werden nur "
+"benötigte Texte übersetzt. Das Übersetzen einzelner Strings dauert zwar "
+"länger, das deutlich schnellere Laden wiegt dies aber mehr als auf. "
+"Weiterhin wird der Speicherverbrauch deutlich gesenkt, was ebenfalls die "
+"Performance verbessert.</p>"
+
+#: ../admin/admin-options.php:68
+msgid "Native gettext"
+msgstr "Natives gettext"
+
+#: ../admin/admin-options.php:69
+msgid ""
+"<p><strong>Use of native gettext if available</strong></p><p>There is "
+"probably no faster way for translations than using the native gettext "
+"implementation. This requires the <code>php_gettext</code> extension to be "
+"installed on the server. This implementation used is based on Bernd "
+"Holzmuellers <a href=\"http://oss.tiggerswelt.net/wordpress/3.3.1/"
+"\">Translate_GetText_Native</a> implementation.</p><p>For now WPPP only "
+"checks if the gettext extension is available, which might not suffice to use "
+"native gettext. Further checks will follow.</p><p><em>Native gettext "
+"overrides MO-Dynamic if both are enabled!</em></p>"
+msgstr ""
+"<p><strong>Natives gettext vewrwenden, wenn verfügbar.</strong></p><p>Die "
+"schnellste Methode zum Übersetzen von Texten (auf .po/.mo Basis) ist die "
+"Verwendung der System-eigenen (nativen) Gettext-Implementierung. Dies "
+"benötigt die PHP-Erweiterung <code>php_gettext</code>. Die vorhandene "
+"Implementierung basiert auf Bernd Holzmüllers <a href=\"http://oss."
+"tiggerswelt.net/wordpress/3.3.1/\">Translate_GetText_Native</a> "
+"Implementierung.</p><p>Im Moment überprüft WPPP nur das Vorhandensein der "
+"Gettext-Erweiterung, was nicht unbedingt ausreichend ist, damit das native "
+"Gettext funktioniert. Weitere Überprüfungen sind in Planung</p><p><em>Die "
+"native Gettext-Implementierung hat Vorrang vor MO-Dynamic, wenn beides "
+"aktiviert ist.</em></p>"
+
+#: ../admin/admin-options.php:74
+msgid "JIT localize"
+msgstr "JIT Übersetzung"
+
+#: ../admin/admin-options.php:75
+msgid ""
+"<p><strong>Just in time localization</strong></p><p>Just in time "
+"localization of scripts. By default WordPress localizes all default scripts "
+"at each request. Enabling this option will translate localization string "
+"only if needed. This might improve performance even if WordPress is not "
+"translated, but has the biggest impact when using MO-Dynamic.</p><p><em>As "
+"for now only implemented for WordPress version 3.8.1 because of differences "
+"in wp_default_scripts (which gets overridden by this feature) between "
+"versions.</em></p>"
+msgstr ""
+"<p><strong>Just-In-Time Übersetzung von Skripten</strong></p><p>WordPress "
+"führt für viele Standard-Skripte (Javascript) bei jedem Seitenaufruf "
+"Übersetzungen durch, auch dann, wenn die Skripte für den Aufruf gar nicht "
+"benötigt werden. Wird diese Option aktiviert, werden die Übersetzungen nur "
+"für benötigte Skripte und auch erst beim Einfügen dieser ausgeführt. Dies "
+"führt zu weniger Übersetzungen, was vor allem bei Verwendung von MO-.Dynamic "
+"einen Geschwindigkeitsvorteil bringen kann.</p><p><em>Vorerst nur für "
+"WordPress Version 3.8.1 verfügbar; wegen Unterschieden in "
+"<code>wp_default_scripts</code> zwischen den Versionen.</em></p>"
+
+#: ../admin/admin-options.php:80 ../admin/admin-options.php:148
+msgid "Disable backend translation"
+msgstr "Backend Übersetzung deaktivieren"
+
+#: ../admin/admin-options.php:81
+msgid ""
+"<p><strong>Disable backend translation while maintaining frontend "
+"translations.</strong></p><p>Speed up the backend by disabling dashboard-"
+"translations. Useful if you don't mind using an english backend.</"
+"p><p><em>AJAX requests on backend pages will still be translated, as I "
+"haven't figured out how to distinguish requests originating backend pages "
+"and requests from frontend pages.</em></p>"
+msgstr ""
+"<p><strong>Backend-Übersetzung deaktivieren, Frontend-Überstzung bleibt "
+"erhalten.</strong></p><p>Durch das Abschalten der Übersetzung von Texten im "
+"Backen kann dieses erheblich beschleunigt werden, zumindest wenn man keine "
+"Probleme mit einem englischen Backend hat.</p><p><em>Bei AJAX-Requests "
+"werden trotzdem auch im Backend Texte übersetzt, da nicht zwischen Requests "
+"vom Backend und Frontend unterschieden werden kann.</em></p>"
+
+#: ../admin/admin-options.php:96
+msgid "WP Performance Pack - Settings"
+msgstr "WP Performance Pack - Einstellungen"
+
+#: ../admin/admin-options.php:104
+msgid "Translation related"
+msgstr "Übersetzungsbezogen"
+
+#: ../admin/admin-options.php:108
+msgid "Use MO-Dynamic"
+msgstr "MO-Dynamic benutzen"
+
+#: ../admin/admin-options.php:111 ../admin/admin-options.php:121
+#: ../admin/admin-options.php:138 ../admin/admin-options.php:151
+msgid "Enabled"
+msgstr "Aktiviert"
+
+#: ../admin/admin-options.php:112 ../admin/admin-options.php:122
+#: ../admin/admin-options.php:139 ../admin/admin-options.php:152
+msgid "Disabled"
+msgstr "Deaktiviert"
+
+#: ../admin/admin-options.php:113
+msgid "Loads translations on demand. Use if native gettext is not available."
+msgstr ""
+"Übersetzungen werden erst bei bedarf geladen. Alternative, wenn keine native "
+"gettext Unterstützung vorhanden ist."
+
+#: ../admin/admin-options.php:118
+msgid "Use native gettext"
+msgstr "Natives gettext benutzen"
+
+#: ../admin/admin-options.php:125
+msgid ""
+"Gettext extension is <b>available</b>. (But this doesn't means it will "
+"work...)"
+msgstr ""
+"Gettext-Erweiterung ist <b>verfügbar</b>. (Was nicht bedeutet, dass sie "
+"funktioniert...)"
+
+#: ../admin/admin-options.php:127
+msgid "Gettext extension is <b>not available</b>!"
+msgstr "Gettext-Erweiterung ist <b>nicht verfügbar</b>!"
+
+#: ../admin/admin-options.php:130
+msgid "Use native gettext implementation for translations."
+msgstr "Native Gettext-Implementierung zum Übersetzen benutzen"
+
+#: ../admin/admin-options.php:135
+msgid "Use JIT localize"
+msgstr "JIT Übersetzung benutzen"
+
+#: ../admin/admin-options.php:141
+msgid "As for now only available for WordPress version 3.8.1!"
+msgstr "Vorerst nur für WordPRess Version 3.8.1 verfügbar!"
+
+#: ../admin/admin-options.php:143
+msgid "Just in time localization of scripts."
+msgstr "Just-In-Time Übersetzung von Skripten"
+
+#: ../admin/admin-options.php:153
+msgid "Disables translation of backend texts."
+msgstr "Deaktiviert das Übersetzen von Texten im Backend (Dashboard)."

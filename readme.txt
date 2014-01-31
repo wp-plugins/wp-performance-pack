@@ -1,6 +1,6 @@
 === WP Performance Pack ===
-Contributors: greencp, linushoppe
-Tags: performance, i18n, translation, i10n, mo, gettext, localize
+Contributors: greencp
+Tags: performance, i18n, translation, i10n, mo, gettext, localize, speed, optimize
 Requires at least: 3.0
 Tested up to: 3.8.1
 Stable tag: trunk
@@ -78,6 +78,13 @@ MO-Dynamic doesn't implement any saving related methods from the *Translations* 
 When installed network wide only the network admin can see and edit WPPP options.
 
 == Changelog ==
+
+= 0.4 =
+
+* [i10n] german translation added
+* [general] admin interface reworked
+* [native gettext] use of LC_MESSAGES instead of LC_ALL
+* [bative gettext] append codeset to locale
 
 = 0.3 =
 

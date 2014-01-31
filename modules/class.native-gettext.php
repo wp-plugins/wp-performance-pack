@@ -221,11 +221,20 @@
       // Make sure that the locale is set correctly in environment
       $locale=get_locale();
       
-	  if ( self::isAvailable( 'putenv' ) ) {
+/*	  if ( self::isAvailable( 'putenv' ) ) {
 		putenv ('LC_ALL=' . $locale);
 	  }
-      setlocale (LC_ALL, $locale);
+      setlocale (LC_ALL, $locale); */
       
+		if( !defined( 'LC_MESSAGES' ) ) {
+			define( 'LC_MESSAGES', 6 );
+		}
+		
+		if ( self::isAvailable( 'putenv' ) ) {
+			putenv('LC_MESSAGES='.$locale.'.UTF-8' );
+		}
+		setlocale( LC_MESSAGES, $locale . '.UTF-8' );
+	  
       // Retrive MD5-hash of the file
       # DIRTY! But there is no other way at the moment to make this work
       if (!($Domain = md5_file ($filename)))

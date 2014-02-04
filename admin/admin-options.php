@@ -33,6 +33,42 @@ if ( !class_exists( 'WPPP_Admin ' ) ) {
 
 		public function admin_init() {
 			register_setting( 'wppp_options', WP_Performance_Pack::$options_name, array( $this, 'validate' ) );
+			load_plugin_textdomain( 'wppp', false, $this->wppp->plugin_dir . '/lang');
+
+			if ( $this->wppp->options['disable_backend_translation'] && $this->wppp->options['dbt_allow_user_override'] ) {
+				add_action( 'show_user_profile', array ( $this, 'show_wppp_user_settings' ) );
+				add_action( 'edit_user_profile', array ( $this, 'show_wppp_user_settings' ) );
+				add_action( 'personal_options_update', array ( $this, 'save_wppp_user_settings' ) );
+				add_action( 'edit_user_profile_update', array ( $this, 'save_wppp_user_settings' ) );
+			}
+		}
+
+		function save_wppp_user_settings ( $user_id ) {
+			if ( !current_user_can( 'edit_user', $user_id ) ) { return false; }
+
+			if ( isset( $_POST['wppp_translate_backend'] ) && $_POST['wppp_translate_backend'] === 'true' ) {
+				$res = update_user_option( $user_id, 'wppp_translate_backend', 'true' );
+			} else {
+				delete_user_option ( $user_id, 'wppp_translate_backend' );
+			}
+		}
+
+		public function show_wppp_user_settings ($user) {
+		?>
+		<h3><?php _e( 'Dashboard language', 'wppp' ); ?></h3>
+
+			<table class="form-table">
+				<tr>
+					<th scope="row"><?php _e( 'Translate Dashboard', 'wppp' ); ?></th>
+					<td>
+						<label for="wppp_translate_backend">
+							<input type="checkbox" name="wppp_translate_backend" id="wppp_translate_backend" value="true" <?php echo get_user_option( 'wppp_translate_backend', $user->ID ) === 'true' ? 'checked="true"' : ''; ?> /> 
+							<?php _e( 'Activate to translate the Dashboard into the blog language.', 'wppp' ); ?>
+						</label>
+					</td>
+				</tr>
+			</table>
+		<?php
 		}
 
 		public function validate( $input ) {
@@ -151,6 +187,9 @@ if ( !class_exists( 'WPPP_Admin ' ) ) {
 								<label for="backend-trans-true"><input id="backend-trans-true" type="radio" name="<?php $this->e_option('disable_backend_translation'); ?>" value="true" <?php echo $this->wppp->options['disable_backend_translation'] == true ? 'checked="checked"' : '';?>/><?php _e( 'Enabled', 'wppp' );?>&nbsp;</label>
 								<label for="backend-trans-false"><input id="backend-trans-false" type="radio" name="<?php $this->e_option('disable_backend_translation'); ?>" value="false" <?php echo !$this->wppp->options['disable_backend_translation'] == true ? 'checked="checked"' : '';?>/><?php _e( 'Disabled', 'wppp' ); ?></label>
 								<p class="description"><?php _e('Disables translation of backend texts.', 'wppp' ); ?></p>
+								<br/>
+								<label for="allow-user-override"><input id="allow-user-override" type="checkbox" name="<?php $this->e_option( 'dbt_allow_user_override'); ?>" value="true" <?php echo $this->wppp->options['dbt_allow_user_override'] == true ? 'checked="checked"' : ''; ?> /><?php _e( 'Allow user override', 'wppp' ); ?></label>
+								<p class="description"><?php  _e( 'Allow users to reactive backend translation in their profile settings.', 'wppp' ); ?></p>
 							</td>
 						</tr>
 					</table>

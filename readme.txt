@@ -15,9 +15,49 @@ improve performance of translated WordPress installations.
 WP Performance Pack is intended to be a collection of performance optimizations for WordPress which don't need 
 patching of core files. As of now it features options to improve performance of translated WordPress installations.
 
-= Current features =
+= Features =
 
-**Dynamic loading of translation files, only loading and translating used strings.**
+* Dynamic loading of translation files, only loading and translating used strings.
+* Use of native gettext if available.
+* Disable backend translation while maintaining frontend translations.
+* Allow individual users to reactivate Dashboard translation via profile setting.
+* Just in time localization of javascripts (requires WordPress version 3.8.1).
+* [Debug Bar](http://wordpress.org/plugins/debug-bar/) integration
+
+== Screenshots ==
+
+1. MO-Dynamic benchmark: Comparing front page of a "fresh" WordPress 3.8.1 installation (plain) and a "complex" installation (22 active plugins) using default MO implementation (*DE / MO* and *EN / MO*) and MO-Dynamic (*DE / MO-Dynamic* and *EN / MO-Dynamic*). Tested with (*DE...*) and without (*EN...*) translating using XDebug. Results are executiuon time in ms. The benchmarks show usage of MO-Dynamic improves performance when translating a blog and doesn't really impact it, when not. (Benchmarked version: 0.1)
+2. Settings
+3. Debug Bar integration
+
+== Installation ==
+
+Download, install and activate. Usage of MO-Dynamic is enabled by default.
+
+== Frequently Asked Questions ==
+
+= Requirements =
+
+PHP >= 5.3 required
+
+For native gettext support:
+
+* installed gettext extension
+* languages folder must be writeable
+
+For Debug bar integration [Debug Bar](http://wordpress.org/plugins/debug-bar/) needs to be installed
+
+= Limitations =
+
+MO-Dynamic doesn't implement any saving related methods from the *Translations* base class. It's a read only implementation.
+
+= Multisite support =
+
+When installed network wide only the network admin can see and edit WPPP options.
+
+== Details == 
+
+= Dynamic loading of translation files, only loading and translating used strings. =
 
 Improves performance and reduces memory consumption. The default WordPress MO implementation loads the complete 
 MO files (e.g. when loaded via load_textdomain) into memory. As a result translation of individual strings is 
@@ -31,7 +71,7 @@ reduce execution time. Furthermore it doesn't load the complete translations int
 This on demand translation is more expensive than translations on fully loaded mo files but the performance
 gain by not loading and parsing the complete file outweighs this.
 
-**Use of native gettext if available**
+= Use of native gettext if available =
 
 There is probably no faster way for translations than using the native gettext implementation. This requires 
 the php_gettext extension to be installed on the server. Version 0.2 supports the use of native gettext if it is 
@@ -39,52 +79,21 @@ available. This is implemented using *Bernd Holzmuellers* [Translate_GetText_Nat
 implementation (slightly modified). For now WPPP only checks if the gettext extension is available, which might 
 not suffice to use native gettext. Further checks will follow.
 
-**Disable backend translation while maintaining frontend translations.**
-
-Speed up the backend by disabling dashboard-translations. Useful if you don't mind using an english backend.
-AJAX requests on backend pages will still be translated, as I haven't figured out how to distinguish requests 
-originating backend pages and requests from frontend pages.
-
-
-**Just in time localization**
-
-Localization of scripts only if needed to reduce unnecessary translations. Currently requires WordPress version 3.8.1.
-
-== Screenshots ==
-
-1. MO-Dynamic benchmark: Comparing front page of a "fresh" WordPress 3.8.1 installation (plain) and a "complex" installation (22 active plugins) using default MO implementation (*DE / MO* and *EN / MO*) and MO-Dynamic (*DE / MO-Dynamic* and *EN / MO-Dynamic*). Tested with (*DE...*) and without (*EN...*) translating using XDebug. Results are executiuon time in ms. The benchmarks show usage of MO-Dynamic improves performance when translating a blog and doesn't really impact it, when not. (Benchmarked version: 0.1)
-
-== Installation ==
-
-Download, install and activate. Usage of MO-Dynamic is enabled by default.
-
-== Frequently Asked Questions ==
-
-= Requirements =
-
-PHP 5.3.0 required
-
-For native gettext support:
-
-* installed gettext extension
-* languages folder must be writeable
-
-= Limitations =
-
-MO-Dynamic doesn't implement any saving related methods from the *Translations* base class. It's a read only implementation.
-
-= Multisite support =
-
-When installed network wide only the network admin can see and edit WPPP options.
-
 == Changelog ==
+
+= 0.5 =
+
+* [native gettext] langage directory set to WP_LANG_DIR
+* [general] allow user override to reactivate backend translation
+* [debug] Debug Bar integration for debugging
+* [i10n] translations updated
 
 = 0.4 =
 
 * [i10n] german translation added
 * [general] admin interface reworked
 * [native gettext] use of LC_MESSAGES instead of LC_ALL
-* [bative gettext] append codeset to locale
+* [native gettext] append codeset to locale
 
 = 0.3 =
 

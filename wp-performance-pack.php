@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://www.bjoernahrens.de
 	Description: A collection of performance optimizations for WordPress
-	Version: 0.4
+	Version: 0.5
 	Author: Bj&ouml;rn Ahrens
 	Author URI: http://www.bjoernahrens.de
 	License: GPL2 or later
@@ -32,6 +32,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			'use_mo_dynamic' => true,
 			'use_jit_localize' => false,
 			'disable_backend_translation' => false,
+			'dbt_allow_user_override' => false,
 			'use_native_gettext' => false,
 		);
 
@@ -39,6 +40,9 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 		public $gettext_available = false;
 		public $is_network = false;
 		public $options = NULL;
+		public $plugin_dir = NULL;
+
+		public $dbg_textdomains = array ();
 
 		private function load_options () {
 			if ( $this->options == NULL ) {
@@ -58,6 +62,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 		public function __construct() { 
 			// initialize fields
 			global $wp_version;
+			$this->plugin_dir = dirname(plugin_basename(__FILE__));
 			$this->jit_available = in_array( $wp_version, array ( '3.8.1' ) );
 			$this->gettext_available = extension_loaded( 'gettext' );
 			if ( !function_exists( 'is_plugin_active_for_network' ) )
@@ -67,12 +72,6 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 
 			// add actions
 			add_action( 'activated_plugin', array ( &$this, 'plugin_load_first' ) );
-
-			if ( is_admin() ) {
-				load_plugin_textdomain( 'wppp', false, dirname(plugin_basename(__FILE__)) . '/lang');
-				include( sprintf( "%s/admin/admin-options.php", dirname( __FILE__ ) ) );
-				$this->admin_opts = new WPPP_Admin ($this);
-			}
 
 			// load modules
 			if ( $this->options['use_mo_dynamic'] || ( $this->options['use_native_gettext'] && $this->gettext_available ) ) {
@@ -84,13 +83,32 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			if ( $this->options['use_jit_localize'] && $this->jit_available ) {
 				include( sprintf( "%s/modules/jit-localize.php", dirname( __FILE__ ) ) );
 			}
+
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				add_filter( 'debug_bar_panels', array ( $this, 'add_debug_bar_wppp' ), 10 );
+			}
+			
+			if ( is_admin() ) {
+				include( sprintf( "%s/admin/admin-options.php", dirname( __FILE__ ) ) );
+				$this->admin_opts = new WPPP_Admin ($this);
+			}
+		}
+
+		function add_debug_bar_wppp ( $panels ) {
+			if ( class_exists( 'Debug_Bar' ) ) {
+				include( sprintf( "%s/admin/class.debug-bar-wppp.php", dirname( __FILE__ ) ) );
+				$panel = new Debug_Bar_WPPP ();
+				$panel->textdomains = &$this->dbg_textdomains;
+				$panels[] = $panel;
+				return $panels;
+			}
 		}
 
 		/**
 		 * Make sure WPPP is loaded as first plugin. Important for e.g. usage of dynamic MOs with all text domains.
 		 */
 		public static function plugin_load_first() {
-			$path = str_replace( str_replace ( '\\', '/', WP_PLUGIN_DIR ) . '/', '', str_replace ( '\\', '/', __FILE__ ) );
+			$path = plugin_basename( __FILE__ );//str_replace( str_replace ( '\\', '/', WP_PLUGIN_DIR ) . '/', '', str_replace ( '\\', '/', __FILE__ ) );
 			
 			if ( $plugins = get_option( 'active_plugins' ) ) {
 				if ( $key = array_search( $path, $plugins ) ) {

@@ -93,6 +93,8 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 				<tr>
 					<th scope="row">System locales (LC_MESSAGES)</th>
 					<td><?php
+						if( !defined( 'LC_MESSAGES' ) )
+							define( 'LC_MESSAGES', 6 );
 						$l = setlocale (LC_MESSAGES, "0");
 						echo join( '<br/>', explode( ';', $l ) );
 						?>

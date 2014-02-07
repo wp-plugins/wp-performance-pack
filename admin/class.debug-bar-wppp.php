@@ -59,6 +59,7 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 						<th>textdomain</th>
 						<th>mofile</th>
 						<th>caller</th>
+						<th>override</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -69,6 +70,7 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 							<td><?php echo $td['domain']; ?></td>
 							<td><?php echo substr ( $td['mofile'], strlen ( ABSPATH . 'wp-content' ) ); ?></td>
 							<td><code><?php echo $this->get_caller( $td['caller'] ); ?></code></td>
+							<td><code><?php echo $td['override']; ?></code></td>
 						</tr>
 						<?php
 					}

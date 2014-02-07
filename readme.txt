@@ -81,6 +81,11 @@ not suffice to use native gettext. Further checks will follow.
 
 == Changelog ==
 
+= 0.5.1 =
+
+* [debug] show class used for textdomain
+* [debug] added debugging option, so WP_DEBUG isn't required anymore
+
 = 0.5 =
 
 * [native gettext] langage directory set to WP_LANG_DIR

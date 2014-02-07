@@ -137,6 +137,17 @@ if ( !class_exists( 'WPPP_Admin ' ) ) {
 					<form method="post" action="options.php">
 				<?php endif; ?>
 					<?php settings_fields( 'wppp_options' ); ?>
+					<h3><?php _e( 'General', 'wppp' ); ?></h3>
+					<table class="form-table">
+						<tr valign="top">
+							<th scope="row"><?php _e( 'Debug Panel', 'wppp' ); ?></th>
+							<td>
+								<label for="debug-panel"><input id="debug-panel" type="checkbox" name="<?php $this->e_option( 'debug' ); ?>" value="true" <?php echo $this->wppp->options['debug'] ? 'checked="checked" ' : ' '; echo class_exists( 'Debug_Bar' ) ? '' : 'disabled="true"'; ?> /><?php _e ( 'Enabled', 'wppp' ); ?></label>
+								<p class="description"><?php _e( 'Enables debugging, requires Debug Bar Plugin.', 'wppp' ); ?></p>
+							</td>
+						</tr>
+					</table>
+					
 					<h3><?php _e('Translation related','wppp') ?></h3>
 					<table class="form-table">
 						<tr valign="top">

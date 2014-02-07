@@ -26,7 +26,7 @@ function load_textdomain_override( $retval, $domain, $mofile ) {
 			return true;
 		}
 	}
-	
+
 	do_action( 'load_textdomain', $domain, $mofile );
 	$mofile = apply_filters( 'load_textdomain_mofile', $mofile, $domain );
 
@@ -40,10 +40,12 @@ function load_textdomain_override( $retval, $domain, $mofile ) {
 		return false;
 	}
 
-	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+	if ( $wp_performance_pack->options['debug'] == true ) {
 		$callers=debug_backtrace();
-		$wp_performance_pack->dbg_textdomains[] = array ( 'domain' => $domain, 'mofile' => $mofile, 'caller' => $callers );
+		$dbginfo = array ( 'domain' => $domain, 'mofile' => $mofile, 'caller' => $callers );
 	}
+
+	$result = false;
 
 	if ($wp_performance_pack->options['use_native_gettext'] && extension_loaded( 'gettext' )) {
 		require_once(sprintf( "%s/class.native-gettext.php", dirname( __FILE__ ) ) );
@@ -52,15 +54,24 @@ function load_textdomain_override( $retval, $domain, $mofile ) {
 		require_once(sprintf( "%s/class.mo-dynamic.php", dirname( __FILE__ ) ) );
 		$mo = new MO_dynamic ();
 	}
-	if ( !$mo->import_from_file( $mofile ) ) { 
-		return false;
+	
+	if ( $mo->import_from_file( $mofile ) ) { 
+		if ( isset( $l10n[$domain] ) )
+			$mo->merge_with( $l10n[$domain] );
+		$l10n[$domain] = &$mo;
+		$result = true;
+	}
+	
+	if ( $wp_performance_pack->options['debug'] ) {
+		if ( $result) {
+			$dbginfo['override'] = get_class( $mo );
+		} else {
+			$dbginfo['override'] = 'false';
+		}
+		$wp_performance_pack->dbg_textdomains[] = $dbginfo;
 	}
 
-	if ( isset( $l10n[$domain] ) )
-		$mo->merge_with( $l10n[$domain] );
-	$l10n[$domain] = &$mo;
-
-	return true;
+	return $result;
 }
 
 add_filter( 'override_load_textdomain', 'load_textdomain_override', 0, 3 );

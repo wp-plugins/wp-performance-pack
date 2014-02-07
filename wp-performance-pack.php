@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://www.bjoernahrens.de
 	Description: A collection of performance optimizations for WordPress
-	Version: 0.5
+	Version: 0.5.1
 	Author: Bj&ouml;rn Ahrens
 	Author URI: http://www.bjoernahrens.de
 	License: GPL2 or later
@@ -34,6 +34,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			'disable_backend_translation' => false,
 			'dbt_allow_user_override' => false,
 			'use_native_gettext' => false,
+			'debug' => true,
 		);
 
 		public $jit_available = false;
@@ -84,7 +85,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 				include( sprintf( "%s/modules/jit-localize.php", dirname( __FILE__ ) ) );
 			}
 
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			if ( $this->options['debug'] ) {
 				add_filter( 'debug_bar_panels', array ( $this, 'add_debug_bar_wppp' ), 10 );
 			}
 			

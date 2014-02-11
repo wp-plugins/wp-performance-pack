@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://www.bjoernahrens.de
 	Description: A collection of performance optimizations for WordPress
-	Version: 0.5.1
+	Version: 0.5.2
 	Author: Bj&ouml;rn Ahrens
 	Author URI: http://www.bjoernahrens.de
 	License: GPL2 or later
@@ -75,10 +75,10 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			add_action( 'activated_plugin', array ( &$this, 'plugin_load_first' ) );
 
 			// load modules
-			if ( $this->options['use_mo_dynamic'] || ( $this->options['use_native_gettext'] && $this->gettext_available ) ) {
+			if ( $this->options['use_mo_dynamic'] 
+				|| ( $this->options['use_native_gettext'] && $this->gettext_available ) 
+				|| $this->options['disable_backend_translation'] ) {
 				include( sprintf( "%s/modules/override-textdomain.php", dirname( __FILE__ ) ) );
-			} else if ( $this->options['disable_backend_translation'] ) {
-				include( sprintf( "%s/modules/disable-backend.php", dirname( __FILE__ ) ) );
 			}
 
 			if ( $this->options['use_jit_localize'] && $this->jit_available ) {
@@ -100,6 +100,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 				include( sprintf( "%s/admin/class.debug-bar-wppp.php", dirname( __FILE__ ) ) );
 				$panel = new Debug_Bar_WPPP ();
 				$panel->textdomains = &$this->dbg_textdomains;
+				$panel->plugin_base = plugin_basename( __FILE__ );
 				$panels[] = $panel;
 				return $panels;
 			}
@@ -109,7 +110,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 		 * Make sure WPPP is loaded as first plugin. Important for e.g. usage of dynamic MOs with all text domains.
 		 */
 		public static function plugin_load_first() {
-			$path = plugin_basename( __FILE__ );//str_replace( str_replace ( '\\', '/', WP_PLUGIN_DIR ) . '/', '', str_replace ( '\\', '/', __FILE__ ) );
+			$path = plugin_basename( __FILE__ );
 			
 			if ( $plugins = get_option( 'active_plugins' ) ) {
 				if ( $key = array_search( $path, $plugins ) ) {

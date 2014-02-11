@@ -1,57 +1,67 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WP Performance Pack\n"
-"POT-Creation-Date: 2014-02-04 23:14+0100\n"
-"PO-Revision-Date: 2014-02-04 23:17+0100\n"
-"Last-Translator: Björn Ahrens <bjoern@ahrens.net>\n"
+"POT-Creation-Date: 2014-02-11 12:20+0100\n"
+"PO-Revision-Date: 2014-02-11 12:24+0100\n"
+"Last-Translator: Bartsch Software <info@bartschsoft.com>\n"
 "Language-Team:  <bjoern@ahrens.net>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.3\n"
+"X-Generator: Poedit 1.6.4\n"
 "X-Poedit-KeywordsList: __:1,2t;_e:1,2t\n"
 "X-Poedit-Basepath: .\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-#: ../admin/admin-options.php:24 ../admin/admin-options.php:30
-#: ../admin/class.debug-bar-wppp.php:35
+#: ../admin/admin-options.php:43 ../admin/admin-options.php:49
+#: ../admin/class.debug-bar-wppp.php:43
 msgid "WP Performance Pack"
 msgstr "WP Performance Pack"
 
-#: ../admin/admin-options.php:24 ../admin/admin-options.php:30
+#: ../admin/admin-options.php:43 ../admin/admin-options.php:49
 msgid "Performance Pack"
 msgstr "Performance Pack"
 
-#: ../admin/admin-options.php:58
+#: ../admin/admin-options.php:77
 msgid "Dashboard language"
 msgstr "Dashbaord sprache"
 
-#: ../admin/admin-options.php:62
+#: ../admin/admin-options.php:81
 msgid "Translate Dashboard"
 msgstr "Dashboard übersetzen"
 
-#: ../admin/admin-options.php:66
+#: ../admin/admin-options.php:85
 msgid "Activate to translate the Dashboard into the blog language."
 msgstr "Wenn aktiviert, wird das Dashboard in die Blog-Sprache übersetzt."
 
-#: ../admin/admin-options.php:93
+#: ../admin/admin-options.php:112
 msgid ""
 "<p>WP Performance Pack is intended to be a collection of performance "
 "optimizations for WordPress which don't need patching of core files. As of "
 "now it features options to improve performance of translated WordPress "
-"installations.</p>"
+"installations.</p><h4>Optimal settings</h4><ul><li>Use native gettext if "
+"available (for details on native gettext support activate <em>Debug Panel</"
+"em>).</li><li>MO-Dynamic should always work and is faster than default "
+"WordPress translations, but slower than native gettext.</li><li>Enable JIT "
+"localize if available.</li></ul>"
 msgstr ""
 "<p>WP Performance Pack ist eine Sammlung von Optimierungen für WordPress, "
 "für die die WordPress-Dateien nicht verändert werden müssen. Derzeit umfasst "
-"WPPP Funktionen zum Beschelunigen von übersetzten WordPress-Blogs.</p>"
+"WPPP Funktionen zum Beschelunigen von übersetzten WordPress-Blogs.</"
+"p><h4>Optimale Einstellungen</h4><ul><li>Natives Gettext ist die schnellste "
+"Methode zum Übersetzen (für Details zur Gettext-Unterstützung das <em>Debug "
+"Panel</em> aktivieren).</li><li>MO-Dynamic sollte immer funktionieren und "
+"ist schneller als die Standard-Implementierung von WordPress, aber langsamer "
+"als natives Gettext.</li><li>Wenn verfügbar JIT-Übersetzungen aktivieren.</"
+"li></ul>"
 
-#: ../admin/admin-options.php:98
+#: ../admin/admin-options.php:117
 msgid "MO-Dynamic"
 msgstr "MO-Dynamic"
 
-#: ../admin/admin-options.php:99
+#: ../admin/admin-options.php:118
 msgid ""
 "<p><strong>Dynamic loading of translation files, only loading and "
 "translating used strings.</strong></p><p>Improves performance and reduces "
@@ -84,11 +94,11 @@ msgstr ""
 "Weiterhin wird der Speicherverbrauch deutlich gesenkt, was ebenfalls die "
 "Performance verbessert.</p>"
 
-#: ../admin/admin-options.php:104
+#: ../admin/admin-options.php:123
 msgid "Native gettext"
 msgstr "Natives gettext"
 
-#: ../admin/admin-options.php:105
+#: ../admin/admin-options.php:124
 msgid ""
 "<p><strong>Use of native gettext if available</strong></p><p>There is "
 "probably no faster way for translations than using the native gettext "
@@ -112,11 +122,11 @@ msgstr ""
 "native Gettext-Implementierung hat Vorrang vor MO-Dynamic, wenn beides "
 "aktiviert ist.</em></p>"
 
-#: ../admin/admin-options.php:110
+#: ../admin/admin-options.php:129
 msgid "JIT localize"
 msgstr "JIT Übersetzung"
 
-#: ../admin/admin-options.php:111
+#: ../admin/admin-options.php:130
 msgid ""
 "<p><strong>Just in time localization</strong></p><p>Just in time "
 "localization of scripts. By default WordPress localizes all default scripts "
@@ -137,11 +147,11 @@ msgstr ""
 "WordPress Version 3.8.1 verfügbar; wegen Unterschieden in "
 "<code>wp_default_scripts</code> zwischen den Versionen.</em></p>"
 
-#: ../admin/admin-options.php:116 ../admin/admin-options.php:184
+#: ../admin/admin-options.php:135 ../admin/admin-options.php:215
 msgid "Disable backend translation"
 msgstr "Backend Übersetzung deaktivieren"
 
-#: ../admin/admin-options.php:117
+#: ../admin/admin-options.php:136
 msgid ""
 "<p><strong>Disable backend translation while maintaining frontend "
 "translations.</strong></p><p>Speed up the backend by disabling dashboard-"
@@ -157,75 +167,93 @@ msgstr ""
 "werden trotzdem auch im Backend Texte übersetzt, da nicht zwischen Requests "
 "vom Backend und Frontend unterschieden werden kann.</em></p>"
 
-#: ../admin/admin-options.php:132
+#: ../admin/admin-options.php:151
 msgid "WP Performance Pack - Settings"
 msgstr "WP Performance Pack - Einstellungen"
 
-#: ../admin/admin-options.php:140
-msgid "Translation related"
-msgstr "Übersetzungsbezogen"
+#: ../admin/admin-options.php:159
+msgid "General"
+msgstr "Allgemein"
 
-#: ../admin/admin-options.php:144
-msgid "Use MO-Dynamic"
-msgstr "MO-Dynamic benutzen"
+#: ../admin/admin-options.php:162
+msgid "Debug Panel"
+msgstr "Debug Panel"
 
-#: ../admin/admin-options.php:147 ../admin/admin-options.php:157
-#: ../admin/admin-options.php:174 ../admin/admin-options.php:187
+#: ../admin/admin-options.php:164 ../admin/admin-options.php:178
+#: ../admin/admin-options.php:195 ../admin/admin-options.php:205
+#: ../admin/admin-options.php:218
 msgid "Enabled"
 msgstr "Aktiviert"
 
-#: ../admin/admin-options.php:148 ../admin/admin-options.php:158
-#: ../admin/admin-options.php:175 ../admin/admin-options.php:188
+#: ../admin/admin-options.php:165 ../admin/admin-options.php:179
+#: ../admin/admin-options.php:196 ../admin/admin-options.php:206
+#: ../admin/admin-options.php:219
 msgid "Disabled"
 msgstr "Deaktiviert"
 
-#: ../admin/admin-options.php:149
+#: ../admin/admin-options.php:166
+msgid ""
+"Enables debugging, requires <a href=\"http://wordpress.org/plugins/debug-bar/"
+"\">Debug Bar</a> Plugin."
+msgstr ""
+"Aktiviert das Debugging, benötigt das <a href=\"http://wordpress.org/plugins/"
+"debug-bar/\">Debug Bar</a> Plugin."
+
+#: ../admin/admin-options.php:171
+msgid "Translation related"
+msgstr "Übersetzungsbezogen"
+
+#: ../admin/admin-options.php:175
+msgid "Use native gettext"
+msgstr "Natives gettext benutzen"
+
+#: ../admin/admin-options.php:182
+msgid ""
+"Gettext extension is <b>available</b>. (For further details on native "
+"gettext support activate <em>Debug Panel</em>)"
+msgstr ""
+"Gettext-Erweiterung ist <b>verfügbar</b>. (für genauere Details zur Gettext-"
+"Unterstüzung das <em>Debug Panel</em> aktivieren)"
+
+#: ../admin/admin-options.php:184
+msgid "Gettext extension is <b>not available</b>!"
+msgstr "Gettext-Erweiterung ist <b>nicht verfügbar</b>!"
+
+#: ../admin/admin-options.php:187
+msgid "Use native gettext implementation for translations."
+msgstr "Native Gettext-Implementierung zum Übersetzen benutzen"
+
+#: ../admin/admin-options.php:192
+msgid "Use MO-Dynamic"
+msgstr "MO-Dynamic benutzen"
+
+#: ../admin/admin-options.php:197
 msgid "Loads translations on demand. Use if native gettext is not available."
 msgstr ""
 "Übersetzungen werden erst bei bedarf geladen. Alternative, wenn keine native "
 "gettext Unterstützung vorhanden ist."
 
-#: ../admin/admin-options.php:154
-msgid "Use native gettext"
-msgstr "Natives gettext benutzen"
-
-#: ../admin/admin-options.php:161
-msgid ""
-"Gettext extension is <b>available</b>. (But this doesn't means it will "
-"work...)"
-msgstr ""
-"Gettext-Erweiterung ist <b>verfügbar</b>. (Was nicht bedeutet, dass sie "
-"funktioniert...)"
-
-#: ../admin/admin-options.php:163
-msgid "Gettext extension is <b>not available</b>!"
-msgstr "Gettext-Erweiterung ist <b>nicht verfügbar</b>!"
-
-#: ../admin/admin-options.php:166
-msgid "Use native gettext implementation for translations."
-msgstr "Native Gettext-Implementierung zum Übersetzen benutzen"
-
-#: ../admin/admin-options.php:171
+#: ../admin/admin-options.php:202
 msgid "Use JIT localize"
 msgstr "JIT Übersetzung benutzen"
 
-#: ../admin/admin-options.php:177
+#: ../admin/admin-options.php:208
 msgid "As for now only available for WordPress version 3.8.1!"
 msgstr "Vorerst nur für WordPRess Version 3.8.1 verfügbar!"
 
-#: ../admin/admin-options.php:179
+#: ../admin/admin-options.php:210
 msgid "Just in time localization of scripts."
 msgstr "Just-In-Time Übersetzung von Skripten"
 
-#: ../admin/admin-options.php:189
+#: ../admin/admin-options.php:220
 msgid "Disables translation of backend texts."
 msgstr "Deaktiviert das Übersetzen von Texten im Backend (Dashboard)."
 
-#: ../admin/admin-options.php:191
+#: ../admin/admin-options.php:222
 msgid "Allow user override"
 msgstr "Überschreiben durch Benutzer erlauben"
 
-#: ../admin/admin-options.php:192
+#: ../admin/admin-options.php:223
 msgid "Allow users to reactive backend translation in their profile settings."
 msgstr ""
 "Benutzern erlauben das Übersetzen des Backends über ihre Profileinstellungen "

@@ -9,7 +9,8 @@
  */
  
 class Debug_Bar_WPPP extends Debug_Bar_Panel {
-	var $textdomains = array ();
+	public $textdomains = array ();
+	public $plugin_base = '';
 
 	private function get_caller ( $stacktrace ) {
 		static $excludes = array (
@@ -20,22 +21,29 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 			'load_theme_textdomain',
 			'load_plugin_textdomain',
 		);
+		$str = '?';
 		for ( $i = 0, $max = count( $stacktrace ); $i < $max; $i++) {
 			if ( !in_array ( $stacktrace[$i]['function'], $excludes ) ) {
 				if ( isset( $stacktrace[$i]['class'] ) ) {
-					return $stacktrace[$i]['class'] . $stacktrace[$i]['type'] . $stacktrace[$i]['function'];
+					$str = $stacktrace[$i]['class'] . $stacktrace[$i]['type'] . $stacktrace[$i]['function'];
 				} else {
-					return $stacktrace[$i]['function'];
+					$str = $stacktrace[$i]['function'];
 				}
+
+				if ( isset( $stacktrace[$i]['file'] ) ) {
+					$str = substr ( $stacktrace[$i]['file'], strlen ( ABSPATH ) ) . ': ' . $str;
+				}
+				break;
 			}
 		}
+		return $str;
 	}
 
 	function init() {
 		$this->title( __('WP Performance Pack', 'wppp') );
 	}
 
-	static function isAvailable($func) {
+	private function isAvailable($func) {
 		if (ini_get('safe_mode')) return false;
 		$disabled = ini_get('disable_functions');
 		if ($disabled) {
@@ -46,13 +54,28 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 		return true;
 	}
 
+	private function WPPP_loaded_first () {
+		if ( $plugins = get_option( 'active_plugins' ) ) {
+			$key = array_search( $this->plugin_base, $plugins );
+			return ( $key === 0 );
+		}
+	}
+
 	function render() {
 		$locale=get_locale();
 		$Path = WP_LANG_DIR . '/' . $locale . '/LC_MESSAGES';
 		$direxists = false;
 		?>
 		<div id="debug-bar-wppp">
-			<h3>textdomains</h3>
+			<h3>General</h3>
+			<table class="widefat">
+				<tr>
+					<th scope="row">WPPP loaded first?</th>
+					<td><?php echo $this->WPPP_loaded_first()===false ? 'No' : 'Yes'; ?></td>
+				</tr>
+			</table>
+			
+			<h3>Textdomains</h3>
 			<table class="widefat">
 				<thead>
 					<tr>
@@ -64,35 +87,66 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 				</thead>
 				<tbody>
 					<?php
+					$odd = false;
 					foreach ($this->textdomains as $td) {
+						$odd = !$odd;
+						$mo_class = NULL;
 						?>
-						<tr>
+						<tr <?php echo $odd ? 'class="alternate" ' : ' '; ?> >
 							<td><?php echo $td['domain']; ?></td>
 							<td><?php echo substr ( $td['mofile'], strlen ( ABSPATH . 'wp-content' ) ); ?></td>
 							<td><code><?php echo $this->get_caller( $td['caller'] ); ?></code></td>
-							<td><code><?php echo $td['override']; ?></code></td>
+							<td><code><?php 
+								if ( is_string( $td['override'] ) ) {
+									echo $td['override'];
+								} else {
+									$mo_class = $td['override'];
+									if ( $mo_class instanceof MO_dynamic_Debug )
+										// Hide use of ...Debug class from user, as it doesn't matter and possibly confuses
+										echo get_parent_class ( $mo_class );
+									else
+										echo get_class( $mo_class ); 
+								}
+							?></code></td>
 						</tr>
 						<?php
+						if ($mo_class instanceof MO_dynamic_Debug) { ?>
+							<tr <?php echo $odd ? 'class="alternate" ' : ' '; ?> >
+								<td colspan="4">
+									<span class="description">
+										translate calls: <strong><?php echo $mo_class->translate_hits; ?></strong> - 
+										translate_plural calls: <strong><?php echo $mo_class->translate_plural_hits; ?></strong> - 
+										unique translations: <strong><?php echo $mo_class->search_translation_hits; ?></strong>
+									</span>
+								</td>
+							</tr>
+						<?php
+						}
 					}
 					?>
 				</tbody>
 			</table>
 
-			<h3>native gettext support</h3>
+			<h3>Native gettext support</h3>
 			<table class="widefat">
+				<tr class="alternate">
+					<th scope="row">OS</th>
+					<td><?php echo php_uname(); ?></td>
+				</tr>
+				</tr>
 				<tr>
 					<th scope="row">PHP gettext extension is</th>
 					<td><?php echo extension_loaded('gettext') ? 'Available' : 'Not available'; ?></td>
 				</tr>
-				<tr>
+				<tr class="alternate">
 					<th scope="row">WordPress locale</th>
 					<td><?php echo $locale; ?></td>
 				</tr>
 				<tr>
-					<th scope="row">LC_MESSAGES defined</th>
+					<th scope="row">LC_MESSAGES defined?</th>
 					<td><?php echo defined( 'LC_MESSAGES' ) ? 'Yes' : 'No'; ?></td>
 				</tr>
-				<tr>
+				<tr class="alternate">
 					<th scope="row">System locales (LC_MESSAGES)</th>
 					<td><?php
 						if( !defined( 'LC_MESSAGES' ) )
@@ -103,11 +157,11 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 					</td>
 				</tr>
 				<tr>
-					<th scope="row">Putenv available</th>
-					<td><?php echo self::isAvailable( 'putenv' ) ? 'Yes' : 'No'; ?></td>
+					<th scope="row">Putenv available?</th>
+					<td><?php echo $this->isAvailable( 'putenv' ) ? 'Yes' : 'No'; ?></td>
 				</tr>
-				<tr>
-					<th scope="row">Locale writeable (<?php  echo $locale . '.UTF-8'; ?>)</th>
+				<tr class="alternate">
+					<th scope="row">Locale writeable? (<?php  echo $locale . '.UTF-8'; ?>)</th>
 					<td><?php echo ( setlocale (LC_MESSAGES, $locale . '.UTF-8' ) == $locale ) ? 'Yes' : 'No' ; ?></td>
 				</tr>
 				<tr>

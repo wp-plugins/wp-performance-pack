@@ -43,9 +43,9 @@ PHP >= 5.3 required
 For native gettext support:
 
 * installed gettext extension
-* languages folder must be writeable
+* languages folder (*wp-content/languages*) must be writeable
 
-For Debug bar integration [Debug Bar](http://wordpress.org/plugins/debug-bar/) needs to be installed
+For debugging [Debug Bar](http://wordpress.org/plugins/debug-bar/) needs to be installed
 
 = Limitations =
 
@@ -54,6 +54,12 @@ MO-Dynamic doesn't implement any saving related methods from the *Translations* 
 = Multisite support =
 
 When installed network wide only the network admin can see and edit WPPP options.
+
+= Optimal settings =
+
+* Native gettext **enabled** (if available)
+* MO-Dynamic **enabled**
+* JIT localize **enabled** (disable if this causes trouble with javascripts)
 
 == Details == 
 
@@ -80,6 +86,12 @@ implementation (slightly modified). For now WPPP only checks if the gettext exte
 not suffice to use native gettext. Further checks will follow.
 
 == Changelog ==
+
+= 0.5.2 =
+
+* [debug] show translation calls when using MO-Dynamic
+* [debug] test if WPPP is loaded as first plugin
+* [i10n] translations updated
 
 = 0.5.1 =
 

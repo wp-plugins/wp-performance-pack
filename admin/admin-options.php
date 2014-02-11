@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * Admin settings page
+ *
+ * @author Björn Ahrens <bjoern@ahrens.net>
+ * @package WP Performance Pack
+ * @since 0.1
+ */
+ 
 if ( !class_exists( 'WPPP_Admin ' ) ) {
 	class WPPP_Admin {
 		private $wppp = NULL;
@@ -15,10 +22,22 @@ if ( !class_exists( 'WPPP_Admin ' ) ) {
 			}
 		}
 
-		private function e_option ( $opt_name ) {
-			echo WP_Performance_Pack::$options_name.'['.$opt_name.']';
+		private function e_opt_name ( $opt_name ) {
+			echo 'name="'.WP_Performance_Pack::$options_name.'['.$opt_name.']"';
 		}
-		
+
+		private function e_checked ( $opt_name, $value = true ) {
+			echo $this->wppp->options[$opt_name] === $value ? 'checked="checked" ' : ' ';
+		}
+
+		private function e_checked_or ( $opt_name, $value = true, $or_val = true ) {
+			echo $this->wppp->options[$opt_name] === $value || $or_val ? 'checked="checked" ' : ' ';
+		}
+
+		private function e_checked_and ( $opt_name, $value = true, $and_val = true ) {
+			echo $this->wppp->options[$opt_name] === $value && $and_val ? 'checked="checked" ' : ' ';
+		}
+
 		public function add_page() {
 			global $wppp_options_hook;
 			$wppp_options_hook = add_options_page( __('WP Performance Pack','wppp'), __('Performance Pack','wppp'), 'manage_options', 'wppp_options_page', array( $this, 'options_do_page' ) );
@@ -90,7 +109,7 @@ if ( !class_exists( 'WPPP_Admin ' ) ) {
 			$screen->add_help_tab( array(
 				'id'	=> 'wppp_help_general',
 				'title'	=> __('Overview'),
-				'content'	=> __('<p>WP Performance Pack is intended to be a collection of performance optimizations for WordPress which don\'t need patching of core files. As of now it features options to improve performance of translated WordPress installations.</p>','wppp'),
+				'content'	=> __('<p>WP Performance Pack is intended to be a collection of performance optimizations for WordPress which don\'t need patching of core files. As of now it features options to improve performance of translated WordPress installations.</p><h4>Optimal settings</h4><ul><li>Use native gettext if available (for details on native gettext support activate <em>Debug Panel</em>).</li><li>MO-Dynamic should always work and is faster than default WordPress translations, but slower than native gettext.</li><li>Enable JIT localize if available.</li></ul>','wppp'),
 			) );
 
 			$screen->add_help_tab( array(
@@ -142,8 +161,9 @@ if ( !class_exists( 'WPPP_Admin ' ) ) {
 						<tr valign="top">
 							<th scope="row"><?php _e( 'Debug Panel', 'wppp' ); ?></th>
 							<td>
-								<label for="debug-panel"><input id="debug-panel" type="checkbox" name="<?php $this->e_option( 'debug' ); ?>" value="true" <?php echo $this->wppp->options['debug'] ? 'checked="checked" ' : ' '; echo class_exists( 'Debug_Bar' ) ? '' : 'disabled="true"'; ?> /><?php _e ( 'Enabled', 'wppp' ); ?></label>
-								<p class="description"><?php _e( 'Enables debugging, requires Debug Bar Plugin.', 'wppp' ); ?></p>
+								<label for="debug-panel-true"><input id="debug-panel-true" type="radio" <?php $this->e_opt_name( 'debug' ); ?> value="true" <?php $this->e_checked( 'debug' ); echo class_exists( 'Debug_Bar' ) ? '' : 'disabled="true"'; ?> /><?php _e ( 'Enabled', 'wppp' ); ?>&nbsp;</label>
+								<label for="debug-panel-false"><input id="debug-panel-false" type="radio" <?php $this->e_opt_name( 'debug' ); ?> value="false" <?php $this->e_checked( 'debug', false ); echo class_exists( 'Debug_Bar' ) ? '' : 'disabled="true"'; ?> /><?php _e ( 'Disabled', 'wppp' ); ?>&nbsp;</label>
+								<p class="description"><?php _e( 'Enables debugging, requires <a href="http://wordpress.org/plugins/debug-bar/">Debug Bar</a> Plugin.', 'wppp' ); ?></p>
 							</td>
 						</tr>
 					</table>
@@ -151,25 +171,15 @@ if ( !class_exists( 'WPPP_Admin ' ) ) {
 					<h3><?php _e('Translation related','wppp') ?></h3>
 					<table class="form-table">
 						<tr valign="top">
-							<th scope="row" style="width:15em">
-								<?php _e( 'Use MO-Dynamic', 'wppp' ); ?>
-							</th>
-							<td>
-								<label for="mo-dynamic-true"><input id="mo-dynamic-true" type="radio" name="<?php $this->e_option( 'use_mo_dynamic' ); ?>" value="true" <?php echo $this->wppp->options['use_mo_dynamic'] ? 'checked="checked"' : '';?>/><?php _e( 'Enabled', 'wppp' ); ?>&nbsp;</label>
-								<label for="mo-dynamic-false"><input id="mo-dynamic-false" type="radio" name="<?php $this->e_option( 'use_mo_dynamic'); ?>" value="false" <?php echo !$this->wppp->options['use_mo_dynamic'] ? 'checked="checked"' : '';?>/><?php _e( 'Disabled', 'wppp' ); ?></label>
-								<p class="description"><?php _e( 'Loads translations on demand. Use if native gettext is not available.' ,'wppp' ); ?></p>
-							</td>
-						</tr>
-						<tr valign="top">
 							<th scope="row">
 								<?php _e( 'Use native gettext', 'wppp' ); ?>
 							</th>
 							<td>
-								<label for="native-gettext-true"><input id="native-gettext-true" type="radio" name="<?php $this->e_option('use_native_gettext'); ?>" value="true" <?php echo ( $this->wppp->options['use_native_gettext'] && $this->wppp->gettext_available ) ? 'checked="checked" ' : ' '; echo !$this->wppp->gettext_available ? 'disabled="true"' : ''; ?>/><?php _e( 'Enabled', 'wppp' ); ?>&nbsp;</label>
-								<label for="native-gettext-false"><input id="native-gettext-false" type="radio" name="<?php $this->e_option('use_native_gettext'); ?>" value="false" <?php echo ( !$this->wppp->options['use_native_gettext'] || !$this->wppp->gettext_available ) ? 'checked="checked" ' : ' '; echo !$this->wppp->gettext_available ? 'disabled="true"' : ''; ?>/><?php _e( 'Disabled', 'wppp' ); ?></label>
+								<label for="native-gettext-true"><input id="native-gettext-true" type="radio" <?php $this->e_opt_name('use_native_gettext'); ?> value="true" <?php $this->e_checked_and( 'use_native_gettext', true, $this->wppp->gettext_available ); echo !$this->wppp->gettext_available ? 'disabled="true"' : ''; ?>/><?php _e( 'Enabled', 'wppp' ); ?>&nbsp;</label>
+								<label for="native-gettext-false"><input id="native-gettext-false" type="radio" <?php $this->e_opt_name('use_native_gettext'); ?> value="false" <?php $this->e_checked_or( 'use_native_gettext', false, !$this->wppp->gettext_available ); echo !$this->wppp->gettext_available ? 'disabled="true"' : ''; ?>/><?php _e( 'Disabled', 'wppp' ); ?></label>
 								<p>
 									<?php if ( $this->wppp->gettext_available ) : ?>
-										<?php _e( 'Gettext extension is <b>available</b>. (But this doesn\'t means it will work...)', 'wppp' ); ?>
+										<?php _e( 'Gettext extension is <b>available</b>. (For further details on native gettext support activate <em>Debug Panel</em>)', 'wppp' ); ?>
 									<?php else : ?>
 										<?php _e( 'Gettext extension is <b>not available</b>!', 'wppp' ); ?>
 									<?php endif; ?>
@@ -178,12 +188,22 @@ if ( !class_exists( 'WPPP_Admin ' ) ) {
 							</td>
 						</tr>
 						<tr valign="top">
+							<th scope="row" style="width:15em">
+								<?php _e( 'Use MO-Dynamic', 'wppp' ); ?>
+							</th>
+							<td>
+								<label for="mo-dynamic-true"><input id="mo-dynamic-true" type="radio" <?php $this->e_opt_name( 'use_mo_dynamic' ); ?> value="true" <?php $this->e_checked( 'use_mo_dynamic' ); ?>/><?php _e( 'Enabled', 'wppp' ); ?>&nbsp;</label>
+								<label for="mo-dynamic-false"><input id="mo-dynamic-false" type="radio" <?php $this->e_opt_name( 'use_mo_dynamic'); ?> value="false" <?php $this->e_checked ( 'use_mo_dynamic', false );?>/><?php _e( 'Disabled', 'wppp' ); ?></label>
+								<p class="description"><?php _e( 'Loads translations on demand. Use if native gettext is not available.' ,'wppp' ); ?></p>
+							</td>
+						</tr>
+						<tr valign="top">
 							<th scope="row">
 								<?php _e( 'Use JIT localize', 'wppp' ); ?>
 							</th>
 							<td>
-								<label for="jit-true"><input id="jit-true" type="radio" name="<?php $this->e_option('use_jit_localize'); ?>" value="true" <?php echo ( $this->wppp->options['use_jit_localize'] && $this->wppp->jit_available ) ? 'checked="checked" ' : ' '; echo !$this->wppp->jit_available ? 'disabled="true"' : '';?>/><?php _e( 'Enabled', 'wppp' ); ?>&nbsp;</label>
-								<label for="jit-false"><input id="jit-false" type="radio" name="<?php $this->e_option('use_jit_localize'); ?>" value="false" <?php echo ( !$this->wppp->options['use_jit_localize'] || !$this->wppp->jit_available ) ? 'checked="checked" ' : ' '; echo !$this->wppp->jit_available ? 'disabled="true"' : '';?>/><?php _e( 'Disabled', 'wppp' ); ?></label>
+								<label for="jit-true"><input id="jit-true" type="radio" <?php $this->e_opt_name('use_jit_localize'); ?> value="true" <?php $this->e_checked_and( 'use_jit_localize', true, $this->wppp->jit_available ); echo !$this->wppp->jit_available ? 'disabled="true"' : '';?>/><?php _e( 'Enabled', 'wppp' ); ?>&nbsp;</label>
+								<label for="jit-false"><input id="jit-false" type="radio" <?php $this->e_opt_name('use_jit_localize'); ?> value="false" <?php $this->e_checked_or( 'use_jit_localize', false, !$this->wppp->jit_available ); echo !$this->wppp->jit_available ? 'disabled="true"' : '';?>/><?php _e( 'Disabled', 'wppp' ); ?></label>
 								<?php if ( !$this->wppp->jit_available ) : ?>
 								<p><strong><?php _e( 'As for now only available for WordPress version 3.8.1!', 'wppp' ); ?></strong></p>
 								<?php endif; ?>
@@ -195,11 +215,11 @@ if ( !class_exists( 'WPPP_Admin ' ) ) {
 								<?php _e( 'Disable backend translation', 'wppp' ); ?>
 							</td>
 							<td>
-								<label for="backend-trans-true"><input id="backend-trans-true" type="radio" name="<?php $this->e_option('disable_backend_translation'); ?>" value="true" <?php echo $this->wppp->options['disable_backend_translation'] == true ? 'checked="checked"' : '';?>/><?php _e( 'Enabled', 'wppp' );?>&nbsp;</label>
-								<label for="backend-trans-false"><input id="backend-trans-false" type="radio" name="<?php $this->e_option('disable_backend_translation'); ?>" value="false" <?php echo !$this->wppp->options['disable_backend_translation'] == true ? 'checked="checked"' : '';?>/><?php _e( 'Disabled', 'wppp' ); ?></label>
+								<label for="backend-trans-true"><input id="backend-trans-true" type="radio" <?php $this->e_opt_name('disable_backend_translation'); ?> value="true" <?php $this->e_checked( 'disable_backend_translation' ); ?>/><?php _e( 'Enabled', 'wppp' );?>&nbsp;</label>
+								<label for="backend-trans-false"><input id="backend-trans-false" type="radio" <?php $this->e_opt_name('disable_backend_translation'); ?> value="false" <?php $this->e_checked( 'disable_backend_translation', false); ?>/><?php _e( 'Disabled', 'wppp' ); ?></label>
 								<p class="description"><?php _e('Disables translation of backend texts.', 'wppp' ); ?></p>
 								<br/>
-								<label for="allow-user-override"><input id="allow-user-override" type="checkbox" name="<?php $this->e_option( 'dbt_allow_user_override'); ?>" value="true" <?php echo $this->wppp->options['dbt_allow_user_override'] == true ? 'checked="checked"' : ''; ?> /><?php _e( 'Allow user override', 'wppp' ); ?></label>
+								<label for="allow-user-override"><input id="allow-user-override" type="checkbox" <?php $this->e_opt_name( 'dbt_allow_user_override'); ?> value="true" <?php $this->e_checked( 'dbt_allow_user_override' ); ?> /><?php _e( 'Allow user override', 'wppp' ); ?></label>
 								<p class="description"><?php  _e( 'Allow users to reactive backend translation in their profile settings.', 'wppp' ); ?></p>
 							</td>
 						</tr>

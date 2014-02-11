@@ -158,7 +158,7 @@ class MO_dynamic extends Gettext_Translations {
 		return true;
 	}
 
-	private function search_translation ($key) {
+	protected function search_translation ( $key ) {
 		for ( $j = 0, $max = count ( $this->MOs ); $j < $max; $j++ ) {
 			$moitem = $this->MOs[$j];
 			if ( $moitem->reader == NULL ) {
@@ -322,6 +322,27 @@ class MO_dynamic extends Gettext_Translations {
 			}
 		}
 		return false;
+	}
+}
+
+class MO_dynamic_Debug extends Mo_dynamic {
+	public $translate_hits = 0;
+	public $translate_plural_hits = 0;
+	public $search_translation_hits = 0;
+	
+	function translate_plural ($singular, $plural, $count, $context = null) {
+		$this->translate_plural_hits++;
+		return parent::translate_plural($singular, $plural, $count, $context);
+	}
+
+	function translate ($singular, $context = null) {
+		$this->translate_hits++;
+		return parent::translate ($singular, $context);
+	}
+	
+	protected function search_translation ( $key ) {
+		$this->search_translation_hits++;
+		return parent::search_translation( $key );
 	}
 }
 

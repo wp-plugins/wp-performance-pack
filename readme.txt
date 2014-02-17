@@ -1,6 +1,6 @@
 === WP Performance Pack ===
-Contributors: greencp
-Tags: performance, i18n, translation, i10n, mo, gettext, localize, speed, optimize
+Contributors: greencp, linushoppe
+Tags: performance, i18n, translation, l10n, mo, gettext, localize, speed, optimize, tuning
 Requires at least: 3.0
 Tested up to: 3.8.1
 Stable tag: trunk
@@ -23,6 +23,7 @@ patching of core files. As of now it features options to improve performance of 
 * Allow individual users to reactivate Dashboard translation via profile setting.
 * Just in time localization of javascripts (requires WordPress version 3.8.1).
 * [Debug Bar](http://wordpress.org/plugins/debug-bar/) integration
+* Caching of translations to further improve translation performance. A persistent object cache has to be installed for this to be effective.
 
 == Screenshots ==
 
@@ -61,6 +62,10 @@ When installed network wide only the network admin can see and edit WPPP options
 * MO-Dynamic **enabled**
 * JIT localize **enabled** (disable if this causes trouble with javascripts)
 
+= Caching =
+
+When using MO-Dynamic optinal caching of translations can be enabled. This uses the WordPress Cache API so a peristent object cache of your choice has to be installed to get any performance improvements from caching. For front end pages one cache per text domain is used to keep the cache rather small (else cache size on blogs with many posts would get quite big). Each front end cache is kept for 60 minutes. For backend pages one cache per page and text domain is used (there are limited back end pages and more translating is going on in the back end). These are kept for 30 minutes.
+
 == Details == 
 
 = Dynamic loading of translation files, only loading and translating used strings. =
@@ -87,27 +92,32 @@ not suffice to use native gettext. Further checks will follow.
 
 == Changelog ==
 
+= 0.6 =
+* [MO-Dynamic] use hash table if mo file contains one
+* [MO-Dynamic] optional caching implemented
+
 = 0.5.2 =
 
 * [debug] show translation calls when using MO-Dynamic
 * [debug] test if WPPP is loaded as first plugin
-* [i10n] translations updated
+* [l10n] translations updated
 
 = 0.5.1 =
 
 * [debug] show class used for textdomain
 * [debug] added debugging option, so WP_DEBUG isn't required anymore
+* [l10n] translations updated
 
 = 0.5 =
 
 * [native gettext] langage directory set to WP_LANG_DIR
 * [general] allow user override to reactivate backend translation
 * [debug] Debug Bar integration for debugging
-* [i10n] translations updated
+* [l10n] translations updated
 
 = 0.4 =
 
-* [i10n] german translation added
+* [l10n] german translation added
 * [general] admin interface reworked
 * [native gettext] use of LC_MESSAGES instead of LC_ALL
 * [native gettext] append codeset to locale

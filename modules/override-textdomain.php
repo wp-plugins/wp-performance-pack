@@ -75,14 +75,14 @@ function load_textdomain_override( $retval, $domain, $mofile ) {
 	if ( $mo === NULL && $wp_performance_pack->options['use_mo_dynamic'] ) {
 		require_once(sprintf( "%s/class.mo-dynamic.php", dirname( __FILE__ ) ) );
 		if ( $wp_performance_pack->options['debug'] ) {
-			$mo = new MO_dynamic_Debug ();
+			$mo = new MO_dynamic_Debug ( $domain, $wp_performance_pack->options['mo_caching'] );
 		} else {
-			$mo = new MO_dynamic ();
+			$mo = new MO_dynamic ( $domain, $wp_performance_pack->options['mo_caching'] );
 		}
 		if ( $mo->import_from_file( $mofile ) ) { 
 			if ( isset( $l10n[$domain] ) )
 				$mo->merge_with( $l10n[$domain] );
-			$l10n[$domain] = &$mo;
+			$l10n[$domain] = $mo;
 			$result = true;
 		} else {
 			$mo = NULL;
@@ -99,6 +99,15 @@ function load_textdomain_override( $retval, $domain, $mofile ) {
 	}
 
 	return $result;
+}
+
+function wppp_cache_translations () {
+	global $l10n;
+	foreach ($l10n as $domain => $mo) {
+		if ($mo instanceof MO_dynamic) {
+			$mo->save_to_cache();
+		}
+	}
 }
 
 add_filter( 'override_load_textdomain', 'load_textdomain_override', 0, 3 );

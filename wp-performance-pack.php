@@ -1,9 +1,9 @@
 <?php
 /*
 	Plugin Name: WP Performance Pack
-	Plugin URI: http://www.bjoernahrens.de
+	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
 	Description: A collection of performance optimizations for WordPress
-	Version: 0.5.2
+	Version: 0.6
 	Author: Bj&ouml;rn Ahrens
 	Author URI: http://www.bjoernahrens.de
 	License: GPL2 or later
@@ -34,6 +34,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			'disable_backend_translation' => false,
 			'dbt_allow_user_override' => false,
 			'use_native_gettext' => false,
+			'mo_caching' => false,
 			'debug' => true,
 		);
 
@@ -79,6 +80,10 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 				|| ( $this->options['use_native_gettext'] && $this->gettext_available ) 
 				|| $this->options['disable_backend_translation'] ) {
 				include( sprintf( "%s/modules/override-textdomain.php", dirname( __FILE__ ) ) );
+				
+				if ( $this->options['mo_caching'] ) {
+					add_action ( 'shutdown', 'wppp_cache_translations' );
+				}
 			}
 
 			if ( $this->options['use_jit_localize'] && $this->jit_available ) {

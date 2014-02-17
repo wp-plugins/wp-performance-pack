@@ -27,7 +27,7 @@ patching of core files. As of now it features options to improve performance of 
 
 == Screenshots ==
 
-1. MO-Dynamic benchmark: Comparing front page of a "fresh" WordPress 3.8.1 installation (plain) and a "complex" installation (22 active plugins) using default MO implementation (*DE / MO* and *EN / MO*) and MO-Dynamic (*DE / MO-Dynamic* and *EN / MO-Dynamic*). Tested with (*DE...*) and without (*EN...*) translating using XDebug. Results are executiuon time in ms. The benchmarks show usage of MO-Dynamic improves performance when translating a blog and doesn't really impact it, when not. (Benchmarked version: 0.1)
+1. MO-Dynamic benchmark: Comparing front page of a "fresh" WordPress 3.8.1 installation with active apc cache using different configurations. As you can see, using MO-Dynamic with active caching is just as fast as not translating the blog or using native gettext. Benchmarked version 0.6, times are mean of four test runs measured using XDebug.
 2. Settings
 3. Debug Bar integration
 

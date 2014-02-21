@@ -92,6 +92,11 @@ not suffice to use native gettext. Further checks will follow.
 
 == Changelog ==
 
+= 0.6.1 =
+
+* [jit] no jit when *IFRAME_REQUEST* is defined (broke theme customize)
+* [jit] fixed multiple localizations per handle
+
 = 0.6 =
 * [MO-Dynamic] use hash table if mo file contains one
 * [MO-Dynamic] optional caching implemented

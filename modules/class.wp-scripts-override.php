@@ -14,7 +14,9 @@ class WP_Scripts_Override extends WP_Scripts {
 
 	function print_extra_script( $handle, $echo = true ) {
 		if ( isset( $this->l10ns[$handle] ) ) {
-			$this->jit_localize ( $handle, $this->l10ns[$handle]['name'], $this->l10ns[$handle]['l10n'] );
+			foreach ( $this->l10ns[$handle] as $l10n ) {
+				$this->jit_localize ( $handle, $l10n['name'], $l10n['l10n'] );
+			}
 			unset( $this->l10ns[$handle] );
 		}
 
@@ -33,7 +35,10 @@ class WP_Scripts_Override extends WP_Scripts {
 		if ( !isset( $this->registered[$handle] ) )
 			return false;
 
-		$this->l10ns[$handle] = array ('name' => $object_name, 'l10n' => $l10n);
+		if ( !isset( $this->l10ns[$handle] ) ) {
+			$this->l10ns[$handle] = array();
+		}
+		$this->l10ns[$handle][] = array ('name' => $object_name, 'l10n' => $l10n);
 
 		return true;
 	}

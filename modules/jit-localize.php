@@ -19,7 +19,7 @@ if ( $jit_available ) {
 	include( sprintf( "%s/class.wp-scripts-override.php", dirname( __FILE__ ) ) );
 	global $wp_scripts;
 	
-	if ( !isset( $wp_scripts ) ) {
+	if ( !isset( $wp_scripts ) && !defined('IFRAME_REQUEST') ) {
 		remove_action( 'wp_default_scripts', 'wp_default_scripts' );
 		add_action( 'wp_default_scripts', 'wp_jit_default_scripts' );
 		$wp_scripts = new WP_Scripts_Override();

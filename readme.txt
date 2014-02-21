@@ -92,6 +92,10 @@ not suffice to use native gettext. Further checks will follow.
 
 == Changelog ==
 
+= 0.6.2 =
+
+* [jit] script l10n now works with bwp minify, and hopefully other script minify plugins as well
+
 = 0.6.1 =
 
 * [jit] no jit when *IFRAME_REQUEST* is defined (broke theme customize)

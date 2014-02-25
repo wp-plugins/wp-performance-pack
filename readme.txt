@@ -93,6 +93,10 @@ not suffice to use native gettext. Further checks will follow.
 
 == Changelog ==
 
+= 0.7.3 =
+
+* [general] file encoding could cause problems
+
 = 0.7.2 =
 
 * [general] script bugfix in simple view

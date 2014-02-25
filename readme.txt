@@ -93,6 +93,10 @@ not suffice to use native gettext. Further checks will follow.
 
 == Changelog ==
 
+= 0.7.1 =
+
+* [general] bugfix: save settings changed view
+
 = 0.7 =
 
 * [general] new user interface with simple and advanced view

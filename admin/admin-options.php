@@ -264,7 +264,7 @@ if ( !class_exists( 'WPPP_Admin ' ) ) {
 				<h2><?php _e( 'WP Performance Pack - Settings', 'wppp' ); ?></h2>
 				
 				<form id="wppp-settings" action="<?php echo $formaction; ?>" method="post">
-					<input type="hidden" <?php $this->e_opt_name('advanced_admin_view'); ?> value="<?php echo ( $this->wppp->options['advanced_admin_view'] ) ? 'false' : 'true'; ?>" />
+					<input type="hidden" <?php $this->e_opt_name('advanced_admin_view'); ?> value="<?php echo ( $this->wppp->options['advanced_admin_view'] ) ? 'true' : 'false'; ?>" />
 					<?php 
 						if ( $this->wppp->is_network ) {
 							wp_nonce_field( 'update_wppp', 'wppp_nonce' );

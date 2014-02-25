@@ -32,7 +32,7 @@ jQuery(document).ready(function($){
 	function setL10nSettingInputValues ( level ) {
 		if ( level == 0 ) {
 			for ( i = 0; i < wpppData['l10nAllSettings'].length; i++ ) {
-				$( "#wppp-l10n-settings input[name='wppp_option[" + wpppData['l10nAllSettings'][i] + "]']").val("false");
+				$( "#wppp-settings input[name='wppp_option[" + wpppData['l10nAllSettings'][i] + "]']").val("false");
 			}
 		} else {
 			var selSettings = [];
@@ -45,7 +45,7 @@ jQuery(document).ready(function($){
 							break;
 			}
 			for ( i = 0; i < wpppData['l10nAllSettings'].length; i++ ) {
-				$( "#wppp-l10n-settings input[name='wppp_option[" + wpppData['l10nAllSettings'][i] + "]']").val(
+				$( "#wppp-settings input[name='wppp_option[" + wpppData['l10nAllSettings'][i] + "]']").val(
 					$.inArray( wpppData['l10nAllSettings'][i], selSettings ) >= 0 ? "true" : "false"
 				);
 			}

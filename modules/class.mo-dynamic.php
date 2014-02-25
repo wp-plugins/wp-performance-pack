@@ -57,10 +57,15 @@ class MO_dynamic extends Gettext_Translations {
 
 	function get_current_url () {
 		$current_url = $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-		if ( ($len = strlen( $_SERVER['QUERY_STRING'] ) ) > 0)
+		if ( ( $len = strlen( $_SERVER['QUERY_STRING'] ) ) > 0 ) {
 			$current_url = substr ( $current_url, 0, strlen($current_url) - $len - 1 );
-		if (isset ($_GET['page']))
-			$current_url .= '?page='.$_GET['page'];
+		}
+		if ( substr( $current_url, -10 ) === '/wp-admin/' ) {
+			$current_url .= 'index.php';
+		}
+		if ( isset( $_GET['page'] ) ) {
+			$current_url .= '?page=' . $_GET['page'];
+		}
 		return $current_url;
 	}
 
@@ -91,7 +96,7 @@ class MO_dynamic extends Gettext_Translations {
 	}
 
 	function import_file_from_cache ( $moitem ) {
-		if ( $this->caching ) {
+		if ( !$this->caching ) {
 			return false;
 		}
 
@@ -447,7 +452,7 @@ class MO_dynamic extends Gettext_Translations {
 		return false;
 	}
 
-	function translate ($singular, $context = null) {
+	function translate ($singular, $context = NULL) {
 		if ( strlen( $singular ) == 0 ) return $singular;
 
 		if ( $context == NULL ) {
@@ -476,11 +481,7 @@ class MO_dynamic extends Gettext_Translations {
 				return $t;
 			}
 		} else {
-			if ( $context == NULL ) {
-				$this->translations[$s] = $context . chr(4) . $singular;
-			} else {
-				$this->translations[$s] = $singular;
-			}
+			$this->translations[$s] = $singular;
 			$this->modified = true;
 			return $singular;
 		}
@@ -523,11 +524,7 @@ class MO_dynamic extends Gettext_Translations {
 				return $default;
 			}
 		} else {
-			if ( $context == NULL ) {
-				$this->translations[$s] = $context . chr(4) . $singular . chr(0) . $plural;
-			} else {
-				$this->translations[$s] = $singular . chr(0) . $plural;
-			}
+			$this->translations[$s] = $singular . chr(0) . $plural;
 			$this->modified = true;
 			return $default;
 		}

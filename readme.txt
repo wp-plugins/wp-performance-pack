@@ -12,11 +12,12 @@ improve performance of translated WordPress installations.
 
 == Description ==
 
-WP Performance Pack is intended to be a collection of performance optimizations for WordPress which don't need 
+WP Performance Pack is a collection of performance optimizations for WordPress which don't need 
 patching of core files. As of now it features options to improve performance of translated WordPress installations.
 
 = Features =
 
+* Simple user interface to automaticall set best available settings
 * Dynamic loading of translation files, only loading and translating used strings.
 * Use of native gettext if available.
 * Disable backend translation while maintaining frontend translations.
@@ -92,6 +93,12 @@ not suffice to use native gettext. Further checks will follow.
 
 == Changelog ==
 
+= 0.7 =
+
+* [general] new user interface with simple and advanced view
+* [general] extended tests for support of gettext, object cache and jit
+* [mo-dynamic] bugfix: removed HTML illegal chars from some translations
+
 = 0.6.2 =
 
 * [jit] script l10n now works with bwp minify, and hopefully other script minify plugins as well
@@ -102,8 +109,9 @@ not suffice to use native gettext. Further checks will follow.
 * [jit] fixed multiple localizations per handle
 
 = 0.6 =
-* [MO-Dynamic] use hash table if mo file contains one
-* [MO-Dynamic] optional caching implemented
+
+* [mo-dynamic] use hash table if mo file contains one
+* [mo-dynamic] optional caching implemented
 
 = 0.5.2 =
 
@@ -151,8 +159,8 @@ not suffice to use native gettext. Further checks will follow.
 
 = 0.2.1 =
 
-* [MO-Dynamic] bugfix - empty string got translated to headers
-* [MO-Dynamic] performance tweaking
+* [mo-dynamic] bugfix - empty string got translated to headers
+* [mo-dynamic] performance tweaking
 * [native gettext] possible multisite fix - using get_locale instead of global $locale
 
 = 0.2 =

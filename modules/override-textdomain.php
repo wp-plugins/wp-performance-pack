@@ -7,13 +7,6 @@
  * @since 0.1
  */
  
-function get_default_noop () {
-	static $default_NOOP = NULL;
-	if ( NULL === $default_NOOP )
-		$default_NOOP = new NOOP_Translations();
-	return $default_NOOP;
-}
- 
 function load_textdomain_override( $retval, $domain, $mofile ) {
 	global $l10n, $wp_performance_pack;
 
@@ -29,11 +22,11 @@ function load_textdomain_override( $retval, $domain, $mofile ) {
 			$current_user = wp_get_current_user();
 
 			if ( get_user_option ( 'wppp_translate_backend', $current_user->user_ID ) !== 'true' ) {
-				$mo = get_default_noop();
+				$mo = $l10n['WPPP_NOOP'];
 				$result = true;
 			}
 		} else {
-			$mo = get_default_noop();
+			$mo = $l10n['WPPP_NOOP'];
 			$result = true;
 		}
 	}
@@ -50,7 +43,8 @@ function load_textdomain_override( $retval, $domain, $mofile ) {
 			$mo = NULL;
 		}
 		if ( !is_readable( $mofile ) ) {
-			return false;
+			$mo = $l10n['WPPP_NOOP'];
+			$result = true;
 		}
 	}
 

@@ -116,7 +116,8 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 									<span class="description">
 										translate calls: <strong><?php echo $mo_class->translate_hits; ?></strong> - 
 										translate_plural calls: <strong><?php echo $mo_class->translate_plural_hits; ?></strong> - 
-										unique translations: <strong><?php echo $mo_class->search_translation_hits; ?></strong>
+										translation searches: <strong><?php echo $mo_class->search_translation_hits; ?></strong>
+										&nbsp;(all values estimates, real values might be higher)
 									</span>
 								</td>
 							</tr>

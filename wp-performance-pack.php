@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
 	Description: A collection of performance optimizations for WordPress
-	Version: 0.6.2
+	Version: 0.7
 	Author: Bj&ouml;rn Ahrens
 	Author URI: http://www.bjoernahrens.de
 	License: GPL2 or later
@@ -36,6 +36,10 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			'use_native_gettext' => false,
 			'mo_caching' => false,
 			'debug' => true,
+			'advanced_admin_view' => true,
+		);
+		public static $jit_versions = array(
+			'3.8.1',
 		);
 
 		public $jit_available = false;
@@ -65,10 +69,11 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			// initialize fields
 			global $wp_version;
 			$this->plugin_dir = dirname(plugin_basename(__FILE__));
-			$this->jit_available = in_array( $wp_version, array ( '3.8.1' ) );
+			$this->jit_available = in_array( $wp_version, self::$jit_versions );
 			$this->gettext_available = extension_loaded( 'gettext' );
-			if ( !function_exists( 'is_plugin_active_for_network' ) )
+			if ( !function_exists( 'is_plugin_active_for_network' ) ) {
 				require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
+			}
 			$this->is_network = is_multisite() && is_plugin_active_for_network( plugin_basename( __FILE__ ) );
 			$this->load_options();
 
@@ -79,6 +84,10 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			if ( $this->options['use_mo_dynamic'] 
 				|| ( $this->options['use_native_gettext'] && $this->gettext_available ) 
 				|| $this->options['disable_backend_translation'] ) {
+				
+				global $l10n;
+				$l10n['WPPP_NOOP'] = new NOOP_Translations;
+				
 				include( sprintf( "%s/modules/override-textdomain.php", dirname( __FILE__ ) ) );
 				
 				if ( $this->options['mo_caching'] ) {
@@ -93,7 +102,8 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			if ( $this->options['debug'] ) {
 				add_filter( 'debug_bar_panels', array ( $this, 'add_debug_bar_wppp' ), 10 );
 			}
-			
+
+			// load admin pages
 			if ( is_admin() ) {
 				include( sprintf( "%s/admin/admin-options.php", dirname( __FILE__ ) ) );
 				$this->admin_opts = new WPPP_Admin ($this);

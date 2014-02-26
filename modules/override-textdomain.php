@@ -7,21 +7,26 @@
  * @since 0.1
  */
  
-function load_textdomain_override( $retval, $domain, $mofile ) {
+function wppp_load_textdomain_override( $retval, $domain, $mofile ) {
 	global $l10n, $wp_performance_pack;
 
 	$result = false;
 	$mo = NULL;
 
-	if ( $wp_performance_pack->options['disable_backend_translation'] && is_admin() && !defined( 'DOING_AJAX' ) ) {
+	if ( $wp_performance_pack->options['disable_backend_translation'] 
+		 && is_admin() 
+		 && !( defined( 'DOING_AJAX' ) && DOING_AJAX && false === strpos( wp_get_referer(), '/wp-admin/' ) ) ) {
 		if ( $wp_performance_pack->options['dbt_allow_user_override'] ) {
 			global $current_user;
-			if ( !function_exists('wp_get_current_user'))
-				require_once(ABSPATH . "wp-includes/pluggable.php"); 
+			if ( !function_exists('wp_get_current_user')) {
+				require_once(ABSPATH . "wp-includes/pluggable.php");
+			}
 			wp_cookie_constants();
 			$current_user = wp_get_current_user();
 
-			if ( get_user_option ( 'wppp_translate_backend', $current_user->user_ID ) !== 'true' ) {
+			$user_setting = get_user_option ( 'wppp_translate_backend', $current_user->user_ID );
+			$user_override = $user_setting === 'true' || ( $wp_performance_pack->options['dbt_user_default_translated'] && $user_setting === false );
+			if ( !$user_override ) {
 				$mo = $l10n['WPPP_NOOP'];
 				$result = true;
 			}
@@ -94,15 +99,4 @@ function load_textdomain_override( $retval, $domain, $mofile ) {
 
 	return $result;
 }
-
-function wppp_cache_translations () {
-	global $l10n;
-	foreach ($l10n as $domain => $mo) {
-		if ($mo instanceof MO_dynamic) {
-			$mo->save_to_cache();
-		}
-	}
-}
-
-add_filter( 'override_load_textdomain', 'load_textdomain_override', 0, 3 );
 ?>

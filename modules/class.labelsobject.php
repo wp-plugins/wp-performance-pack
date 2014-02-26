@@ -72,11 +72,11 @@ class LabelsObject implements ArrayAccess, Iterator {
 	}
 
 	public function offsetSet ( $offset , $value ) {
-		if ( is_array( $value ) && reset( $value ) && is_callable( current( $value ) ) ) {
-			// if $value is an array and it's first element is a function/closure then call it on later access
-			$this->input[$offset] = $value;
-		} else if ( $this->default_translate_func !== NULL && is_string( $value ) ) {
+		if ( $this->default_translate_func !== NULL && is_string( $value ) ) {
 			// if $value is a string and a default translate function is defined then translate on later access
+			$this->input[$offset] = $value;
+		} else if ( is_array( $value ) && reset( $value ) && is_callable( current( $value ) ) ) {
+			// if $value is an array and it's first element is a function/closure then call it on later access
 			$this->input[$offset] = $value;
 		} else {
 			// else store $value directly as value for this offset

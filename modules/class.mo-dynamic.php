@@ -44,6 +44,9 @@ class MO_dynamic extends Gettext_Translations {
 	function __construct( $domain, $caching = false ) {
 		$this->domain = $domain;
 		$this->caching = $caching;
+		if ( $caching ) {
+			add_action ( 'shutdown', array( $this, 'save_to_cache' ) );
+		}
 	}
 
 	function __destruct() {
@@ -133,7 +136,7 @@ class MO_dynamic extends Gettext_Translations {
 	}
 
 	function save_to_cache () {
-		if ( $this->caching && $this->modified ) {
+		if ( $this->modified ) {
 			if ( is_admin() ) {
 				$key = md5( $this->domain . $this->get_current_url() );
 				wp_cache_set( 'domain_'.$key, $this->translations, 'wppp_translations', 1800 ); // keep cache for 30 minutes
@@ -144,7 +147,7 @@ class MO_dynamic extends Gettext_Translations {
 		}
 
 		foreach ( $this->MOs as $moitem ) {
-			if ( ! $moitem->is_cached && $moitem->reader !== NULL ) {
+			if ( !$moitem->is_cached && $moitem->reader !== NULL ) {
 				$key = md5_file ( $moitem->mofile );
 				if ( class_exists ( 'SplFixedArray' ) ) {
 					wp_cache_set( 'origtbl'.$key, $moitem->originals_table->toArray(), 'wppp_translations' );

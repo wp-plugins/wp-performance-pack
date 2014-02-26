@@ -1,6 +1,6 @@
 === WP Performance Pack ===
 Contributors: greencp, linushoppe
-Tags: performance, i18n, translation, l10n, mo, gettext, localize, speed, optimize, tuning
+Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext
 Requires at least: 3.0
 Tested up to: 3.8.1
 Stable tag: trunk
@@ -92,6 +92,12 @@ implementation (slightly modified). For now WPPP only checks if the gettext exte
 not suffice to use native gettext. Further checks will follow.
 
 == Changelog ==
+
+= 0.8 =
+
+* [jit] fixed broken file upload (e.g. when editing posts)
+* [general] code refactoring to reduce loaded code
+* [general] selectable user default for backend transaltion if allow override is enabled
 
 = 0.7.3 =
 

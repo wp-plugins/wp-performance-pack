@@ -3,12 +3,12 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
 	Description: A collection of performance optimizations for WordPress
-	Version: 0.7.3
+	Version: 0.8
 	Author: Bj&ouml;rn Ahrens
 	Author URI: http://www.bjoernahrens.de
 	License: GPL2 or later
 */ 
-	
+
 /*
 	Copyright 2014 Björn Ahrens (email : bjoern@ahrens.net) 
 	This program is free software; you can redistribute it and/or modify 
@@ -26,17 +26,18 @@
 if( !class_exists( 'WP_Performance_Pack' ) ) {
 	class WP_Performance_Pack {
 		private $admin_opts = NULL;
-		
+
 		public static $options_name = 'wppp_option';
 		public static $options_default = array(
 			'use_mo_dynamic' => true,
 			'use_jit_localize' => false,
 			'disable_backend_translation' => false,
 			'dbt_allow_user_override' => false,
+			'dbt_user_default_translated' => false,
 			'use_native_gettext' => false,
 			'mo_caching' => false,
-			'debug' => true,
-			'advanced_admin_view' => true,
+			'debug' => false,
+			'advanced_admin_view' => false,
 		);
 		public static $jit_versions = array(
 			'3.8.1',
@@ -78,7 +79,8 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			$this->load_options();
 
 			// add actions
-			add_action( 'activated_plugin', array ( &$this, 'plugin_load_first' ) );
+			add_action( 'activated_plugin', array ( $this, 'plugin_load_first' ) );
+			add_action( 'init', array ( $this, 'init' ) );
 
 			// load modules
 			if ( $this->options['use_mo_dynamic'] 
@@ -89,24 +91,33 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 				$l10n['WPPP_NOOP'] = new NOOP_Translations;
 				
 				include( sprintf( "%s/modules/override-textdomain.php", dirname( __FILE__ ) ) );
-				
-				if ( $this->options['mo_caching'] ) {
-					add_action ( 'shutdown', 'wppp_cache_translations' );
-				}
+				add_filter( 'override_load_textdomain', 'wppp_load_textdomain_override', 0, 3 );
 			}
 
 			if ( $this->options['use_jit_localize'] && $this->jit_available ) {
 				include( sprintf( "%s/modules/jit-localize.php", dirname( __FILE__ ) ) );
 			}
+		}
 
+		public function init () {
 			if ( $this->options['debug'] ) {
 				add_filter( 'debug_bar_panels', array ( $this, 'add_debug_bar_wppp' ), 10 );
 			}
 
-			// load admin pages
+			// admin pages
 			if ( is_admin() ) {
-				include( sprintf( "%s/admin/admin-options.php", dirname( __FILE__ ) ) );
-				$this->admin_opts = new WPPP_Admin ($this);
+				if ( current_user_can ( 'manage_options' ) ) {
+					if ( $this->options['advanced_admin_view'] ) {
+						include( sprintf( "%s/admin/class.wppp-admin-advanced.php", dirname( __FILE__ ) ) );
+						$this->admin_opts = new WPPP_Admin_Advanced ($this);
+					} else {
+						include( sprintf( "%s/admin/class.wppp-admin-simple.php", dirname( __FILE__ ) ) );
+						$this->admin_opts = new WPPP_Admin_Simple ($this);
+					}
+				} else if ( $this->options['disable_backend_translation'] && $this->options['dbt_allow_user_override']) {
+					include( sprintf( "%s/admin/class.wppp-admin.php", dirname( __FILE__ ) ) );
+					$this->admin_opts = new WPPP_Admin ($this);
+				}
 			}
 		}
 
@@ -135,7 +146,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 				}
 			}
 		}
-		
+
 		public static function activate() { 
 			// if is active in network of multisite
 			if ( is_multisite() && isset( $_GET['networkwide'] ) && 1 == $_GET['networkwide'] ) {
@@ -145,7 +156,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			}
 			self::plugin_load_first();
 		}
-		
+
 		public static function deactivate() { 
 			if ( is_multisite() && isset( $_GET['networkwide'] ) && 1 == $_GET['networkwide'] ) {
 				delete_site_option( self::$options_name );

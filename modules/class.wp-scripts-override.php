@@ -15,7 +15,9 @@ class WP_Scripts_Override extends WP_Scripts {
 
 	function print_extra_script( $handle, $echo = true ) {
 		if ( isset( $this->l10ns[$handle] ) ) {
-			$this->add_data( $handle, 'data', '' ); // clear dummy value - for details see below
+			if ( $this->get_data( $handle, 'data' ) === '//%wppp_dummy%' ) {
+				parent::add_data( $handle, 'data', '' ); // clear dummy value - for details see below
+			}
 			foreach ( $this->l10ns[$handle] as $l10n ) {
 				$this->jit_localize ( $handle, $l10n['name'], $l10n['l10n'] );
 			}
@@ -42,11 +44,11 @@ class WP_Scripts_Override extends WP_Scripts {
 		}
 		$this->l10ns[$handle][] = array ('name' => $object_name, 'l10n' => $l10n);
 
-		$this->add_data( $handle, 'data', 'wppp_dummy' ); 	// set dummy data - plugins like bwp minify check the extra['data'] 
-															// if a scripts needs l10n - as wppp localizes jit this isn't set 
-															// until print_extra_script, which in turn never gets called because
-															// extra['data'] wasn't set. to prevent this the dummy value is set.
-															// this works only until some plugin uses that dummy value directly...
+		parent::add_data( $handle, 'data', '//%wppp_dummy%' ); 	// set dummy data - plugins like bwp minify check the extra['data'] 
+																// if a scripts needs l10n - as wppp localizes jit this isn't set 
+																// until print_extra_script, which in turn never gets called because
+																// extra['data'] wasn't set. to prevent this the dummy value is set.
+																// this works only until some plugin uses that dummy value directly...
 
 		return true;
 	}
@@ -87,5 +89,13 @@ class WP_Scripts_Override extends WP_Scripts {
 			$script = "$data\n$script";
 
 		return $this->add_data( $handle, 'data', $script );
+	}
+	
+	public function add_data( $handle, $key, $value ) {
+		if ( $key == 'data' && $this->get_data( $handle, 'data' ) == '//%wppp_dummy%' ) {
+			$value = str_replace( '//%wppp_dummy%\n', '', $value );
+			$value = str_replace( '//%wppp_dummy%', '', $value );
+		}
+		return parent::add_data( $handle, $key, $value );
 	}
 }

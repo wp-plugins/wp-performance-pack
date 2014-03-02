@@ -1,73 +1,50 @@
 <?php
 /**
- * Admin settings base class (abstract). Adds admin menu and contains functions for both
- * simple and advanced view.
+ * Abstract admin settings renderer class.
  *
- * @author BjÃ¶rn Ahrens <bjoern@ahrens.net>
+ * @author Björn Ahrens <bjoern@ahrens.net>
  * @package WP Performance Pack
- * @since 0.8
+ * @since 0.9
  */
-
-require_once( sprintf( '%s/class.wppp-admin.php', dirname( __FILE__ ) ) );
  
-abstract class WPPP_Admin_Base extends WPPP_Admin {
-
-	public function __construct($wppp_parent) {
-		parent::__construct($wppp_parent);
-
-		add_action( 'admin_menu', array( $this, 'add_menu_page' ) );
+abstract class WPPP_Admin_Renderer {
+	protected $wppp = NULL;
+	private $admin = NULL;
+	
+	public function __construct( $wppp_parent ) {
+		$this->wppp = $wppp_parent;
 	}
 
-	public function admin_init() {
-		register_setting( 'wppp_options', WP_Performance_Pack::$options_name, array( $this, 'validate' ) );
-		parent::admin_init();
-	}
+	abstract function render_options ();
 
-	public function add_menu_page() {
-		if ( $this->wppp->is_network ) {
-			$wppp_options_hook = add_submenu_page( 'settings.php', __('WP Performance Pack','wppp'), __('Performance Pack','wppp'), 'manage_options', 'wppp_options_page', array( $this, 'do_options_page' ) );
-		} else {
-			$wppp_options_hook = add_options_page( __('WP Performance Pack','wppp'), __('Performance Pack','wppp'), 'manage_options', 'wppp_options_page', array( $this, 'do_options_page' ) );
-		}
-		add_action('load-'.$wppp_options_hook, array ( $this, 'load_admin_page' ) );
-	}
+	abstract function enqueue_scripts_and_styles();
 
-	/*
-	 * Save and validate settings functions
-	 */
+	abstract function add_help_tab();
 
-	public function validate( $input ) {
-		$output = array();
-		if ( isset( $input ) && is_array( $input ) ) {
-			foreach( $input as $key => $val ) {
-				if ( isset ( $input[$key] ) ) {
-					$output[$key] = ( $input[$key] == 'true' ? true : false );
-				}
-			}
-		}
-		return $output;
-	}
+	public function on_do_options_page() {}
 
-	function update_wppp_settings () {
-		if ( current_user_can( 'manage_network_options' ) ) {
-			check_admin_referer( 'update_wppp', 'wppp_nonce' );
-			// process your fields from $_POST here and update_site_option
-			$input = array();
-			foreach ( WP_Performance_Pack::$options_default as $key => $value ) {
-				if ( isset( $_POST['wppp_option'][$key] ) ) {
-					$input[$key] = sanitize_text_field( $_POST['wppp_option'][$key] );
-				}
-			}
-			$input = $this->validate( $input );
-			foreach ( WP_Performance_Pack::$options_default as $key => $value ) {
-				if ( !isset( $input[$key] ) ) {
-					$this->wppp->options[$key] = false;
-				} else {
-					$this->wppp->options[$key] = $input[$key];
-				}
-			}
-			update_site_option( WP_Performance_Pack::$options_name, $this->wppp->options );
-		}
+	public function render_page ( $formaction ) {
+		?>
+		<div class="wrap">
+			<h2><?php _e( 'WP Performance Pack - Settings', 'wppp' ); ?></h2>
+			<form id="wppp-settings" action="<?php echo $formaction; ?>" method="post">
+				<input type="hidden" <?php $this->e_opt_name('advanced_admin_view'); ?> value="<?php echo ( $this->wppp->options['advanced_admin_view'] ) ? 'true' : 'false'; ?>" />
+				<?php 
+					if ( $this->wppp->is_network ) {
+						wp_nonce_field( 'update_wppp', 'wppp_nonce' );
+					}
+					settings_fields( 'wppp_options' );
+				?>
+				<div class="accordion">
+				<?php
+					$this->render_options();
+				?>
+				</div>
+				<?php submit_button(); ?>
+			</form>
+			<?php $this->do_switch_view_button( $formaction, $this->wppp->options['advanced_admin_view'] ? 'false' : 'true' ); ?>
+		</div>
+		<?php
 	}
 
 	/*
@@ -124,49 +101,53 @@ abstract class WPPP_Admin_Base extends WPPP_Admin {
 	}
 
 	/*
-	 * Settings page functions
-	 */
-
-	abstract function load_admin_page ();
-
-	abstract function render_options ();
-
-	public function do_options_page() {
-		if ( $this->wppp->is_network ) {
-			if ( isset( $_GET['action'] ) && $_GET['action'] === 'update_wppp' ) {
-				$this->update_wppp_settings();
-			}
-			$formaction = network_admin_url('settings.php?page=wppp_options_page&action=update_wppp');
-		} else {
-			$formaction = 'options.php';
-		}
-
-		?>
-		<div class="wrap">
-			<h2><?php _e( 'WP Performance Pack - Settings', 'wppp' ); ?></h2>
-			<form id="wppp-settings" action="<?php echo $formaction; ?>" method="post">
-				<input type="hidden" <?php $this->e_opt_name('advanced_admin_view'); ?> value="<?php echo ( $this->wppp->options['advanced_admin_view'] ) ? 'true' : 'false'; ?>" />
-				<?php 
-					if ( $this->wppp->is_network ) {
-						wp_nonce_field( 'update_wppp', 'wppp_nonce' );
-					}
-					settings_fields( 'wppp_options' );
-				?>
-				<div class="accordion">
-				<?php
-					$this->render_options();
-				?>
-				</div>
-				<?php submit_button(); ?>
-			</form>
-			<?php $this->do_switch_view_button( $formaction, $this->wppp->options['advanced_admin_view'] ? 'false' : 'true' ); ?>
-		</div>
-		<?php
-	}
-
-	/*
 	 * Helper functions
 	 */
+
+	function do_hint_gettext ( $as_error ) {
+		$native = $this->is_native_gettext_available(); 
+		if ( $native != 0 ) {
+			if ( $as_error ) {
+				echo '<div class="ui-state-error ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-alert" style="float:left; margin-right:.3em;"></span>';
+			} else {
+				echo '<div class="ui-state-highlight ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-info" style="float:left; margin-right:.3em;"></span>';
+			}
+
+			switch ( $native ) {
+				case 0 :	break;
+				case 1 :	printf( __( 'Gettext support requires the %s extension.', 'wppp' ), '<a href="http://www.php.net/gettext">PHP Gettext</a>' );
+							break;
+				case 2 :
+				case 3 :	printf( __( 'Gettext support requires the language directory %s to be writeable for php.', 'wppp' ), '<code>wp-content/languages</code>' );
+							break;
+				case 4 :	_e( 'Gettext test failed. Activate WPPP debugging for additional info.', 'wppp' );
+							break;
+			}
+			echo '</div>';
+		}
+		return $native;
+	}
+
+	function do_hint_mo_cache () {
+		if ( !$this->is_object_cache_installed() ) : ?>
+			<div class="ui-state-highlight ui-corner-all" style="padding:.5em">
+				<span class="ui-icon ui-icon-info" style="float:left; margin-right:.3em;"></span>
+				<?php printf( __( 'Caching requires a persisten object cache to be effective. Different %sobject cache plugins%s are available for WordPress.', 'wppp' ), '<a href="http://wordpress.org/plugins/search.php?q=object+cache">', '</a>' ); ?>
+			</div>
+		<?php endif;
+	}
+
+	function do_hint_jit ( $as_error ) {
+		if ( !$this->is_jit_available() ) {
+			if ( $as_error ) {
+				echo '<div class="ui-state-error ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-alert" style="float:left; margin-right:.3em;"></span>';
+			} else {
+				echo '<div class="ui-state-highlight ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-info" style="float:left; margin-right:.3em;"></span>';
+			}
+			printf( __( 'JIT localization of scripts is only available for WordPress versions %s .', 'wppp' ), implode( ', ', WP_Performance_Pack::$jit_versions ) );
+			echo '</div>';
+		}
+	}
 
 	function do_switch_view_button ( $formaction, $value ) {
 		?>
@@ -204,4 +185,5 @@ abstract class WPPP_Admin_Base extends WPPP_Admin {
 		echo $this->wppp->options[$opt_name] === $value && $and_val ? 'checked="checked" ' : ' ';
 	}
 }
+
 ?>

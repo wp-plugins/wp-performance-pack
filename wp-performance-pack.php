@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
 	Description: A collection of performance optimizations for WordPress
-	Version: 0.8
+	Version: 0.9
 	Author: Bj&ouml;rn Ahrens
 	Author URI: http://www.bjoernahrens.de
 	License: GPL2 or later
@@ -25,7 +25,8 @@
 
 if( !class_exists( 'WP_Performance_Pack' ) ) {
 	class WP_Performance_Pack {
-		private $admin_opts = NULL;
+		const cache_group = 'wppp0.9'; 	// WPPP cache group name = wppp + version of last change to cache. 
+												// This way no cache conflicts occur while old cache entries just expire.
 
 		public static $options_name = 'wppp_option';
 		public static $options_default = array(
@@ -43,12 +44,10 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			'3.8.1',
 		);
 
-		public $jit_available = false;
-		public $gettext_available = false;
+		private $admin_opts = NULL;
 		public $is_network = false;
 		public $options = NULL;
 		public $plugin_dir = NULL;
-
 		public $dbg_textdomains = array ();
 
 		private function load_options () {
@@ -58,6 +57,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 				} else {
 					$this->options = get_option( self::$options_name );
 				}
+
 				foreach ( self::$options_default as $key => $value ) {
 					if ( !isset( $this->options[$key] ) ) {
 						$this->options[$key] = false;
@@ -70,8 +70,6 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			// initialize fields
 			global $wp_version;
 			$this->plugin_dir = dirname(plugin_basename(__FILE__));
-			$this->jit_available = in_array( $wp_version, self::$jit_versions );
-			$this->gettext_available = extension_loaded( 'gettext' );
 			if ( !function_exists( 'is_plugin_active_for_network' ) ) {
 				require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
 			}
@@ -84,17 +82,16 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 
 			// load modules
 			if ( $this->options['use_mo_dynamic'] 
-				|| ( $this->options['use_native_gettext'] && $this->gettext_available ) 
+				|| $this->options['use_native_gettext']
 				|| $this->options['disable_backend_translation'] ) {
 				
 				global $l10n;
 				$l10n['WPPP_NOOP'] = new NOOP_Translations;
-				
 				include( sprintf( "%s/modules/override-textdomain.php", dirname( __FILE__ ) ) );
 				add_filter( 'override_load_textdomain', 'wppp_load_textdomain_override', 0, 3 );
 			}
 
-			if ( $this->options['use_jit_localize'] && $this->jit_available ) {
+			if ( $this->options['use_jit_localize'] ) {
 				include( sprintf( "%s/modules/jit-localize.php", dirname( __FILE__ ) ) );
 			}
 		}
@@ -107,16 +104,11 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			// admin pages
 			if ( is_admin() ) {
 				if ( current_user_can ( 'manage_options' ) ) {
-					if ( $this->options['advanced_admin_view'] ) {
-						include( sprintf( "%s/admin/class.wppp-admin-advanced.php", dirname( __FILE__ ) ) );
-						$this->admin_opts = new WPPP_Admin_Advanced ($this);
-					} else {
-						include( sprintf( "%s/admin/class.wppp-admin-simple.php", dirname( __FILE__ ) ) );
-						$this->admin_opts = new WPPP_Admin_Simple ($this);
-					}
+					include( sprintf( "%s/admin/class.wppp-admin-admin.php", dirname( __FILE__ ) ) );
+					$this->admin_opts = new WPPP_Admin_Admin ($this);
 				} else if ( $this->options['disable_backend_translation'] && $this->options['dbt_allow_user_override']) {
-					include( sprintf( "%s/admin/class.wppp-admin.php", dirname( __FILE__ ) ) );
-					$this->admin_opts = new WPPP_Admin ($this);
+					include( sprintf( "%s/admin/class.wppp-admin-user.php", dirname( __FILE__ ) ) );
+					$this->admin_opts = new WPPP_Admin_User ($this);
 				}
 			}
 		}
@@ -137,7 +129,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 		 */
 		public static function plugin_load_first() {
 			$path = plugin_basename( __FILE__ );
-			
+
 			if ( $plugins = get_option( 'active_plugins' ) ) {
 				if ( $key = array_search( $path, $plugins ) ) {
 					array_splice( $plugins, $key, 1 );
@@ -157,7 +149,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			self::plugin_load_first();
 		}
 
-		public static function deactivate() { 
+		public static function deactivate() {
 			if ( is_multisite() && isset( $_GET['networkwide'] ) && 1 == $_GET['networkwide'] ) {
 				delete_site_option( self::$options_name );
 			} else {

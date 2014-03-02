@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WP Performance Pack\n"
-"POT-Creation-Date: 2014-02-25 16:17+0100\n"
-"PO-Revision-Date: 2014-02-25 16:17+0100\n"
-"Last-Translator: Bjoern Ahrens <bjoern@ahrens.net>\n"
+"POT-Creation-Date: 2014-03-02 10:32+0100\n"
+"PO-Revision-Date: 2014-03-02 10:33+0100\n"
+"Last-Translator: Björn Ahrens <bjoern@ahrens.net>\n"
 "Language-Team:  <bjoern@ahrens.net>\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
@@ -14,328 +14,295 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-#: ../admin/admin-options.php:35 ../admin/admin-options.php:37
-#: ../admin/class.debug-bar-wppp.php:43
-msgid "WP Performance Pack"
-msgstr ""
-
-#: ../admin/admin-options.php:35 ../admin/admin-options.php:37
-msgid "Performance Pack"
-msgstr ""
-
-#: ../admin/admin-options.php:151
-msgid "Dashboard language"
-msgstr ""
-
-#: ../admin/admin-options.php:155
-msgid "Translate Dashboard"
-msgstr ""
-
-#: ../admin/admin-options.php:159
-msgid "Activate to translate the Dashboard into the blog language."
-msgstr ""
-
-#: ../admin/admin-options.php:200
-msgid ""
-"<p>WP Performance Pack is intended to be a collection of performance "
-"optimizations for WordPress which don't need patching of core files. As of "
-"now it features options to improve performance of translated WordPress "
-"installations.</p><h4>Optimal settings</h4><ul><li>Use native gettext if "
-"available (for details on native gettext support activate <em>Debug Panel</"
-"em>).</li><li>MO-Dynamic should always work and is faster than default "
-"WordPress translations, but slower than native gettext.</li><li>Enable JIT "
-"localize if available.</li></ul>"
-msgstr ""
-
-#: ../admin/admin-options.php:205
-msgid "MO-Dynamic"
-msgstr ""
-
-#: ../admin/admin-options.php:206
-msgid ""
-"<p><strong>Dynamic loading of translation files, only loading and "
-"translating used strings.</strong></p><p>Improves performance and reduces "
-"memory consumption. The default WordPress <em>MO</em> implementation loads "
-"the complete MO files (e.g. when loaded via <code>load_textdomain</code>) "
-"into memory. As a result translation of individual strings is quite fast, "
-"but loading times and memory consumption are high. Most of the time only a "
-"few strings from a mo file are required within a single page request. "
-"Activating translation almost doubles execution time in a typical WordPress "
-"installation.</p><p>WPPP uses MO-Dynamic, a complete rewrite of the <em>MO</"
-"em> implementation, to speed up translations. .mo files are only loaded if "
-"needed. On installations with many translated plugins this alone can "
-"dramatically reduce execution time. It doesn't load the complete "
-"translations into memory, only required ones. This on demand translation is "
-"more expensive than translations on fully loaded .mo files but the "
-"performance gain by not loading and parsing the complete file outweighs this."
-"</p>"
-msgstr ""
-
-#: ../admin/admin-options.php:211
-msgid "Native gettext"
-msgstr ""
-
-#: ../admin/admin-options.php:212
-msgid ""
-"<p><strong>Use of native gettext if available</strong></p><p>There is "
-"probably no faster way for translations than using the native gettext "
-"implementation. This requires the <code>php_gettext</code> extension to be "
-"installed on the server. This implementation used is based on Bernd "
-"Holzmuellers <a href=\"http://oss.tiggerswelt.net/wordpress/3.3.1/"
-"\">Translate_GetText_Native</a> implementation.</p><p>For now WPPP only "
-"checks if the gettext extension is available, which might not suffice to use "
-"native gettext. Further checks will follow.</p><p><em>Native gettext "
-"overrides MO-Dynamic if both are enabled!</em></p>"
-msgstr ""
-
-#: ../admin/admin-options.php:217
-msgid "JIT localize"
-msgstr ""
-
-#: ../admin/admin-options.php:218
-msgid ""
-"<p><strong>Just in time localization</strong></p><p>Just in time "
-"localization of scripts. By default WordPress localizes all default scripts "
-"at each request. Enabling this option will translate localization string "
-"only if needed. This might improve performance even if WordPress is not "
-"translated, but has the biggest impact when using MO-Dynamic.</p><p><em>As "
-"for now only implemented for WordPress version 3.8.1 because of differences "
-"in wp_default_scripts (which gets overridden by this feature) between "
-"versions.</em></p>"
-msgstr ""
-
-#: ../admin/admin-options.php:223 ../admin/admin-options.php:441
-msgid "Disable backend translation"
-msgstr ""
-
-#: ../admin/admin-options.php:224
-msgid ""
-"<p><strong>Disable backend translation while maintaining frontend "
-"translations.</strong></p><p>Speed up the backend by disabling dashboard-"
-"translations. Useful if you don't mind using an english backend.</"
-"p><p><em>AJAX requests on backend pages will still be translated, as I "
-"haven't figured out how to distinguish requests originating backend pages "
-"and requests from frontend pages.</em></p>"
-msgstr ""
-
-#: ../admin/admin-options.php:250
-msgid "Off"
-msgstr ""
-
-#: ../admin/admin-options.php:251
-msgid "Stable"
-msgstr ""
-
-#: ../admin/admin-options.php:252
-msgid "Speed"
-msgstr ""
-
-#: ../admin/admin-options.php:253
-msgid "Custom"
-msgstr ""
-
-#: ../admin/admin-options.php:264
+#: ../admin/class.admin-renderer.php:29
 msgid "WP Performance Pack - Settings"
 msgstr ""
 
-#: ../admin/admin-options.php:292
-msgid "Improve translation performance"
+#: ../admin/class.admin-renderer.php:118
+#, php-format
+msgid "Gettext support requires the %s extension."
 msgstr ""
 
-#: ../admin/admin-options.php:306
-msgid "Translation improvements turned off"
-msgstr ""
-
-#: ../admin/admin-options.php:310
-msgid "Fast WordPress translation"
-msgstr ""
-
-#: ../admin/admin-options.php:311
-msgid "Safe settings that should work with any WordPress install."
-msgstr ""
-
-#: ../admin/admin-options.php:315
-msgid "Fastest WordPress translation"
-msgstr ""
-
-#: ../admin/admin-options.php:316
+#: ../admin/class.admin-renderer.php:121
+#, php-format
 msgid ""
-"Fastest translation settings. If any problems occur after activating, switch "
-"to stable setting."
+"Gettext support requires the language directory %s to exists and to be "
+"writeable for php."
 msgstr ""
 
-#: ../admin/admin-options.php:320
-msgid "Custom settings"
+#: ../admin/class.admin-renderer.php:123
+msgid "Gettext test failed. Activate WPPP debugging for additional info."
 msgstr ""
 
-#: ../admin/admin-options.php:321
-msgid "Select your own settings. Customize via advanced view."
-msgstr ""
-
-#: ../admin/admin-options.php:336 ../admin/admin-options.php:363
+#: ../admin/class.admin-renderer.php:135
+#, php-format
 msgid ""
-"Native Gettext support requires the <a href=\"http://www.php.net/gettext"
-"\">php_gettext</a> extension."
+"Caching requires a persisten object cache to be effective. Different "
+"%sobject cache plugins%s are available for WordPress."
 msgstr ""
 
-#: ../admin/admin-options.php:339 ../admin/admin-options.php:366
-msgid ""
-"Native Gettext support requires the language dir <code>wp-content/languages</"
-"code> to exists and to be writeable for php."
-msgstr ""
-
-#: ../admin/admin-options.php:341 ../admin/admin-options.php:368
-msgid "Native Gettext test failed. Activate debugging for additional info."
-msgstr ""
-
-#: ../admin/admin-options.php:350 ../admin/admin-options.php:377
-msgid ""
-"MO-Dynamic caching requires a persisten object cache to be effective. "
-"Different <a href=\"http://wordpress.org/plugins/search.php?q=object+cache"
-"\">object cache plugins</a> are available for Wordpress."
-msgstr ""
-
-#: ../admin/admin-options.php:383
+#: ../admin/class.admin-renderer.php:147
 #, php-format
 msgid ""
 "JIT localization of scripts is only available for WordPress versions %s ."
 msgstr ""
 
-#: ../admin/admin-options.php:397
-msgid "Translation related"
+#: ../admin/class.admin-renderer.php:167
+msgid "Switch to advanced view"
 msgstr ""
 
-#: ../admin/admin-options.php:401
-msgid "Use native gettext"
+#: ../admin/class.admin-renderer.php:167
+msgid "Switch to simple view"
 msgstr ""
 
-#: ../admin/admin-options.php:403 ../admin/admin-options.php:418
-#: ../admin/admin-options.php:431 ../admin/admin-options.php:444
-#: ../admin/admin-options.php:460
-msgid "Enabled"
+#: ../admin/class.debug-bar-wppp.php:43 ../admin/class.wppp-admin-admin.php:30
+#: ../admin/class.wppp-admin-admin.php:32
+msgid "WP Performance Pack"
 msgstr ""
 
-#: ../admin/admin-options.php:404 ../admin/admin-options.php:419
-#: ../admin/admin-options.php:432 ../admin/admin-options.php:445
-#: ../admin/admin-options.php:461
-msgid "Disabled"
-msgstr ""
-
-#: ../admin/admin-options.php:407
+#: ../admin/class.renderer-advanced.php:32
+#: ../admin/class.renderer-simple.php:36
 msgid ""
-"Gettext extension is <b>available</b>. (For further details on native "
-"gettext support activate <em>Debug Panel</em>)"
+"Welcome to WP Performance Pack, your first choice for speeding up WordPress "
+"core the easy way. The simple view helps you to easily apply  the optimal "
+"settings for your blog. Advanced view offers more in depth control of WPPP "
+"settings."
 msgstr ""
 
-#: ../admin/admin-options.php:409
-msgid "Gettext extension is <b>not available</b>!"
+#: ../admin/class.renderer-advanced.php:37
+#: ../admin/class.renderer-advanced.php:59
+#: ../admin/class.renderer-simple.php:41 ../admin/class.renderer-simple.php:74
+msgid "Improve translation performance"
 msgstr ""
 
-#: ../admin/admin-options.php:412
-msgid "Use native gettext implementation for translations."
-msgstr ""
-
-#: ../admin/admin-options.php:416
-msgid "Use MO-Dynamic"
-msgstr ""
-
-#: ../admin/admin-options.php:420
-msgid "Loads translations on demand. Use if native gettext is not available."
-msgstr ""
-
-#: ../admin/admin-options.php:422
-msgid "Use caching"
-msgstr ""
-
-#: ../admin/admin-options.php:423
+#: ../admin/class.renderer-advanced.php:38
 msgid ""
-"Use caching of translation. Only effective if any persistent object cache is "
-"installed."
+"WPPP offers different options to significantly improve translation "
+"performance. These only affect localization of WordPress core, themes and "
+"plugins, not translation of content (e.g. when using plugins like WPML). To "
+"automatically apply optimal settings for your blog, use the simple view. For "
+"implementation details refer to the WordPress plugin page or the development "
+"blog."
 msgstr ""
 
-#: ../admin/admin-options.php:428
-msgid "Use JIT localize"
-msgstr ""
-
-#: ../admin/admin-options.php:434
-msgid "As for now only available for WordPress version 3.8.1!"
-msgstr ""
-
-#: ../admin/admin-options.php:436
-msgid "Just in time localization of scripts."
-msgstr ""
-
-#: ../admin/admin-options.php:446
-msgid "Disables translation of backend texts."
-msgstr ""
-
-#: ../admin/admin-options.php:448
-msgid "Allow user override"
-msgstr ""
-
-#: ../admin/admin-options.php:449
-msgid "Allow users to reactive backend translation in their profile settings."
-msgstr ""
-
-#: ../admin/admin-options.php:454
+#: ../admin/class.renderer-advanced.php:43
+#: ../admin/class.renderer-advanced.php:116
 msgid "Debugging"
 msgstr ""
 
-#: ../admin/admin-options.php:458
+#: ../admin/class.renderer-advanced.php:44
+#, php-format
+msgid ""
+"WPPP supports debugging using the %s plugin. When installed and activated, "
+"debugging adds a new panel to the Debug Bar showing information about loaded "
+"textdomains, used translation implementations and translation calls, as well "
+"as information about gettext support and other details."
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:49
+#: ../admin/class.renderer-simple.php:47
+msgid "Development Blog (german)"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:63
+#: ../admin/class.renderer-simple.php:212
+#: ../admin/class.renderer-simple.php:235
+msgid "Use gettext"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:65
+#: ../admin/class.renderer-advanced.php:74
+#: ../admin/class.renderer-advanced.php:88
+#: ../admin/class.renderer-advanced.php:99
+#: ../admin/class.renderer-advanced.php:122
+#: ../admin/class.wppp-admin-user.php:52
+msgid "Enabled"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:66
+#: ../admin/class.renderer-advanced.php:75
+#: ../admin/class.renderer-advanced.php:89
+#: ../admin/class.renderer-advanced.php:100
+#: ../admin/class.renderer-advanced.php:123
+#: ../admin/class.wppp-admin-user.php:53
+msgid "Disabled"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:67
+msgid ""
+"Use php gettext extension for translations. This is in most cases the "
+"fastest way to translate your blog."
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:72
+#: ../admin/class.renderer-simple.php:215
+#: ../admin/class.renderer-simple.php:238
+msgid "Use alternative MO reader"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:76
+msgid ""
+"Alternative MO reader using on demand translation and loading of translation "
+"files. Faster and less memory intense than the default WordPress "
+"implementation."
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:78
+#: ../admin/class.renderer-simple.php:217
+#: ../admin/class.renderer-simple.php:241
+msgid "Use caching"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:79
+msgid "Cache translations using WordPress Object Cache API"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:85
+#: ../admin/class.renderer-simple.php:225
+#: ../admin/class.renderer-simple.php:244
+msgid "Use JIT localize"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:90
+msgid "Just in time localization of scripts."
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:96
+#: ../admin/class.renderer-simple.php:230
+#: ../admin/class.renderer-simple.php:247
+msgid "Disable back end translation"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:101
+msgid "Disables translation of back end texts."
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:103
+#: ../admin/class.renderer-simple.php:230
+#: ../admin/class.renderer-simple.php:249
+msgid "Allow user override"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:104
+msgid ""
+"Allow users to reactivate back end translation in their profile settings."
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:107
+msgid "Default user language:"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:108
+msgid "English"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:109
+msgid "Blog language"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:111
+msgid ""
+"Default back end language for new and existing users, who haven't updated "
+"their profile yet."
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:120
 msgid "Debug Panel"
 msgstr ""
 
-#: ../admin/admin-options.php:462
+#: ../admin/class.renderer-advanced.php:124
 msgid ""
 "Enables debugging, requires <a href=\"http://wordpress.org/plugins/debug-bar/"
 "\">Debug Bar</a> Plugin."
 msgstr ""
 
-#: ../admin/admin-options.php:485
-msgid "Switch to advanced view"
+#: ../admin/class.renderer-simple.php:42
+msgid ""
+"WPPP offers different levels of improving translation performance. When you "
+"select an option, optimal settings will be applied. Applied settings will be "
+"displayed. If some settings couldn't be applied, e.g. due to missing "
+"requirements, these will be displayed in red and the next best setting (if "
+"available) will be chosen. Also hints as to why a setting couldn't be "
+"applied will be displayed."
 msgstr ""
 
-#: ../admin/admin-options.php:485
-msgid "Switch to simple view"
+#: ../admin/class.renderer-simple.php:65
+msgid "Off"
 msgstr ""
 
-#: ../admin/admin-options.php:564
+#: ../admin/class.renderer-simple.php:66
+msgid "Stable"
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:67
+msgid "Speed"
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:68
+msgid "Custom"
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:88
+msgid "Translation improvements turned off"
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:92
+msgid "Fast WordPress translation"
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:93
+msgid "Safe settings that should work with any WordPress install."
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:97
+msgid "Fastest WordPress translation"
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:98
+msgid ""
+"Fastest translation settings. If any problems occur after activating, switch "
+"to stable setting."
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:102
+msgid "Custom settings"
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:103
+msgid "Select your own settings. Customize via advanced view."
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:208
 msgid "All translation settings turned off."
 msgstr ""
 
-#: ../admin/admin-options.php:568 ../admin/admin-options.php:591
-msgid "Native gettext activated."
+#: ../admin/class.renderer-simple.php:214
+msgid "Gettext not available."
 msgstr ""
 
-#: ../admin/admin-options.php:570
-msgid "Native gettext not available."
-msgstr ""
-
-#: ../admin/admin-options.php:571 ../admin/admin-options.php:594
-msgid "MO-Dynamic activated."
-msgstr ""
-
-#: ../admin/admin-options.php:573 ../admin/admin-options.php:597
-msgid "MO-Dynamic caching activated."
-msgstr ""
-
-#: ../admin/admin-options.php:575
+#: ../admin/class.renderer-simple.php:219
 msgid "No persistent object cache installed."
 msgstr ""
 
-#: ../admin/admin-options.php:581 ../admin/admin-options.php:600
-msgid "JIT script localization activated"
+#: ../admin/class.renderer-simple.php:227
+msgid "JIT localize not available"
 msgstr ""
 
-#: ../admin/admin-options.php:583
-msgid "JIT script localization not available"
+#: ../admin/class.wppp-admin-admin.php:30
+#: ../admin/class.wppp-admin-admin.php:32
+msgid "Performance Pack"
 msgstr ""
 
-#: ../admin/admin-options.php:586 ../admin/admin-options.php:604
+#: ../admin/class.wppp-admin-user.php:47
+msgid "Back end language"
+msgstr ""
+
+#: ../admin/class.wppp-admin-user.php:50
+msgid "Translate back end"
+msgstr ""
+
+#: ../admin/class.wppp-admin-user.php:54
 msgid ""
-"Backend translation disabled (per user override via user profile allowed)."
-msgstr ""
-
-#: ../admin/admin-options.php:606
-msgid "Backend translation disabled."
+"Enable or disable back end translation. When disabled, back end will be "
+"displayed in english, else it will be translated to the blog language."
 msgstr ""

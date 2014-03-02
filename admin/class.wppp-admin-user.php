@@ -7,7 +7,7 @@
  * @since 0.8
  */
  
-class WPPP_Admin {
+class WPPP_Admin_User {
 	protected $wppp = NULL;
 
 	public function __construct($wppp_parent) {
@@ -44,14 +44,14 @@ class WPPP_Admin {
 		$user_setting = get_user_option( 'wppp_translate_backend', $user->ID );
 		$user_override = $user_setting === 'true' || ( $this->wppp->options['dbt_user_default_translated'] && $user_setting === false );
 		?>
-		<h3><?php _e( 'Dashboard language', 'wppp' ); ?></h3>
+		<h3><?php _e( 'Back end language', 'wppp' ); ?></h3>
 			<table class="form-table">
 				<tr>
-					<th scope="row"><?php _e( 'Translate Dashboard', 'wppp' ); ?></th>
+					<th scope="row"><?php _e( 'Translate back end', 'wppp' ); ?></th>
 					<td>
 						<label for="wppp-translate-backend-enabled"><input type="radio" name="wppp_translate_backend" id="wppp-translate-backend-enabled" value="true" <?php echo  $user_override ? 'checked="true"' : ''; ?> /><?php _e( 'Enabled', 'wppp' ); ?></label>&nbsp;
 						<label for="wppp-translate-backend-disabled"><input type="radio" name="wppp_translate_backend" id="wppp-translate-backend-disabled" value="false" <?php echo !$user_override ? 'checked="true"' : ''; ?> /><?php _e( 'Disabled', 'wppp' ); ?></label>
-						<p class="description"><?php _e( 'Enable or disable backend translation. When disabled, backend will be displayed in english, else it will be translated into the blog language.', 'wppp' ); ?></p>
+						<p class="description"><?php _e( 'Enable or disable back end translation. When disabled, back end will be displayed in english, else it will be translated to the blog language.', 'wppp' ); ?></p>
 					</td>
 				</tr>
 			</table>

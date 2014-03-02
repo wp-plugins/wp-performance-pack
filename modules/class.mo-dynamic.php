@@ -36,16 +36,20 @@ class MO_dynamic extends Gettext_Translations {
 	private $domain = '';
 	private $caching = false;
 	private $modified = false;
+	protected $cache_loaded = false;
 
 	protected $_nplurals = 2;
 	protected $MOs = array();
+
 	protected $translations = NULL;
+	protected $base_translations = array(); 
 
 	function __construct( $domain, $caching = false ) {
 		$this->domain = $domain;
 		$this->caching = $caching;
 		if ( $caching ) {
 			add_action ( 'shutdown', array( $this, 'save_to_cache' ) );
+			add_action ( 'wp_loaded', array( $this, 'save_base_translations' ) );
 		}
 	}
 
@@ -81,87 +85,48 @@ class MO_dynamic extends Gettext_Translations {
 		return true;
 	}
 
+	function save_base_translations () {
+		if ( is_admin() && $this->translations !== NULL && !$this->cache_loaded ) {
+			$this->base_translations = $this->translations;
+			$this->translations = array();
+		}
+	}
+
 	function import_domain_from_cache () {
 		// build cache key from domain and request uri
 		if ( $this->caching ) {
 			if ( is_admin() ) {
-				$key = md5( $this->domain . $this->get_current_url() );
+				$t = wp_cache_get( 'backend_' . $this->domain, WP_Performance_Pack::cache_group );
+				if ( $t !== false ) {
+					$this->base_translations = json_decode( gzuncompress( $t ), true );
+					$this->cache_loaded = true;
+				}
+
+				$key = 'backend_' . $this->domain . '_' . $this->get_current_url();
 			} else {
-				$key = 'frontend_'.$this->domain;
+				$key = 'frontend_' . $this->domain;
 			}
-			$this->translations = wp_cache_get( 'domain_'.$key, 'wppp_translations' );
-			if ( $this->translations === false ) {
+			
+			$t = wp_cache_get( $key, WP_Performance_Pack::cache_group );
+			if ( $t === false ) {
 				$this->translations = array();
+			} else {
+				$this->translations = json_decode( gzuncompress( $t ), true );
 			}
 		} else {
 			$this->translations = array();
 		}
 	}
 
-	function import_file_from_cache ( $moitem ) {
-		if ( !$this->caching ) {
-			return false;
-		}
-
-		$key = md5_file ( $moitem->mofile );
-
-		$arr = wp_cache_get( 'origtbl'.$key, 'wppp_translations' );
-		if ( $arr === false ) {
-			return false;
-		}
-
-		if ( class_exists ( 'SplFixedArray' ) )
-			$moitem->originals_table = SplFixedArray::fromArray( $arr, false );
-		else
-			$moitem->originals_table = $arr;
-
-		$arr = wp_cache_get ( 'transtbl'.$key, 'wppp_translations' );
-		if ( class_exists ( 'SplFixedArray' ) )
-			$moitem->translations_table = SplFixedArray::fromArray( $arr, false );
-		else
-			$moitem->translations_table = $arr;
-
-		$arr = wp_cache_get ( 'hashtbl'.$key, 'wppp_translations' );
-		if ($arr !== false) {
-			if ( class_exists ( 'SplFixedArray' ) )
-				$moitem->hash_table = SplFixedArray::fromArray( $arr, false );
-			else
-				$moitem->hash_table = $arr;
-			$hash_lenght = count( $arr );
-		}
-
-		$moitem->total = count ($moitem->originals_table);
-		$moitem->is_cached = true;
-		return true;
-	}
-
 	function save_to_cache () {
 		if ( $this->modified ) {
 			if ( is_admin() ) {
-				$key = md5( $this->domain . $this->get_current_url() );
-				wp_cache_set( 'domain_'.$key, $this->translations, 'wppp_translations', 1800 ); // keep cache for 30 minutes
-			} else {
-				$key = 'frontend_'.$this->domain;
-				wp_cache_set( 'domain_'.$key, $this->translations, 'wppp_translations', 3600 ); // keep cache for 60 minutes
-			}
-		}
-
-		foreach ( $this->MOs as $moitem ) {
-			if ( !$moitem->is_cached && $moitem->reader !== NULL ) {
-				$key = md5_file ( $moitem->mofile );
-				if ( class_exists ( 'SplFixedArray' ) ) {
-					wp_cache_set( 'origtbl'.$key, $moitem->originals_table->toArray(), 'wppp_translations' );
-					wp_cache_set( 'transtbl'.$key, $moitem->translations_table->toArray(), 'wppp_translations' );
-					if ( $moitem->hash_length > 0 ) {
-						wp_cache_set( 'hashtbl'.$key, $moitem->hash_table->toArray(), 'wppp_translations' );
-					}
-				} else {
-					wp_cache_set( 'origtbl'.$key, $moitem->originals_table, 'wppp_translations' );
-					wp_cache_set( 'transtbl'.$key, $moitem->translations_table, 'wppp_translations' );
-					if ( $moitem->hash_length > 0 ) {
-						wp_cache_set( 'hashtbl'.$key, $moitem->hash_table, 'wppp_translations' );
-					}
+				wp_cache_set( 'backend_' . $this->domain . '_' . $this->get_current_url(), gzcompress( json_encode( $this->translations ) ), WP_Performance_Pack::cache_group, 30 * MINUT_IN_SECONDS ); // keep admin page cache for 30 minutes
+				if ( count( $this->base_translations ) > 0 ) {
+					wp_cache_set( 'backend_'.$this->domain, gzcompress( json_encode( $this->base_translations ) ), WP_Performance_Pack::cache_group, HOUR_IN_SECONDS ); // keep admin base cache for 60 minutes
 				}
+			} else {
+				wp_cache_set( 'frontend_'.$this->domain, gzcompress( json_encode( $this->translations ) ), WP_Performance_Pack::cache_group, HOUR_IN_SECONDS ); // keep front end cache for 60 minutes
 			}
 		}
 	}
@@ -181,10 +146,6 @@ class MO_dynamic extends Gettext_Translations {
 		}
 		$moitem->reader->setEndian( $endian_string );
 		$endian = ( 'big' == $endian_string ) ? 'N' : 'V';
-
-		if ( $this->import_file_from_cache( $moitem ) ) {
-			return true;
-		}
 
 		$header = $moitem->reader->read( 24 );
 		if ( $moitem->reader->strlen( $header ) != 24 ) {
@@ -470,10 +431,14 @@ class MO_dynamic extends Gettext_Translations {
 
 		if ( isset( $this->translations[$s] ) ) {
 			$t = $this->translations[$s];
+		} else if ( isset ($this->base_translations[$s] ) ) {
+			$t = $this->base_translations[$s];
 		} else {
 			$t = $this->search_translation( $s );
-			$this->translations[$s] = $t;
-			$this->modified = true;
+			if ( $t !== false ) {
+				$this->translations[$s] = $t;
+				$this->modified = true;
+			}
 		}
 		
 		if ( $t !== false ) {
@@ -508,10 +473,14 @@ class MO_dynamic extends Gettext_Translations {
 
 		if ( isset( $this->translations[$s] ) ) {
 			$t = $this->translations[$s];
+		} else if ( isset ($this->base_translations[$s] ) ) {
+			$t = $this->base_translations[$s];
 		} else {
 			$t = $this->search_translation( $s );
-			$this->translations[$s] = $t;
-			$this->modified = true;
+			if ( $t !== false ) {
+				$this->translations[$s] = $t;
+				$this->modified = true;
+			}
 		}
 
 		if ( $t !== false ) {
@@ -535,9 +504,16 @@ class MO_dynamic extends Gettext_Translations {
 
 	function merge_with( &$other ) {
 		if ( $other instanceof MO_dynamic ) {
+			$this->cache_loaded = $other->cache_loaded;
+			
 			if ( $other->translations !== NULL ) {
 				foreach( $other->translations as $key => $translation ) {
-					$this->entries[$key] = $translation;
+					$this->translations[$key] = $translation;
+				}
+			}
+			if ( $other->base_translations !== NULL ) {
+				foreach( $other->base_translations as $key => $translation ) {
+					$this->base_translations[$key] = $translation;
 				}
 			}
 
@@ -552,7 +528,6 @@ class MO_dynamic extends Gettext_Translations {
 					if ( !$found )
 						$this->MOs[] = $moitem;
 			}
-		} else if ( ! $other instanceof NOOP_Translations ) {
 		}
 	}
 

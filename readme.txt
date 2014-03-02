@@ -1,7 +1,7 @@
 === WP Performance Pack ===
 Contributors: greencp, linushoppe
 Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext
-Requires at least: 3.0
+Requires at least: 3.6
 Tested up to: 3.8.1
 Stable tag: trunk
 License: GPLv2 or later
@@ -93,11 +93,20 @@ not suffice to use native gettext. Further checks will follow.
 
 == Changelog ==
 
+= 0.9 =
+
+* [mo-dynamic] mo table caching removed (small speed improvement vs. big cache usage)
+* [mo-dynmiac] reduced cache space usage (reused admin "base" translations, data compression)
+* [mo-dynamic] some small fixes
+* [general] more refactoring to reduce loaded code
+* [l10n] texts and translations updated
+
 = 0.8 =
 
 * [jit] fixed broken file upload (e.g. when editing posts)
 * [general] code refactoring to reduce loaded code
 * [general] selectable user default for backend transaltion if allow override is enabled
+* [l10n] translations updated
 
 = 0.7.3 =
 

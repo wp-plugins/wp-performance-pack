@@ -2,8 +2,10 @@
 /*
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
-	Description: A collection of performance optimizations for WordPress
-	Version: 0.9
+	Description: A collection of performance optimizations for WordPress. As of now it features options to improve performance of translated WordPress installations. 
+	Version: 1.0
+	Text Domain: wppp
+	Domain Path: /languages/
 	Author: Bj&ouml;rn Ahrens
 	Author URI: http://www.bjoernahrens.de
 	License: GPL2 or later
@@ -25,8 +27,8 @@
 
 if( !class_exists( 'WP_Performance_Pack' ) ) {
 	class WP_Performance_Pack {
-		const cache_group = 'wppp0.9'; 	// WPPP cache group name = wppp + version of last change to cache. 
-												// This way no cache conflicts occur while old cache entries just expire.
+		const cache_group = 'wppp1.0'; 	// WPPP cache group name = wppp + version of last change to cache. 
+										// This way no cache conflicts occur while old cache entries just expire.
 
 		public static $options_name = 'wppp_option';
 		public static $options_default = array(
@@ -77,7 +79,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			$this->load_options();
 
 			// add actions
-			add_action( 'activated_plugin', array ( $this, 'plugin_load_first' ) );
+			add_action( 'activated_plugin', array ( 'WP_Performance_Pack', 'plugin_load_first' ) );
 			add_action( 'init', array ( $this, 'init' ) );
 
 			// load modules
@@ -160,10 +162,10 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 }
 
 if ( class_exists( 'WP_Performance_Pack' ) ) { 
-	// installation and uninstallation hooks 
 	register_activation_hook( __FILE__, array( 'WP_Performance_Pack', 'activate' ) ); 
 	register_deactivation_hook( __FILE__, array( 'WP_Performance_Pack', 'deactivate' ) ); 
-	// instantiate the plugin class 
+
+	// instantiate the plugin
 	global $wp_performance_pack;
 	$wp_performance_pack = new WP_Performance_Pack(); 
 }

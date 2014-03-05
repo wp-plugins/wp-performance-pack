@@ -7,8 +7,7 @@ Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A collection of performance optimizations for wordpress. As of now it features options to 
-improve performance of translated WordPress installations.
+A collection of performance optimizations for WordPress. As of now it features options to improve performance of translated WordPress installations.
 
 == Description ==
 
@@ -93,10 +92,22 @@ not suffice to use native gettext. Further checks will follow.
 
 == Changelog ==
 
+= 1.0 =
+
+* [mo-dynamic] cache soft expire
+* [mo-dynamic] optimizations (faster hash calculation) and code cleanup
+* [mo-dynamic] object cache test now checks existence of object-cache.php and class name of wp_object_cache
+* [override textdomain] bugfix so alternative folders for theme and plugin translations are searched again
+* [l10n] textdomain added to plugin description
+* [native gettext] bugfix in native gettext test
+* [debug] reworked display of loaded textdomains
+* [debug] show cached translation count when using mo-dynamic and caching
+* [general] added uninstall to clean up created translations from native gettext
+
 = 0.9 =
 
 * [mo-dynamic] mo table caching removed (small speed improvement vs. big cache usage)
-* [mo-dynmiac] reduced cache space usage (reused admin "base" translations, data compression)
+* [mo-dynamic] reduced cache space usage (reused admin "base" translations, data compression)
 * [mo-dynamic] some small fixes
 * [general] more refactoring to reduce loaded code
 * [l10n] texts and translations updated

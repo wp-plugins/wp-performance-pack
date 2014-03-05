@@ -26,7 +26,8 @@ abstract class WPPP_Admin_Renderer {
 	public function render_page ( $formaction ) {
 		?>
 		<div class="wrap">
-			<h2><?php _e( 'WP Performance Pack - Settings', 'wppp' ); ?></h2>
+			<img src="<?php echo plugins_url( 'img/wppp_logo_150.png' , __FILE__ ); ?>" style="float:left; margin-right:10px;" />
+			<h2 style="height:80px"><?php _e( 'WP Performance Pack - Settings', 'wppp' ); ?></h2>
 			<form id="wppp-settings" action="<?php echo $formaction; ?>" method="post">
 				<input type="hidden" <?php $this->e_opt_name('advanced_admin_view'); ?> value="<?php echo ( $this->wppp->options['advanced_admin_view'] ) ? 'true' : 'false'; ?>" />
 				<?php 
@@ -52,7 +53,9 @@ abstract class WPPP_Admin_Renderer {
 	 */
 
 	function is_object_cache_installed () {
-		return file_exists ( WP_CONTENT_DIR . '/object-cache.php' );
+		global $wp_object_cache;
+		return ( file_exists ( WP_CONTENT_DIR . '/object-cache.php' )
+				&& get_class( $wp_object_cache ) != 'WP_Object_Cache' );
 	}
 
 	function is_native_gettext_available () {
@@ -85,7 +88,7 @@ abstract class WPPP_Admin_Renderer {
 			return 3;
 		}
 
-		if ( !$mo->translate( 'native-gettext-test' ) === 'success' ) {
+		if ( $mo->translate( 'native-gettext-test' ) !== 'success' ) {
 			$result = 4;
 			return 4;
 		}

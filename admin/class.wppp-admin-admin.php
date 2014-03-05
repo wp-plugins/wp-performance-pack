@@ -16,20 +16,15 @@ class WPPP_Admin_Admin extends WPPP_Admin_User {
 
 	public function __construct($wppp_parent) {
 		parent::__construct($wppp_parent);
-
-		add_action( 'admin_menu', array( $this, 'add_menu_page' ) );
-	}
-
-	public function admin_init() {
 		register_setting( 'wppp_options', WP_Performance_Pack::$options_name, array( $this, 'validate' ) );
-		parent::admin_init();
+		add_action( 'admin_menu', array( $this, 'add_menu_page' ) );
 	}
 
 	public function add_menu_page() {
 		if ( $this->wppp->is_network ) {
-			$wppp_options_hook = add_submenu_page( 'settings.php', __('WP Performance Pack','wppp'), __('Performance Pack','wppp'), 'manage_options', 'wppp_options_page', array( $this, 'do_options_page' ) );
+			$wppp_options_hook = add_submenu_page( 'settings.php', __( 'WP Performance Pack', 'wppp' ), __( 'Performance Pack', 'wppp' ), 'manage_options', 'wppp_options_page', array( $this, 'do_options_page' ) );
 		} else {
-			$wppp_options_hook = add_options_page( __('WP Performance Pack','wppp'), __('Performance Pack','wppp'), 'manage_options', 'wppp_options_page', array( $this, 'do_options_page' ) );
+			$wppp_options_hook = add_options_page( __( 'WP Performance Pack', 'wppp' ), __( 'Performance Pack', 'wppp' ), 'manage_options', 'wppp_options_page', array( $this, 'do_options_page' ) );
 		}
 		add_action('load-'.$wppp_options_hook, array ( $this, 'load_admin_page' ) );
 	}

@@ -62,7 +62,7 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 				<tr valign="top">
 					<th scope="row"><?php _e( 'Use gettext', 'wppp' ); ?></th>
 					<td>
-						<label for="native-gettext-true"><input id="native-gettext-true" type="radio" <?php $this->e_opt_name('use_native_gettext'); ?> value="true" <?php $this->e_checked_and( 'use_native_gettext', true, $this->is_native_gettext_available() ); echo $this->is_native_gettext_available() != 0 ? 'disabled="true"' : ''; ?>/><?php _e( 'Enabled', 'wppp' ); ?></label>&nbsp;
+						<label for="native-gettext-true"><input id="native-gettext-true" type="radio" <?php $this->e_opt_name('use_native_gettext'); ?> value="true" <?php $this->e_checked_and( 'use_native_gettext', true, $this->is_native_gettext_available() == 0 ); echo $this->is_native_gettext_available() != 0 ? 'disabled="true"' : ''; ?>/><?php _e( 'Enabled', 'wppp' ); ?></label>&nbsp;
 						<label for="native-gettext-false"><input id="native-gettext-false" type="radio" <?php $this->e_opt_name('use_native_gettext'); ?> value="false" <?php $this->e_checked_or( 'use_native_gettext', false, $this->is_native_gettext_available() != 0 ); echo $this->is_native_gettext_available() != 0 ? 'disabled="true"' : ''; ?>/><?php _e( 'Disabled', 'wppp' ); ?></label>
 						<p class="description"><?php _e( 'Use php gettext extension for translations. This is in most cases the fastest way to translate your blog.', 'wppp' ); ?></p>
 						<?php $this->do_hint_gettext( true ); ?>

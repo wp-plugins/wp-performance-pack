@@ -15,7 +15,7 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 	private function get_caller ( $stacktrace ) {
 		static $excludes = array (
 			'call_user_func_array',
-			'load_textdomain_override',
+			'wppp_load_textdomain_override',
 			'apply_filters',
 			'load_textdomain',
 			'load_theme_textdomain',
@@ -31,7 +31,7 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 				}
 
 				if ( isset( $stacktrace[$i]['file'] ) ) {
-					$str = substr ( $stacktrace[$i]['file'], strlen ( ABSPATH ) ) . ': ' . $str;
+					$str = substr ( $stacktrace[$i]['file'], strlen ( ABSPATH ) ) . ', line ' . $stacktrace[$i]['line'] . ': ' . $str;
 				}
 				break;
 			}
@@ -80,45 +80,77 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 				<thead>
 					<tr>
 						<th>textdomain</th>
-						<th>mofile</th>
-						<th>caller</th>
-						<th>override</th>
+						<th>mofile(s)</th>
+						<th>file exists?</th>
+						<th>caller(s)</th>
+						<th>implementation</th>
 					</tr>
 				</thead>
 				<tbody>
 					<?php
 					$odd = false;
-					foreach ($this->textdomains as $td) {
+					foreach ($this->textdomains as $domain => $td) {
 						$odd = !$odd;
 						$mo_class = NULL;
+						for ($i = 0, $max = count($td['mofiles']); $i < $max; $i++ ) {
 						?>
 						<tr <?php echo $odd ? 'class="alternate" ' : ' '; ?> >
-							<td><?php echo $td['domain']; ?></td>
-							<td><?php echo substr ( $td['mofile'], strlen ( ABSPATH . 'wp-content' ) ); ?></td>
-							<td><code><?php echo $this->get_caller( $td['caller'] ); ?></code></td>
-							<td><code><?php 
-								if ( is_string( $td['override'] ) ) {
-									echo $td['override'];
-								} else {
-									$mo_class = $td['override'];
-									if ( $mo_class instanceof MO_dynamic_Debug )
-										// Hide use of ...Debug class from user, as it doesn't matter and possibly confuses
-										echo get_parent_class ( $mo_class );
-									else
-										echo get_class( $mo_class ); 
+							<td><?php if ( $i == 0 ) { echo $domain; } ?></td>
+							<td><?php echo substr ( $td['mofiles'][$i], strlen ( ABSPATH . 'wp-content' ) ); ?></td>
+							<td><?php echo $td['mofileexists'][$i]; ?></td>
+							<td><code><?php echo $this->get_caller( $td['callers'][$i] ); ?></code></td>
+							<td><?php
+								if ( $i == 0 ) {
+									echo '<code>';
+									global $l10n;
+									if ( isset( $l10n[$domain] ) ) {
+										$mo_class = $l10n[$domain];
+										if ( $mo_class instanceof MO_dynamic_Debug )
+											// Hide use of ...Debug class from user, as it doesn't matter and possibly confuses
+											echo get_parent_class ( $mo_class );
+										else
+											echo get_class( $mo_class ); 
+									} else {
+										echo 'none (NOOPTranslations)';
+									}
+									echo '</code>';
 								}
-							?></code></td>
+							?></td>
 						</tr>
 						<?php
+						}
+						
 						if ($mo_class instanceof MO_dynamic_Debug) { ?>
 							<tr <?php echo $odd ? 'class="alternate" ' : ' '; ?> >
+								<td></td>
 								<td colspan="4">
 									<span class="description">
 										translate calls: <strong><?php echo $mo_class->translate_hits; ?></strong> - 
 										translate_plural calls: <strong><?php echo $mo_class->translate_plural_hits; ?></strong> - 
 										translation searches: <strong><?php echo $mo_class->search_translation_hits; ?></strong>
-										&nbsp;(all values estimates, real values might be higher)
+										<sup><a href="#wppp-hit-count-hint">*</a></sup>
 									</span>
+									<?php
+										global $wp_performance_pack;
+										if ( $wp_performance_pack->options['mo_caching'] ) : ?>
+										<br/>
+										<span class="description">
+											caching active - 
+											<?php if ( isset( $td['cache'] ) || isset( $td['basecache'] ) ) : ?>
+												translations loaded from cache: 
+												<?php if ( isset( $td['cache'] ) ) : ?>
+													<strong><?php echo $td['cache']; ?></strong>
+													<?php if ( isset( $td['basecache'] ) ) : ?>
+														+ <strong><?php echo $td['basecache']; ?></strong> base translations
+													<?php endif; ?>
+												<?php else : ?>
+													<strong><?php echo $td['basecache']; ?></strong> base translations
+												<?php endif; ?>
+											<?php else : ?>
+												no translations loaded from cache
+											<?php endif; ?>
+										</span>
+									<?php endif; ?>
 								</td>
 							</tr>
 						<?php
@@ -127,6 +159,7 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 					?>
 				</tbody>
 			</table>
+			<small><sup><a id="wppp-hit-count-hint" style="text-decoration:none !important;">*</a></sup>Hit counts are actually higher because some translations occur after debug panel is rendered.</small>
 
 			<h3>Native gettext support</h3>
 			<table class="widefat">
@@ -151,7 +184,7 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 					<th scope="row">System locales (LC_MESSAGES)</th>
 					<td><?php
 						if( !defined( 'LC_MESSAGES' ) )
-							define( 'LC_MESSAGES', 6 );
+							define( 'LC_MESSAGES', LC_CTYPE );
 						$l = setlocale (LC_MESSAGES, "0");
 						echo join( '<br/>', explode( ';', $l ) );
 						?>
@@ -162,8 +195,8 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 					<td><?php echo $this->isAvailable( 'putenv' ) ? 'Yes' : 'No'; ?></td>
 				</tr>
 				<tr class="alternate">
-					<th scope="row">Locale writeable? (<?php  echo $locale . '.UTF-8'; ?>)</th>
-					<td><?php echo ( setlocale (LC_MESSAGES, $locale . '.UTF-8' ) == $locale ) ? 'Yes' : 'No' ; ?></td>
+					<th scope="row">Locale writeable? (<?php  echo $locale; ?>)</th>
+					<td><?php echo ( setlocale (LC_MESSAGES, $locale ) == $locale ) ? 'Yes' : 'No' ; ?></td>
 				</tr>
 				<tr>
 					<th scope="row">Directory <code><?php echo $Path; ?></code></th>

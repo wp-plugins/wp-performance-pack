@@ -36,35 +36,45 @@ function wppp_load_textdomain_override( $retval, $domain, $mofile ) {
 		}
 	}
 
+
 	if ( $mo === NULL ) {
 		do_action( 'load_textdomain', $domain, $mofile );
 		$mofile = apply_filters( 'load_textdomain_mofile', $mofile, $domain );
 
 		if ( isset( $l10n[$domain] ) ) {
-			$mo = $l10n[$domain];
-			if ( $mo instanceof MO_dynamic && $mo->Mo_file_loaded( $mofile ) ) {
+			if ( $l10n[$domain] instanceof MO_dynamic && $l10n[$domain]->Mo_file_loaded( $mofile ) ) {
 				return true;
 			}
-			$mo = NULL;
 		}
+
+		if ( $wp_performance_pack->options['debug'] ) {
+			$callers=debug_backtrace();
+			$wp_performance_pack->dbg_textdomains[$domain]['mofiles'][] = $mofile;
+			$wp_performance_pack->dbg_textdomains[$domain]['callers'][] = $callers;
+		}
+
 		if ( !is_readable( $mofile ) ) {
-			$mo = $l10n['WPPP_NOOP'];
-			$result = true;
+			if ( $wp_performance_pack->options['debug'] ) {
+				$wp_performance_pack->dbg_textdomains[$domain]['mofileexists'][] = 'no';
+			}
+			return false; // return false is important so load_plugin_textdomain/load_theme_textdomain/... can call load_textdomain for different locations
+		} elseif ( $wp_performance_pack->options['debug'] ) {
+			$wp_performance_pack->dbg_textdomains[$domain]['mofileexists'][] = 'yes';
+		}
+	} else {
+		if ( $wp_performance_pack->options['debug'] ) {
+			$callers=debug_backtrace();
+			$wp_performance_pack->dbg_textdomains[$domain]['mofiles'][] = $mofile;
+			$wp_performance_pack->dbg_textdomains[$domain]['mofileexists'][] = 'disabled';
+			$wp_performance_pack->dbg_textdomains[$domain]['callers'][] = $callers;
 		}
 	}
 
-	if ( $wp_performance_pack->options['debug'] ) {
-		$callers=debug_backtrace();
-		$dbginfo = array ( 'domain' => $domain, 'mofile' => $mofile, 'caller' => $callers );
-	}
 
 	if ( $mo === NULL && $wp_performance_pack->options['use_native_gettext'] && extension_loaded( 'gettext' ) ) {
 		require_once(sprintf( "%s/class.native-gettext.php", dirname( __FILE__ ) ) );
 		$mo = new Translate_GetText_Native ();
 		if ( $mo->import_from_file( $mofile ) ) { 
-			if ( isset( $l10n[$domain] ) )
-				$mo->merge_with( $l10n[$domain] );
-			$l10n[$domain] = &$mo;
 			$result = true;
 		} else {
 			$mo = NULL;
@@ -79,22 +89,21 @@ function wppp_load_textdomain_override( $retval, $domain, $mofile ) {
 			$mo = new MO_dynamic ( $domain, $wp_performance_pack->options['mo_caching'] );
 		}
 		if ( $mo->import_from_file( $mofile ) ) { 
-			if ( isset( $l10n[$domain] ) )
-				$mo->merge_with( $l10n[$domain] );
-			$l10n[$domain] = $mo;
 			$result = true;
 		} else {
+			$mo->unhook_and_close();
 			$mo = NULL;
 		}
 	}
 
-	if ( $wp_performance_pack->options['debug'] ) {
-		if ( $result) {
-			$dbginfo['override'] = &$mo;
-		} else {
-			$dbginfo['override'] = 'false';
+	if ( $mo !== NULL ) {
+		if ( isset( $l10n[$domain] ) ) {
+			$mo->merge_with( $l10n[$domain] );
+			if ( $l10n[$domain] instanceof MO_dynamic ) {
+				$l10n[$domain]->unhook_and_close();
+			}
 		}
-		$wp_performance_pack->dbg_textdomains[] = $dbginfo;
+		$l10n[$domain] = $mo;
 	}
 
 	return $result;

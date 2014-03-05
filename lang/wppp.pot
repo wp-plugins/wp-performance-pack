@@ -14,6 +14,9 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
+msgid "A collection of performance optimizations for WordPress. As of now it features options to improve performance of translated WordPress installations."
+msgstr ""
+
 #: ../admin/class.admin-renderer.php:29
 msgid "WP Performance Pack - Settings"
 msgstr ""

@@ -24,7 +24,12 @@ class MO_item {
 	var $hash_table;
 	var $hash_length = 0;
 
-	var $is_cached = false;
+	function clear_reader () {
+		if ( $this->reader !== NULL ) {
+			$this->reader->close();
+			$this->reader = NULL;
+		}
+	}
 }
 
 /**
@@ -33,32 +38,37 @@ class MO_item {
  * Due to this export and save functions are not implemented.
  */
 class MO_dynamic extends Gettext_Translations {
-	private $domain = '';
 	private $caching = false;
 	private $modified = false;
-	protected $cache_loaded = false;
 
+	protected $domain = '';
 	protected $_nplurals = 2;
 	protected $MOs = array();
 
 	protected $translations = NULL;
-	protected $base_translations = array(); 
+	protected $base_translations = NULL; 
 
 	function __construct( $domain, $caching = false ) {
 		$this->domain = $domain;
 		$this->caching = $caching;
 		if ( $caching ) {
 			add_action ( 'shutdown', array( $this, 'save_to_cache' ) );
-			add_action ( 'wp_loaded', array( $this, 'save_base_translations' ) );
+			add_action ( 'admin_init', array( $this, 'save_base_translations' ), 100 );
 		}
 	}
 
+	function unhook_and_close () {
+		remove_action ( 'shutdown', array( $this, 'save_to_cache' ) );
+		remove_action ( 'admin_init', array( $this, 'save_base_translations' ), 100 );
+		foreach ( $this->MOs as $moitem ) {
+			$moitem->clear_reader();
+		}
+		$this->MOs = array();
+	}
+
 	function __destruct() {
-		foreach ( $this->MOs as &$moitem ) {
-			if ( $moitem->reader!=NULL ) {
-				$moitem->reader->close();
-				$moitem->reader=NULL;
-			}
+		foreach ( $this->MOs as $moitem ) {
+			$moitem->clear_reader();
 		}
 	}
 
@@ -86,47 +96,59 @@ class MO_dynamic extends Gettext_Translations {
 	}
 
 	function save_base_translations () {
-		if ( is_admin() && $this->translations !== NULL && !$this->cache_loaded ) {
+		if ( is_admin() && $this->translations !== NULL && $this->base_translations === NULL ) {
 			$this->base_translations = $this->translations;
 			$this->translations = array();
 		}
+	}
+
+	private function cache_get ( $key, $cache_time ) {
+		$t = wp_cache_get( $key, WP_Performance_Pack::cache_group );
+		if ( $t !== false && isset( $t['data'] ) ) {
+			// check soft expire
+			if ( $t['softexpire'] < time() ) {
+				// update cache with new soft expire time
+				$t['softexpire'] = time() + ( $cache_time - ( 5 * MINUTE_IN_SECONDS ) );
+				wp_cache_replace( $key, $t, WP_Performance_Pack::cache_group, $cache_time );
+			}
+			return json_decode( gzuncompress( $t['data'] ), true );
+		} else
+			return NULL;
+	}
+
+	private function cache_set ( $key, $cache_time, $data ) {
+		$t = array();
+		$t['softexpire'] = time() + ( $cache_time - ( 5 * MINUTE_IN_SECONDS ) );
+		$t['data'] = gzcompress( json_encode( $data ) );
+		wp_cache_set( $key, $t, WP_Performance_Pack::cache_group, $cache_time );
 	}
 
 	function import_domain_from_cache () {
 		// build cache key from domain and request uri
 		if ( $this->caching ) {
 			if ( is_admin() ) {
-				$t = wp_cache_get( 'backend_' . $this->domain, WP_Performance_Pack::cache_group );
-				if ( $t !== false ) {
-					$this->base_translations = json_decode( gzuncompress( $t ), true );
-					$this->cache_loaded = true;
-				}
+				$this->base_translations = $this->cache_get( 'backend_' . $this->domain, HOUR_IN_SECONDS );
+				$this->translations = $this->cache_get( 'backend_' . $this->domain . '_' . $this->get_current_url(), 30 * MINUTE_IN_SECONDS );
+			} else {
+				$this->translations = $this->cache_get( 'frontend_' . $this->domain, HOUR_IN_SECONDS );
+			}
+		}
 
-				$key = 'backend_' . $this->domain . '_' . $this->get_current_url();
-			} else {
-				$key = 'frontend_' . $this->domain;
-			}
-			
-			$t = wp_cache_get( $key, WP_Performance_Pack::cache_group );
-			if ( $t === false ) {
-				$this->translations = array();
-			} else {
-				$this->translations = json_decode( gzuncompress( $t ), true );
-			}
-		} else {
+		if ( $this->translations === NULL ) {
 			$this->translations = array();
 		}
 	}
 
 	function save_to_cache () {
 		if ( $this->modified ) {
+			$t = array();
 			if ( is_admin() ) {
-				wp_cache_set( 'backend_' . $this->domain . '_' . $this->get_current_url(), gzcompress( json_encode( $this->translations ) ), WP_Performance_Pack::cache_group, 30 * MINUT_IN_SECONDS ); // keep admin page cache for 30 minutes
+				$this->cache_set( 'backend_' . $this->domain . '_' . $this->get_current_url(), 30 * MINUTE_IN_SECONDS, $this->translations ); // keep admin page cache for 30 minutes
 				if ( count( $this->base_translations ) > 0 ) {
-					wp_cache_set( 'backend_'.$this->domain, gzcompress( json_encode( $this->base_translations ) ), WP_Performance_Pack::cache_group, HOUR_IN_SECONDS ); // keep admin base cache for 60 minutes
+					$this->cache_set( 'backend_'.$this->domain, HOUR_IN_SECONDS, $this->base_translations ); // keep admin base cache for 60 minutes
 				}
 			} else {
-				wp_cache_set( 'frontend_'.$this->domain, gzcompress( json_encode( $this->translations ) ), WP_Performance_Pack::cache_group, HOUR_IN_SECONDS ); // keep front end cache for 60 minutes
+				$this->cache_set( 'frontend_'.$this->domain, HOUR_IN_SECONDS, $this->translations ); // keep front end cache for 60 minutes
 			}
 		}
 	}
@@ -149,24 +171,21 @@ class MO_dynamic extends Gettext_Translations {
 
 		$header = $moitem->reader->read( 24 );
 		if ( $moitem->reader->strlen( $header ) != 24 ) {
-			$moitem->reader->close();
-			$moitem->reader = NULL;
+			$moitem->clear_reader();
 			return false;
 		}
 
 		// parse header
 		$header = unpack( "{$endian}revision/{$endian}total/{$endian}originals_lenghts_addr/{$endian}translations_lenghts_addr/{$endian}hash_length/{$endian}hash_addr", $header );
 		if ( !is_array( $header ) ) {
-			$moitem->reader->close();
-			$moitem->reader = NULL;
+			$moitem->clear_reader();
 			return false;
 		}
 		extract( $header );
 
 		// support revision 0 of MO format specs, only
 		if ( $revision != 0 ) {
-			$moitem->reader->close();
-			$moitem->reader = NULL;
+			$moitem->clear_reader();
 			return false;
 		}
 
@@ -178,8 +197,7 @@ class MO_dynamic extends Gettext_Translations {
 			$moitem->reader->seekto ( $hash_addr );
 			$str = $moitem->reader->read( $hash_length * 4 );
 			if ( $moitem->reader->strlen( $str ) != $hash_length * 4 ) {
-				$moitem->reader->close();
-				$moitem->reader = NULL;
+				$moitem->clear_reader();
 				return false;
 			} 
 			if ( class_exists ( 'SplFixedArray' ) )
@@ -189,21 +207,15 @@ class MO_dynamic extends Gettext_Translations {
 		}
 
 		// read originals' indices
-		if ( class_exists( 'SplFixedArray' ) )
-			$moitem->originals = new SplFixedArray ( $total );
-		else
-			$moitem->originals = array();
 		$moitem->reader->seekto( $originals_lenghts_addr );
 		$originals_lengths_length = $translations_lenghts_addr - $originals_lenghts_addr;
 		if ( $originals_lengths_length != $total * 8 ) {
-			$moitem->reader->close();
-			$moitem->reader = NULL;
+			$moitem->clear_reader();
 			return false;
 		}
 		$str = $moitem->reader->read( $originals_lengths_length );
 		if ( $moitem->reader->strlen( $str ) != $originals_lengths_length ) {
-			$moitem->reader->close();
-			$moitem->reader = NULL;
+			$moitem->clear_reader();
 			return false;
 		}
 		if ( class_exists ( 'SplFixedArray' ) )
@@ -214,14 +226,12 @@ class MO_dynamic extends Gettext_Translations {
 		// read translations' indices
 		$translations_lenghts_length = $hash_addr - $translations_lenghts_addr;
 		if ( $translations_lenghts_length != $total * 8 ) {
-			$moitem->reader->close();
-			$moitem->reader = NULL;
+			$moitem->clear_reader();
 			return false;
 		}
 		$str = $moitem->reader->read( $translations_lenghts_length );
 		if ( $moitem->reader->strlen( $str ) != $translations_lenghts_length ) {
-			$moitem->reader->close();
-			$moitem->reader = NULL;
+			$moitem->clear_reader();
 			return false;
 		}
 		if ( class_exists ( 'SplFixedArray' ) )
@@ -232,7 +242,7 @@ class MO_dynamic extends Gettext_Translations {
 		// read headers
 		for ( $i = 0, $max = $total * 2; $i < $max; $i+=2 ) {
 			if ( $moitem->originals_table[$i] > 0 ) {
-				$moitem->reader->seekto( $moitem->originals[$i+1] );
+				$moitem->reader->seekto( $moitem->originals_table[$i+1] );
 				$original = $moitem->reader->read( $moitem->originals_table[$i] );
 						
 				$j = strpos( $original, 0 );
@@ -256,9 +266,6 @@ class MO_dynamic extends Gettext_Translations {
 	}
 
 	protected function search_translation ( $key ) {
-		static $hash_val; 	// declare hash_val as static. this way it can be calculated only if needed, i.e. when a moitem has a hash table. if it would be precalculated
-							// then it would require either a "pre-check" for hash table existence or the hash value could be calculated although not needed.
-							// by declaring it static and setting it to NULL with each call, it is guaranteed to be calculated maximal once per call.
 		$hash_val = NULL;
 		$key_len = strlen( $key );
 
@@ -280,10 +287,10 @@ class MO_dynamic extends Gettext_Translations {
 				// adapted to php and its quirkiness caused by missing unsigned ints and shift operators...
 				if ( $hash_val === NULL) {
 					$hash_val = 0;
-					for ($i = 0; $i < $key_len; $i++ ) {
-						$hash_val = ( $hash_val << 4 ) + ord( $key{$i} );
-						$g = $hash_val & 0xF0000000;
-						if( $g !== 0 ){
+					$chars = unpack ( 'C*', $key ); // faster than accessing every single char by ord(char)
+					foreach ( $chars as $char ) {
+						$hash_val = ( $hash_val << 4 ) + $char;
+						if( 0 !== ( $g = $hash_val & 0xF0000000 ) ){
 							if ( $g < 0 )
 								$hash_val ^= ( ( ($g & 0x7FFFFFFF) >> 24 ) | 0x80 ); // wordaround: php operator >> is arithmetic, not logic, so shifting negative values gives unexpected results. Cut sign bit, shift right, set sign bit again.
 								/* 
@@ -318,30 +325,24 @@ class MO_dynamic extends Gettext_Translations {
 
 				$orig_idx = $moitem->hash_table[$idx];
 				while ( $orig_idx != 0 ) {
-					$orig_idx--; // ? taken from original gettext function, doesn't work without, don't understand right now... possibly some index based 0 and 1 stuff
+					$orig_idx--; // index adjustment
 
+					$pos = $orig_idx * 2;
 					if ( $orig_idx < $moitem->total // orig_idx must be in range
-						 && $moitem->originals_table[$orig_idx * 2] >= $key_len ) { // and original length must be equal or greater as key length (original can contain plural forms)
-						$pos = $orig_idx * 2;
+						 && $moitem->originals_table[$pos] >= $key_len ) { // and original length must be equal or greater as key length (original can contain plural forms)
 
-						if ( isset( $moitem->originals[$orig_idx] ) ) {
-							$mo_original = $moitem->originals[$orig_idx];
-						} else {
-							// read and "cache" original string to improve performance of subsequent searches
-							if ( $moitem->originals_table[$pos] > 0 ) {
-								$moitem->reader->seekto( $moitem->originals_table[$pos+1] );
-								$mo_original = $moitem->reader->read( $moitem->originals_table[$pos] );
-							} else
-								$mo_original = '';
-							$moitem->originals[$orig_idx] = $mo_original;
-						}
+						// read original string
+						if ( $moitem->originals_table[$pos] > 0 ) {
+							$moitem->reader->seekto( $moitem->originals_table[$pos+1] );
+							$mo_original = $moitem->reader->read( $moitem->originals_table[$pos] );
+						} else
+							$mo_original = '';
 
 						if ( $moitem->originals_table[$pos] == $key_len
 							 || ord( $mo_original{$key_len} ) == 0 ) {
 							// strings can only match if they have the same length, no need to inspect otherwise
 
-							$i = strpos( $mo_original, 0 );
-							if ( $i !== false )
+							if ( false !== ( $i = strpos( $mo_original, 0 ) ) )
 								$cmpval = strncmp( $key, $mo_original, $i );
 							else 
 								$cmpval = strcmp( $key, $mo_original );
@@ -351,7 +352,7 @@ class MO_dynamic extends Gettext_Translations {
 								$moitem->reader->seekto( $moitem->translations_table[$pos+1] );
 								$translation = $moitem->reader->read( $moitem->translations_table[$pos] );
 								if ( $j > 0 ) {
-									// Assuming frequent subsequent translations from the same file resort MOs by access time to avoid unnecessary in the wrong files.
+									// Assuming frequent subsequent translations from the same file resort MOs by access time to avoid unnecessary search in the wrong files.
 									$moitem->last_access=time();
 									usort( $this->MOs, function ($a, $b) {return ($b->last_access - $a->last_access);} );
 								}
@@ -388,8 +389,7 @@ class MO_dynamic extends Gettext_Translations {
 						$moitem->originals[$pivot] = $mo_original;
 					}
 
-					$i = strpos( $mo_original, 0 );
-					if ( $i !== false )
+					if ( false !== ( $i = strpos( $mo_original, 0 ) ) )
 						$cmpval = strncmp( $key, $mo_original, $i );
 					else
 						$cmpval = strcmp( $key, $mo_original );
@@ -399,7 +399,7 @@ class MO_dynamic extends Gettext_Translations {
 						$moitem->reader->seekto( $moitem->translations_table[$pos+1] );
 						$translation = $moitem->reader->read( $moitem->translations_table[$pos] );
 						if ( $j > 0 ) {
-							// Assuming frequent subsequent translations from the same file resort MOs by access time to avoid unnecessary in the wrong files.
+							// Assuming frequent subsequent translations from the same file resort MOs by access time to avoid unnecessary search in the wrong files.
 							$moitem->last_access=time();
 							usort( $this->MOs, function ($a, $b) {return ($b->last_access - $a->last_access);} );
 						}
@@ -417,7 +417,7 @@ class MO_dynamic extends Gettext_Translations {
 	}
 
 	function translate ($singular, $context = NULL) {
-		if ( strlen( $singular ) == 0 ) return $singular;
+		if ( !isset ($singular{0} ) ) return $singular;
 
 		if ( $context == NULL ) {
 			$s = $singular;
@@ -431,19 +431,17 @@ class MO_dynamic extends Gettext_Translations {
 
 		if ( isset( $this->translations[$s] ) ) {
 			$t = $this->translations[$s];
-		} else if ( isset ($this->base_translations[$s] ) ) {
+		} elseif ( isset ($this->base_translations[$s] ) ) {
 			$t = $this->base_translations[$s];
 		} else {
-			$t = $this->search_translation( $s );
-			if ( $t !== false ) {
+			if ( false !== ( $t = $this->search_translation( $s ) ) ) {
 				$this->translations[$s] = $t;
 				$this->modified = true;
 			}
 		}
 		
 		if ( $t !== false ) {
-			$i = strpos( $t, 0 );
-			if ( $i !== false ) {
+			if ( false !== ( $i = strpos( $t, 0 ) ) ) {
 				return substr( $t, 0, $i );
 			} else {
 				return $t;
@@ -456,7 +454,7 @@ class MO_dynamic extends Gettext_Translations {
 	}
 
 	function translate_plural ($singular, $plural, $count, $context = null) {
-		if ( strlen( $singular ) == 0 ) return $singular;
+		if ( !isset( $singular{0} ) ) return $singular;
 
 		// Get the "default" return-value
 		$default = ($count == 1 ? $singular : $plural);
@@ -473,19 +471,17 @@ class MO_dynamic extends Gettext_Translations {
 
 		if ( isset( $this->translations[$s] ) ) {
 			$t = $this->translations[$s];
-		} else if ( isset ($this->base_translations[$s] ) ) {
+		} elseif ( isset ($this->base_translations[$s] ) ) {
 			$t = $this->base_translations[$s];
 		} else {
-			$t = $this->search_translation( $s );
-			if ( $t !== false ) {
+			if ( false !== ( $t = $this->search_translation( $s ) ) ) {
 				$this->translations[$s] = $t;
 				$this->modified = true;
 			}
 		}
 
 		if ( $t !== false ) {
-			$i = strpos( $t, 0 );
-			if ( $i !== false ) {
+			if ( false !== ( $i = strpos( $t, 0 ) ) ) {
 				if ( $count == 1 ) {
 					return substr ( $t, 0, $i );
 				} else {
@@ -504,8 +500,6 @@ class MO_dynamic extends Gettext_Translations {
 
 	function merge_with( &$other ) {
 		if ( $other instanceof MO_dynamic ) {
-			$this->cache_loaded = $other->cache_loaded;
-			
 			if ( $other->translations !== NULL ) {
 				foreach( $other->translations as $key => $translation ) {
 					$this->translations[$key] = $translation;
@@ -518,15 +512,15 @@ class MO_dynamic extends Gettext_Translations {
 			}
 
 			foreach ( $other->MOs as $moitem ) {
-					$i = 0;
-					$c = count( $this->MOs );
-					$found = false;
-					while ( !$found && ( $i < $c ) ) {
-						$found = $this->MOs[$i]->mofile == $moitem->mofile;
-						$i++;
-					}
-					if ( !$found )
-						$this->MOs[] = $moitem;
+				$i = 0;
+				$c = count( $this->MOs );
+				$found = false;
+				while ( !$found && ( $i < $c ) ) {
+					$found = $this->MOs[$i]->mofile == $moitem->mofile;
+					$i++;
+				}
+				if ( !$found )
+					$this->MOs[] = $moitem;
 			}
 		}
 	}
@@ -545,7 +539,20 @@ class MO_dynamic_Debug extends Mo_dynamic {
 	public $translate_hits = 0;
 	public $translate_plural_hits = 0;
 	public $search_translation_hits = 0;
-	
+
+	function import_domain_from_cache () {
+		global $wp_performance_pack;
+		if ( $wp_performance_pack->options['mo_caching'] ) {
+			parent::import_domain_from_cache ();
+			if ( ($c = count( $this->translations ) ) > 0 ) {
+				$wp_performance_pack->dbg_textdomains[$this->domain]['cache'] = $c;
+			}
+			if ( $this->base_translations !== NULL ) {
+				$wp_performance_pack->dbg_textdomains[$this->domain]['basecache'] = count( $this->base_translations );
+			}
+		}
+	}
+
 	function translate_plural ($singular, $plural, $count, $context = null) {
 		$this->translate_plural_hits++;
 		return parent::translate_plural($singular, $plural, $count, $context);

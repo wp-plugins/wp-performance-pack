@@ -188,15 +188,14 @@ class Translate_GetText_Native extends Gettext_Translations {
 		$locale=get_locale();
           
 		if( !defined( 'LC_MESSAGES' ) ) {
-			define( 'LC_MESSAGES', 6 );
+			define( 'LC_MESSAGES', LC_CTYPE );
 		}
 
 		if ( self::isAvailable( 'putenv' ) ) {
-			//putenv ('LC_ALL=' . $locale);
-			putenv('LC_MESSAGES='.$locale.'.UTF-8' );
+			putenv('LC_MESSAGES='.$locale );
 		}
 		//setlocale (LC_ALL, $locale);
-		setlocale( LC_MESSAGES, $locale . '.UTF-8' );
+		setlocale( LC_MESSAGES, $locale  );
  
 		// Retrive MD5-hash of the file
 		# DIRTY! But there is no other way at the moment to make this work

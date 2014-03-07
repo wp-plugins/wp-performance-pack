@@ -11,15 +11,15 @@ A collection of performance optimizations for WordPress. As of now it features o
 
 == Description ==
 
-WP Performance Pack is a collection of performance optimizations for WordPress which don't need 
+WP Performance Pack is your first choice for speeding up WordPress core the easy way. WP Performance Pack is a collection of performance optimizations for WordPress which don't need 
 patching of core files. As of now it features options to improve performance of translated WordPress installations.
 
 = Features =
 
 * Simple user interface to automaticall set best available settings
 * Dynamic loading of translation files, only loading and translating used strings.
-* Use of native gettext if available.
-* Disable backend translation while maintaining frontend translations.
+* Use of PHP gettext extension if available.
+* Disable back end translation while maintaining front end translations.
 * Allow individual users to reactivate Dashboard translation via profile setting.
 * Just in time localization of javascripts (requires WordPress version 3.8.1).
 * [Debug Bar](http://wordpress.org/plugins/debug-bar/) integration
@@ -28,67 +28,39 @@ patching of core files. As of now it features options to improve performance of 
 == Screenshots ==
 
 1. MO-Dynamic benchmark: Comparing front page of a "fresh" WordPress 3.8.1 installation with active apc cache using different configurations. As you can see, using MO-Dynamic with active caching is just as fast as not translating the blog or using native gettext. Benchmarked version 0.6, times are mean of four test runs measured using XDebug.
-2. Settings
-3. Debug Bar integration
+2. Settings, advanced view (v1.0)
+3. Debug Bar integration (v1.0)
+4. Settings, simple view (v1.0)
 
 == Installation ==
 
-Download, install and activate. Usage of MO-Dynamic is enabled by default.
+* Download, install and activate. Usage of MO-Dynamic is enabled by default.
+* Gettext support requires PHP Gettext extension and the languages folder (*wp-content/languages*) must be writeable for php.
+* Caching is only effective if a persisten object cache is installed
+* JIT requires PHP >= 5.3 and WordPress >= 3.8.1
+* Debugging requires [Debug Bar](http://wordpress.org/plugins/debug-bar/) to be installed and activated
 
 == Frequently Asked Questions ==
 
-= Requirements =
+= How do I check if caching works? =
 
-PHP >= 5.3 required
+Caching only works when using alternative MO implementation. To check if tha cache works, activate WPPP debugging (requires [Debug Bar](http://wordpress.org/plugins/debug-bar/)) Plugin). This adds the panel *WP Performance Pack* to the Debug Bar. Textdomains using *MO_dynamic* implementation show information about translations loaded from cache. If no translations are getting loaded from cache cache persistence isn't working.
 
-For native gettext support:
+= Which persisten object cache plugins are recommended? =
 
-* installed gettext extension
-* languages folder (*wp-content/languages*) must be writeable
+Any persisten object cache will do, but it has to be supported in your hosting environment. Check if any caches like APC, XCache, Memcache, etc. are installed on your webserver and select a suitable cache plugin respectively. File based object caches should work always and might improve performance, same goes for data base based caches. Performance gains depend on the available caching method and its configuration.
 
-For debugging [Debug Bar](http://wordpress.org/plugins/debug-bar/) needs to be installed
+= Does WPPP support multisite? =
 
-= Limitations =
+Yes, when installed network wide only the network admin can see and edit WPPP options.
 
-MO-Dynamic doesn't implement any saving related methods from the *Translations* base class. It's a read only implementation.
+== How translation improvements work == 
 
-= Multisite support =
+WPPP overrides WordPress' default implementation by using the *override_load_textdomain* hook. The fastest way for translations is using the native gettext implementation. This requires the PHP Gettext extension to be installed on the server. WPPPs gettext implementation is based on *Bernd Holzmuellers* [Translate_GetText_Native](http://oss.tiggerswelt.net/wordpress/3.3.1/) implementation (slightly modified). Gettext support is still a bit tricky and having the gettext extension installed doesn't mean it will work. 
 
-When installed network wide only the network admin can see and edit WPPP options.
+As second option WPPP features a complete rewrite of WordPress MO imlementation: MO_dynamic (the alternative MO reader). The default WordPress implementaion loads the complete mo file right after a call to *load_textdomain*, whether any transaltions of this textdomain are needed or not. This needs quite some time and even more memory. Mo_dynamic features on demand loading. It doesn't load any mo file until the first translation call to that specific textdomain. And it doesn't load the entire mo file either, only the requested transaltion. Though the (highly optimized) search for an individual translation is slower, the vastly improved loading time and reduced memory foot print result in an overall performance gain.
 
-= Optimal settings =
-
-* Native gettext **enabled** (if available)
-* MO-Dynamic **enabled**
-* JIT localize **enabled** (disable if this causes trouble with javascripts)
-
-= Caching =
-
-When using MO-Dynamic optinal caching of translations can be enabled. This uses the WordPress Cache API so a peristent object cache of your choice has to be installed to get any performance improvements from caching. For front end pages one cache per text domain is used to keep the cache rather small (else cache size on blogs with many posts would get quite big). Each front end cache is kept for 60 minutes. For backend pages one cache per page and text domain is used (there are limited back end pages and more translating is going on in the back end). These are kept for 30 minutes.
-
-== Details == 
-
-= Dynamic loading of translation files, only loading and translating used strings. =
-
-Improves performance and reduces memory consumption. The default WordPress MO implementation loads the complete 
-MO files (e.g. when loaded via load_textdomain) into memory. As a result translation of individual strings is 
-quite fast, but loading times and memory consumption are high. Most of the time only a few strings from a mo file 
-are required within a single page request. Activating translation almost doubles execution time in a typical WordPress 
-installation.
-
-WPPP uses MO-Dynamic, a complete rewrite of the MO implementation, to speed up translations. Firstly 
-mo files are only loaded if needed. On installations with many translated plugins this alone can dramatically 
-reduce execution time. Furthermore it doesn't load the complete translations into memory, only required ones.
-This on demand translation is more expensive than translations on fully loaded mo files but the performance
-gain by not loading and parsing the complete file outweighs this.
-
-= Use of native gettext if available =
-
-There is probably no faster way for translations than using the native gettext implementation. This requires 
-the php_gettext extension to be installed on the server. Version 0.2 supports the use of native gettext if it is 
-available. This is implemented using *Bernd Holzmuellers* [Translate_GetText_Native](http://oss.tiggerswelt.net/wordpress/3.3.1/)
-implementation (slightly modified). For now WPPP only checks if the gettext extension is available, which might 
-not suffice to use native gettext. Further checks will follow.
+Caching can further improve performance. When using MO_dynamic with activated caching, translations get cached using WordPress Object Cache API. Front end pages usually don't use many translations, so for all front end pages one cache is used per textdomain. Back end pages on the other hand use many translations. So back end pages get each their own individual translation cache with one *base cache* for each textdomain. This *base cache* consists of those translations that are used on all back end pages (i.e. they have been used up to *admin_init* hook). Later used translations are cached for each page. All this is to reduce cache size, which is very limited on many caching methods like APC. To even further reduce cache size, the transaltions get compressed before being saved to cache.
 
 == Changelog ==
 

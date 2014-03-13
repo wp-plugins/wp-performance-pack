@@ -36,9 +36,11 @@ class WPPP_Admin_Admin extends WPPP_Admin_User {
 	public function validate( $input ) {
 		$output = array();
 		if ( isset( $input ) && is_array( $input ) ) {
-			foreach( $input as $key => $val ) {
+			foreach ( WP_Performance_Pack::$options_default as $key => $val ) {
 				if ( isset ( $input[$key] ) ) {
 					$output[$key] = ( $input[$key] == 'true' ? true : false );
+				} else {
+					$output[$key] = false;
 				}
 			}
 		}

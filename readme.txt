@@ -15,7 +15,7 @@ WP Performance Pack is your first choice for speeding up WordPress core the easy
 patching of core files. As of now it features options to improve performance of translated WordPress installations.
 
 = Features =
-
+* *NEW* Dynamic image resizing (based on [Dynamic Image Resizer](http://wordpress.org/plugins/dynamic-image-resizer/))
 * Simple user interface to automaticall set best available settings
 * Dynamic loading of translation files, only loading and translating used strings.
 * Use of PHP gettext extension if available.
@@ -63,6 +63,11 @@ As second option WPPP features a complete rewrite of WordPress MO imlementation:
 Caching can further improve performance. When using MO_dynamic with activated caching, translations get cached using WordPress Object Cache API. Front end pages usually don't use many translations, so for all front end pages one cache is used per textdomain. Back end pages on the other hand use many translations. So back end pages get each their own individual translation cache with one *base cache* for each textdomain. This *base cache* consists of those translations that are used on all back end pages (i.e. they have been used up to *admin_init* hook). Later used translations are cached for each page. All this is to reduce cache size, which is very limited on many caching methods like APC. To even further reduce cache size, the transaltions get compressed before being saved to cache.
 
 == Changelog ==
+
+= 1.1 =
+
+* NEW dynamic image resizing
+* [translation] uasort-warning bugfix
 
 = 1.0 =
 

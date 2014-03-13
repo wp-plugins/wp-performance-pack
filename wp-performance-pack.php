@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
 	Description: A collection of performance optimizations for WordPress. As of now it features options to improve performance of translated WordPress installations. 
-	Version: 1.0
+	Version: 1.1
 	Text Domain: wppp
 	Domain Path: /languages/
 	Author: Bj&ouml;rn Ahrens
@@ -41,12 +41,16 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			'mo_caching' => false,
 			'debug' => false,
 			'advanced_admin_view' => false,
+			'dynamic_images' => false,
+			'dynamic_images_nosave' => false,
 		);
 		public static $jit_versions = array(
 			'3.8.1',
 		);
 
 		private $admin_opts = NULL;
+		private $modules = array();
+
 		public $is_network = false;
 		public $options = NULL;
 		public $plugin_dir = NULL;
@@ -62,7 +66,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 
 				foreach ( self::$options_default as $key => $value ) {
 					if ( !isset( $this->options[$key] ) ) {
-						$this->options[$key] = false;
+						$this->options[$key] = self::$options_default[$key];
 					}
 				}
 			}
@@ -95,6 +99,11 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 
 			if ( $this->options['use_jit_localize'] ) {
 				include( sprintf( "%s/modules/jit-localize.php", dirname( __FILE__ ) ) );
+			}
+
+			if ( $this->options['dynamic_images'] && !is_multisite() ) {
+				include( sprintf( "%s/modules/class.dynamic-images.php", dirname( __FILE__ ) ) );
+				$this->modules[] = new WPPP_Dynamic_Images ();
 			}
 		}
 

@@ -48,7 +48,7 @@ function wppp_load_textdomain_override( $retval, $domain, $mofile ) {
 		}
 
 		if ( $wp_performance_pack->options['debug'] ) {
-			$callers=debug_backtrace();
+			$callers=debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 			$wp_performance_pack->dbg_textdomains[$domain]['mofiles'][] = $mofile;
 			$wp_performance_pack->dbg_textdomains[$domain]['callers'][] = $callers;
 		}

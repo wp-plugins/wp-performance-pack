@@ -113,6 +113,64 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 				</tr>
 			</table>
 		</div>
+
+		<h3>Dynamic image resizing</h3>
+		<div>
+			<table class="form-table">
+				<tr valign="top">
+					<th scope="row">Dynamic image resizing</td>
+					<td>
+						<label for="dynimg-enabled"><input id="dynimg-enabled" type="radio" <?php $this->e_opt_name( 'dynamic_images' ); ?> value="true" <?php $this->e_checked( 'dynamic_images' ); ?>/><?php _e( 'Enabled', 'wppp' ); ?></label>&nbsp;
+						<label for="dynimg-disabled"><input id="dynimg-disabled" type="radio" <?php $this->e_opt_name( 'dynamic_images' ); ?> value="false" <?php $this->e_checked( 'dynamic_images', false ); ?>/><?php _e( 'Disabled', 'wppp' ); ?></label>&nbsp;
+						<p class="description">
+							If activated intermediate image sizes won't be generated on upload. Instead resizing is done dynamically when an intermediate image is accessed. This improves upload performance and reduces disk usage. <b>Requires pretty permalinks!</b> If you deactive this option after some time of usage you might have to recreate thumbnails using a plugin like Regenerate Thumbnails.
+						</p>
+						<br/>
+						<label for="dynimg-save"><input id="dynimg-save" type="checkbox" <?php $this->e_opt_name( 'dynamic_images_nosave' ); ?> value="true" <?php $this->e_checked( 'dynamic_images_nosave' ); ?>/>Don't save intermediate images</label>
+						<p class="description">
+							By default once created intermediate images are saved to disk and served directly on subsequent requests. Though this already reduces disk space usage you further reduce it by disabling saving, but this will slow down your blog as images get created on each access. Useful e.g. for test environments to reduce disk space usage.
+						</p>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+<!--		<h3>Selective plugin loading</h3>
+		<div>
+			<table class="widefat">
+				<thead>
+					<tr>
+						<th>Plugin name</th>
+						<th>Front end</th>
+						<th>Back end</th>
+						<th>AJAX</th>
+					</tr>
+				</thead>
+				<tbody>
+				<?php
+					$plugins = get_option( 'active_plugins' );
+					$odd = false;
+					foreach ( $plugins as $plugin ) {
+						$odd = !$odd;
+						$data = get_plugin_data( trailingslashit( WP_PLUGIN_DIR ) . $plugin );
+						if ($odd) {
+							echo '<tr class="alternate">';
+						} else {
+							echo '<tr>';
+						}
+						echo '<td>', $data['Name'],'</td>';
+						?>
+							<td><input type="checkbox" name="splFronend[]" value="test" /></td>
+							<td><input type="checkbox" name="splBackend[]" value="test" /></td>
+							<td><input type="checkbox" name="splAjax[]" value="test" /></td>
+						</tr>
+						<?php
+					}
+				?>
+				</tbody>
+			</table>
+		</div>
+-->
 		<h3><?php _e( 'Debugging', 'wppp' ); ?></h3>
 		<div>
 			<table class="form-table">

@@ -6,7 +6,7 @@
  * (Bernd Holzmueller <bernd@tiggerswelt.net>, http://oss.tiggerswelt.net/wordpress/3.3.1/)
  * 
  * @author Bernd Holzmueller <bernd@tiggerswelt.net>
- * @author Björn Ahrens <bjoern@ahrens.net>
+ * @author BjÃ¶rn Ahrens <bjoern@ahrens.net>
  * @package WP Performance Pack
  * @since 0.1
  * @license GNU General Public License version 3 or later

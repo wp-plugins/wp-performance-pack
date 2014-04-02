@@ -4,7 +4,7 @@
  *
  * Delays localization into print_extra_script.
  *
- * @author Björn Ahrens
+ * @author BjÃ¶rn Ahrens
  * @package WP Performance Pack
  * @since 0.2.3
  */

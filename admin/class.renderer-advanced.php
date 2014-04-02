@@ -130,6 +130,9 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 						<p class="description">
 							By default once created intermediate images are saved to disk and served directly on subsequent requests. Though this already reduces disk space usage you further reduce it by disabling saving, but this will slow down your blog as images get created on each access. Useful e.g. for test environments to reduce disk space usage.
 						</p>
+						<br/>
+						<label for="dynimg-cache"><input id="dynimg-cache" type="checkbox" <?php $this->e_opt_name( 'dynamic_images_cache' ); ?> value="true" <?php $this->e_checked( 'dynamic_images_cache' ); ?>/>Use WP Object Cache for (not saved) intermediate images.</label>
+						<p class="description">If you aren't using a file based object cache, make sure the cache memory limit isn't too low for this. This is best used in testing environments, not on production sites and is only applied if "<em>Don't save intermediate images</em>" is activated. Created images are cached for 30 minutes.</p>
 					</td>
 				</tr>
 			</table>

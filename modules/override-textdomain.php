@@ -2,7 +2,7 @@
 /**
  * Activate override textdomain
  *
- * @author Björn Ahrens
+ * @author BjÃ¶rn Ahrens
  * @package WP Performance Pack
  * @since 0.1
  */

@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
 	Description: A collection of performance optimizations for WordPress. As of now it features options to improve performance of translated WordPress installations. 
-	Version: 1.1
+	Version: 1.2
 	Text Domain: wppp
 	Domain Path: /languages/
 	Author: Bj&ouml;rn Ahrens
@@ -12,7 +12,7 @@
 */ 
 
 /*
-	Copyright 2014 Björn Ahrens (email : bjoern@ahrens.net) 
+	Copyright 2014 BjÃ¶rn Ahrens (email : bjoern@ahrens.net) 
 	This program is free software; you can redistribute it and/or modify 
 	it under the terms of the GNU General Public License, version 2 or 
 	later, as published by the Free Software Foundation. This program is 
@@ -43,6 +43,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			'advanced_admin_view' => false,
 			'dynamic_images' => false,
 			'dynamic_images_nosave' => false,
+			'dynamic_images_cache' => false,
 		);
 		public static $jit_versions = array(
 			'3.8.1',
@@ -72,7 +73,14 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			}
 		}
 
-		public function __construct() { 
+		function is_jit_available () {
+			global $wp_version;
+			return in_array( $wp_version, self::$jit_versions );
+		}
+
+		public function __construct() {
+			spl_autoload_register( array( $this, 'wppp_autoloader' ) );
+
 			// initialize fields
 			global $wp_version;
 			$this->plugin_dir = dirname(plugin_basename(__FILE__));
@@ -85,8 +93,9 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			// add actions
 			add_action( 'activated_plugin', array ( 'WP_Performance_Pack', 'plugin_load_first' ) );
 			add_action( 'init', array ( $this, 'init' ) );
+			add_filter( 'update_option_' . self::$options_name, array( $this, 'do_options_changed' ), 10, 2 );
 
-			// load modules
+			// load early modules
 			if ( $this->options['use_mo_dynamic'] 
 				|| $this->options['use_native_gettext']
 				|| $this->options['disable_backend_translation'] ) {
@@ -97,19 +106,27 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 				add_filter( 'override_load_textdomain', 'wppp_load_textdomain_override', 0, 3 );
 			}
 
-			if ( $this->options['use_jit_localize'] ) {
+			if ( $this->is_jit_available() && $this->options['use_jit_localize'] ) {
 				include( sprintf( "%s/modules/jit-localize.php", dirname( __FILE__ ) ) );
 			}
+		}
 
-			if ( $this->options['dynamic_images'] && !is_multisite() ) {
-				include( sprintf( "%s/modules/class.dynamic-images.php", dirname( __FILE__ ) ) );
-				$this->modules[] = new WPPP_Dynamic_Images ();
+		function do_options_changed( $old_value, $new_value )
+		{
+			// flush rewrite rules if dynamic images setting changed
+			if ( $old_value['dynamic_images'] !== $new_value['dynamic_images'] ) {
+				WPPP_Dynamic_Images::flush_rewrite_rules( $new_value['dynamic_images'] );
 			}
 		}
 
 		public function init () {
 			if ( $this->options['debug'] ) {
 				add_filter( 'debug_bar_panels', array ( $this, 'add_debug_bar_wppp' ), 10 );
+			}
+
+			if ( $this->options['dynamic_images'] && !is_multisite() ) {
+				//include( sprintf( "%s/modules/class.dynamic-images.php", dirname( __FILE__ ) ) );
+				$this->modules[] = new WPPP_Dynamic_Images ();
 			}
 
 			// admin pages
@@ -150,7 +167,12 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			}
 		}
 
-		public static function activate() { 
+		public function activate() { 
+			if ( version_compare( PHP_VERSION, '5.3.0', '<' ) ) { 
+				deactivate_plugins( basename(__FILE__) ); // Deactivate self - does that really work at this stage?
+				wp_die( 'WP Performance pack requries PHP version >= 5.3' );
+			}
+
 			// if is active in network of multisite
 			if ( is_multisite() && isset( $_GET['networkwide'] ) && 1 == $_GET['networkwide'] ) {
 				add_site_option( self::$options_name, self::$options_default );
@@ -160,23 +182,37 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			self::plugin_load_first();
 		}
 
-		public static function deactivate() {
+		public function deactivate() {
+			if ( $this->options['dynamic_images'] ) {
+				// Delete rewrite rules from htaccess
+				if ( !class_exists( 'WPPP_Dynamic_Images' ) ) {
+					include( sprintf( "%s/modules/class.dynamic-images.php", dirname( __FILE__ ) ) );
+				}
+				WPPP_Dynamic_Images::flush_rewrite_rules( false ); // hopefully WPPP_Dynamic_images didn't get initialized elsewhere. Not shure at which point deactivation occurs, but I think it's save to assume DynImg didn't get initialized so rewrite rules didn't get set.
+			}
+
 			if ( is_multisite() && isset( $_GET['networkwide'] ) && 1 == $_GET['networkwide'] ) {
 				delete_site_option( self::$options_name );
 			} else {
 				delete_option( self::$options_name );
 			}
 		}
+
+		function wppp_autoloader ( $class ) {
+			$class = strtolower( $class );
+			if ( strncmp( $class, 'wppp_', 5 ) === 0 ) {
+				include( sprintf( "%s/classes/class.$class.php", dirname( __FILE__ ) ) );
+			}
+		}
 	}
 }
 
 if ( class_exists( 'WP_Performance_Pack' ) ) { 
-	register_activation_hook( __FILE__, array( 'WP_Performance_Pack', 'activate' ) ); 
-	register_deactivation_hook( __FILE__, array( 'WP_Performance_Pack', 'deactivate' ) ); 
-
 	// instantiate the plugin
 	global $wp_performance_pack;
 	$wp_performance_pack = new WP_Performance_Pack(); 
+	register_activation_hook( __FILE__, array( $wp_performance_pack, 'activate' ) ); 
+	register_deactivation_hook( __FILE__, array( $wp_performance_pack, 'deactivate' ) ); 
 }
 
 ?>

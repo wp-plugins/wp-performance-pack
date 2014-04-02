@@ -2,7 +2,7 @@
 /**
  * Dynamic loading and parsing of MO files
  *
- * @author Björn Ahrens <bjoern@ahrens.net>
+ * @author BjÃ¶rn Ahrens <bjoern@ahrens.net>
  * @package WP Performance Pack
  * @since 0.1
  */

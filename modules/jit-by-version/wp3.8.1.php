@@ -2,7 +2,7 @@
 /**
  * JIT localization of scripts using LabelsObjects
  *
- * @author Björn Ahrens
+ * @author BjÃ¶rn Ahrens
  * @since 0.2.3
  */
  

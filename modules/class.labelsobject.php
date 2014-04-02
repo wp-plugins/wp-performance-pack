@@ -9,7 +9,7 @@
  * used like arrays of strings. This way usage of LabelsObject doesn't break any existing
  * code which uses arrays of strings.
  *
- * @author Björn Ahrens
+ * @author BjÃ¶rn Ahrens
  * @since 0.2.3
  */
  

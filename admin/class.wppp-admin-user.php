@@ -14,8 +14,7 @@ class WPPP_Admin_User {
 		$this->wppp = $wppp_parent;
 		load_plugin_textdomain( 'wppp', false, $this->wppp->plugin_dir . '/lang');
 		if ( $this->wppp->options['disable_backend_translation'] && $this->wppp->options['dbt_allow_user_override'] ) {
-			add_action( 'show_user_profile', array ( $this, 'show_wppp_user_settings' ) );
-			add_action( 'edit_user_profile', array ( $this, 'show_wppp_user_settings' ) );
+			add_action( 'profile_personal_options', array( $this, 'wppp_extra_profile_fields' ) );
 			add_action( 'personal_options_update', array ( $this, 'save_wppp_user_settings' ) );
 			add_action( 'edit_user_profile_update', array ( $this, 'save_wppp_user_settings' ) );
 		}
@@ -35,18 +34,16 @@ class WPPP_Admin_User {
 		}
 	}
 
-	public function show_wppp_user_settings ($user) {
+	function wppp_extra_profile_fields( $user ) {
 		$user_setting = get_user_option( 'wppp_translate_backend', $user->ID );
 		$user_override = $user_setting === 'true' || ( $this->wppp->options['dbt_user_default_translated'] && $user_setting === false );
 		?>
-		<h3><?php _e( 'Back end language', 'wppp' ); ?></h3>
 			<table class="form-table">
-				<tr>
+				<tr valign="top">
 					<th scope="row"><?php _e( 'Translate back end', 'wppp' ); ?></th>
 					<td>
-						<label for="wppp-translate-backend-enabled"><input type="radio" name="wppp_translate_backend" id="wppp-translate-backend-enabled" value="true" <?php echo  $user_override ? 'checked="true"' : ''; ?> /><?php _e( 'Enabled', 'wppp' ); ?></label>&nbsp;
-						<label for="wppp-translate-backend-disabled"><input type="radio" name="wppp_translate_backend" id="wppp-translate-backend-disabled" value="false" <?php echo !$user_override ? 'checked="true"' : ''; ?> /><?php _e( 'Disabled', 'wppp' ); ?></label>
-						<p class="description"><?php _e( 'Enable or disable back end translation. When disabled, back end will be displayed in english, else it will be translated to the blog language.', 'wppp' ); ?></p>
+						<label for="wppp-translate-backend-enabled"><input type="checkbox" name="wppp_translate_backend" id="wppp-translate-backend-enabled" value="true" <?php echo  $user_override ? 'checked="true"' : ''; ?> /><?php _e( 'Enable back end translation', 'wppp' ); ?></label><br/>
+						<span class="description"><?php _e( 'Enable or disable back end translation. When disabled, back end will be displayed in english, else it will be translated to the blog language.', 'wppp' ); ?></span>
 					</td>
 				</tr>
 			</table>

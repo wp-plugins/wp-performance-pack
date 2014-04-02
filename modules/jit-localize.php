@@ -2,7 +2,7 @@
 /**
  * Activate JIT localize if available
  *
- * @author Björn Ahrens
+ * @author BjÃ¶rn Ahrens
  * @since 0.2
  */
  

@@ -3,7 +3,7 @@ Contributors: greencp, linushoppe
 Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext
 Requires at least: 3.6
 Tested up to: 3.8.1
-Stable tag: 1.2
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -58,11 +58,16 @@ Yes, when installed network wide only the network admin can see and edit WPPP op
 
 WPPP overrides WordPress' default implementation by using the *override_load_textdomain* hook. The fastest way for translations is using the native gettext implementation. This requires the PHP Gettext extension to be installed on the server. WPPPs gettext implementation is based on *Bernd Holzmuellers* [Translate_GetText_Native](http://oss.tiggerswelt.net/wordpress/3.3.1/) implementation (slightly modified). Gettext support is still a bit tricky and having the gettext extension installed doesn't mean it will work. 
 
-As second option WPPP features a complete rewrite of WordPress MO imlementation: MO_dynamic (the alternative MO reader). The default WordPress implementaion loads the complete mo file right after a call to *load_textdomain*, whether any transaltions of this textdomain are needed or not. This needs quite some time and even more memory. Mo_dynamic features on demand loading. It doesn't load any mo file until the first translation call to that specific textdomain. And it doesn't load the entire mo file either, only the requested transaltion. Though the (highly optimized) search for an individual translation is slower, the vastly improved loading time and reduced memory foot print result in an overall performance gain.
+As second option WPPP features a complete rewrite of WordPress' MO imlementation: MO_dynamic (the alternative MO reader). The default WordPress implementaion loads the complete mo file right after a call to *load_textdomain*, whether any transaltions from this textdomain are needed or not. This needs quite some time and even more memory. Mo_dynamic features on demand loading. It doesn't load a mo file until the first translation call to that specific textdomain. And it doesn't load the entire mo file either, only the requested translation. Though the (highly optimized) search for an individual translation is slower, the vastly improved loading time and reduced memory foot print result in an overall performance gain.
 
 Caching can further improve performance. When using MO_dynamic with activated caching, translations get cached using WordPress Object Cache API. Front end pages usually don't use many translations, so for all front end pages one cache is used per textdomain. Back end pages on the other hand use many translations. So back end pages get each their own individual translation cache with one *base cache* for each textdomain. This *base cache* consists of those translations that are used on all back end pages (i.e. they have been used up to *admin_init* hook). Later used translations are cached for each page. All this is to reduce cache size, which is very limited on many caching methods like APC. To even further reduce cache size, the transaltions get compressed before being saved to cache.
 
 == Changelog ==
+
+= 1.2.1 =
+
+* [dynimg] bug fixed which caused intermedate images to be created on upload
+* [multisite] bugfix: settings page is displayed again
 
 = 1.2 =
 
@@ -70,6 +75,7 @@ Caching can further improve performance. When using MO_dynamic with activated ca
 * [dynimg] automatically flush rewrite rules on feature activation/deactivation
 * [backend translation] moved user override option to personal options
 * [general] changed all files' encoding to utf-8
+* [general] php version check on activation
 
 = 1.1 =
 

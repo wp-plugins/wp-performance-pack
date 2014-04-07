@@ -14,7 +14,10 @@ class WPPP_Dynamic_Images {
 	private $dynimg_image_sizes = NULL;
 
 	function __construct () {
-		add_action ('init', array( $this, 'init' ) );
+		// this gets called at init
+		self::set_rewrite_rules();
+		add_filter( 'intermediate_image_sizes_advanced', array ( $this, 'dynimg_image_sizes_advanced' ) );
+		add_filter( 'wp_generate_attachment_metadata', array ( $this, 'dynimg_generate_metadata' ) );
 	}
 
 	public static function set_rewrite_rules () {
@@ -41,12 +44,6 @@ class WPPP_Dynamic_Images {
 			$rules .= $lines[$i] . "\n";
 		}
 		return $rules;
-	}
-
-	function init () {
-		self::set_rewrite_rules();
-		add_filter( 'intermediate_image_sizes_advanced', array ( $this, 'dynimg_image_sizes_advanced' ) );
-		add_filter( 'wp_generate_attachment_metadata', array ( $this, 'dynimg_generate_metadata' ) );
 	}
 
 	// prevent WP from generating resized images on upload

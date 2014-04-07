@@ -17,7 +17,11 @@ class WPPP_Admin_Admin extends WPPP_Admin_User {
 	public function __construct($wppp_parent) {
 		parent::__construct($wppp_parent);
 		register_setting( 'wppp_options', WP_Performance_Pack::$options_name, array( $this, 'validate' ) );
-		add_action( 'admin_menu', array( $this, 'add_menu_page' ) );
+		if ( $this->wppp->is_network ) {
+			add_action( 'network_admin_menu', array( $this, 'add_menu_page' ) );
+		} else {
+			add_action( 'admin_menu', array( $this, 'add_menu_page' ) );
+		}
 	}
 
 	public function add_menu_page() {

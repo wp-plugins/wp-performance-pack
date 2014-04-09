@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
 	Description: A collection of performance optimizations for WordPress. As of now it features options to improve performance of translated WordPress installations. 
-	Version: 1.2.1
+	Version: 1.2.2
 	Text Domain: wppp
 	Domain Path: /languages/
 	Author: Bj&ouml;rn Ahrens
@@ -47,6 +47,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 		);
 		public static $jit_versions = array(
 			'3.8.1',
+			'3.8.2',
 		);
 
 		private $admin_opts = NULL;

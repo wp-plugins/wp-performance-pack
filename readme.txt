@@ -2,8 +2,8 @@
 Contributors: greencp, linushoppe
 Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext
 Requires at least: 3.6
-Tested up to: 3.8.1
-Stable tag: 1.2.1
+Tested up to: 3.8.2
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,10 @@ As second option WPPP features a complete rewrite of WordPress' MO imlementation
 Caching can further improve performance. When using MO_dynamic with activated caching, translations get cached using WordPress Object Cache API. Front end pages usually don't use many translations, so for all front end pages one cache is used per textdomain. Back end pages on the other hand use many translations. So back end pages get each their own individual translation cache with one *base cache* for each textdomain. This *base cache* consists of those translations that are used on all back end pages (i.e. they have been used up to *admin_init* hook). Later used translations are cached for each page. All this is to reduce cache size, which is very limited on many caching methods like APC. To even further reduce cache size, the transaltions get compressed before being saved to cache.
 
 == Changelog ==
+
+= 1.2.2 =
+
+* [jit] added WordPress 3.8.2 support
 
 = 1.2.1 =
 

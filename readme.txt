@@ -3,7 +3,7 @@ Contributors: greencp, linushoppe
 Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext
 Requires at least: 3.6
 Tested up to: 3.8.2
-Stable tag: 1.3
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -78,6 +78,10 @@ Dynamic image resizing is based on [Dynamic Image Resizer](http://wordpress.org/
 Images don't get resized on upload. Instead only the meta data for the resized images is created. Instead the actual images are created on demand. When requested WPPP checks first if the full size version of the requested image exists in the database. If it does, it is checked if the requested image size corresponds to a registered image size (either one of the default sizes "thumb", "medium" or "large" or any by themes or plugins registered sizes). This check also tells WPPP if to crop the image while resizing. Only if this check passes the intermediate image is then created. This prevents unwanted creation of thumbnails.
 
 == Changelog ==
+
+= 1.3.1 =
+
+* [dynimg] bugfix: thumbnail quality was set to 10 instead of 80 - will be user selectable in future version
 
 = 1.3 =
 

@@ -8,60 +8,174 @@
  * @since 1.1
  */
 
-if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)(c)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQUEST_URI'], $matches ) ) {
+if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQUEST_URI'], $matches ) ) {
 	// should always match as this file is called using mod_rewrite using the exact same regexp
-	
+
 	define( 'SHORTINIT', true );
-	require( '../../../../wp-load.php' );
+
+	// search and load wp-load.php
+	$folder = dirname( __FILE__ );
+	while ( $folder != dirname( $folder ) ) {
+		if ( file_exists( $folder . '/wp-load.php' ) ) {
+			break;
+		} else {
+			$folder = dirname( $folder );
+		}
+	}
+	require( $folder . '/wp-load.php' ); // will fail if while loop didn't find wp-load.php
 
 	// dummy add_shortcode required for media.php - we don't need any shortcodes so don't load that file and use a dummy instead
 	function add_shortcode() {}
 	require( ABSPATH . 'wp-includes/media.php' );
 
-	//require( ABSPATH . 'wp-includes/formatting.php' );
-	// untrailingslashit from wp-includes/formatting.php. is required for get_option - formatting.php is more than 120kb big - too big to include for just one small function
-	function untrailingslashit($string) {
+	require( ABSPATH . 'wp-includes/formatting.php' );
+	// formatting.php is more than 120kb big - too big to include for just some small functions, so use copies of needed functions
+	// untrailingslashit from wp-includes/formatting.php. is required for get_option
+	// trailingslashit and sanitize_key are needed for meta data retrieval
+	/*function untrailingslashit($string) {
 		return rtrim($string, '/');
 	}
+	function trailingslashit($string) {
+		return untrailingslashit($string) . '/';
+	}
+	function sanitize_key( $key ) {
+		$raw_key = $key;
+		$key = strtolower( $key );
+		$key = preg_replace( '/[^a-z0-9_\-]/', '', $key );
+		return apply_filters( 'sanitize_key', $key, $raw_key );
+	}*/
+
 	if ( ! defined( 'WP_CONTENT_URL' ) ) {
 		define( 'WP_CONTENT_URL', get_option( 'siteurl' ) . '/wp-content' );
 	}
 
-	$filename = urldecode( $matches[1] . '.' . $matches[5] );
-	$width = $matches[2];
-	$height = $matches[3];
-	$crop = !empty( $matches[4] );
+	// required for home_url
+	require( ABSPATH . 'wp-includes/link-template.php' );
 
-	$uploads_dir = wp_upload_dir();
-	$temp = parse_url( $uploads_dir['baseurl'] );
-	$upload_path = $temp['path'];
-	$findfile = str_replace( $upload_path, '', $filename );
-	$basefile = $uploads_dir['basedir'] . $findfile;
-	$suffix = $width . 'x' . $height;
-	/*if ( $crop ) {
-		$suffix .= 'c';
-	}*/
+	// required for wp_get_attachment_metadata
+	require( ABSPATH . 'wp-includes/post.php' );
+	require( ABSPATH . 'wp-includes/meta.php' );
+
+	/*
+	 * "Normalize" URLs to make them comparable. Partial copy from url_to_postid in rewrite.php
+	 */
+	function normalize_url ( $url ) {
+		if ( false !== strpos(home_url(), '://www.') && false === strpos($url, '://www.') )
+			$url = str_replace('://', '://www.', $url);
+
+		if ( false === strpos(home_url(), '://www.') )
+			$url = str_replace('://www.', '://', $url);
+
+		if ( false !== strpos( trailingslashit( $url ), home_url( '/' ) ) ) {
+			$url = str_replace(home_url(), '', $url);
+		} else {
+			$home_path = parse_url( home_url( '/' ) );
+			$home_path = isset( $home_path['path'] ) ? $home_path['path'] : '' ;
+			$url = preg_replace( sprintf( '#^%s#', preg_quote( $home_path ) ), '', trailingslashit( $url ) );
+		}
+
+		$url = trim($url, '/');
+ 
+		return( $url );
+	}
+
+	/*
+	 * Get attachment ID for image url
+	 * Source: http://philipnewcomer.net/2012/11/get-the-attachment-id-from-an-image-url-in-wordpress/
+	 */
+	function pn_get_attachment_id_from_url( $attachment_url = '' ) {
+		global $wpdb;
+		$attachment_id = false;
+		if ( '' !== $attachment_url ) {
+			$upload_dir_paths = wp_upload_dir();
+			$baseurl = normalize_url( $upload_dir_paths['baseurl'] );
+			$attachment_url = normalize_url( $attachment_url );
+ 
+			if ( false !== strpos( $attachment_url, $baseurl ) ) {
+				$attachment_url = str_replace( $baseurl . '/', '', $attachment_url );
+				$attachment_id = $wpdb->get_var( $wpdb->prepare( "SELECT wposts.ID FROM $wpdb->posts wposts, $wpdb->postmeta wpostmeta WHERE wposts.ID = wpostmeta.post_id AND wpostmeta.meta_key = '_wp_attached_file' AND wpostmeta.meta_value = '%s' AND wposts.post_type = 'attachment'", $attachment_url ) );
+			}
+		}
+		return $attachment_id;
+	}
+
+	$filename 		= urldecode( $matches[1] . '.' . $matches[4] );
+	$uploads_dir 	= wp_upload_dir();
+	$temp 			= parse_url( $uploads_dir['baseurl'] );
+	$upload_path 	= $temp['path'];
+	$findfile 		= str_replace( $upload_path, '', $filename );
+	$basefile 		= $uploads_dir['basedir'] . $findfile;
 
 	if ( file_exists( $basefile ) ) {
-		$wppp_opts = get_option( 'wppp_option' );
+		$width 			= $matches[2];
+		$height 		= $matches[3];
+		$crop 			= false;
+		$suffix 		= $width . 'x' . $height;
+		$wppp_opts 		= get_option( 'wppp_option' );
 
 		if ( isset( $wppp_opts['dynamic_images_cache'] ) && $wppp_opts['dynamic_images_cache'] && ( false !== ( $data = wp_cache_get ( $basefile . $suffix, 'wppp' ) ) ) ) {
 			header( 'Content-Type: ' . $data['mimetype'] );
 			echo $data['data'];
 			exit;
 		}
+
+		$sizes 			= get_option( 'wppp_dynimg_sizes' );	// defined image sizes - no way to get them all here, because
+																// this would require to initialize the template and all plugins
+																// that's why they are stored as an option
+
+		// test if image is an attachment and get its meta data
+		$attachment_id = pn_get_attachment_id_from_url( $filename );
+		if ( $attachment_id === false ) {
+			header('HTTP/1.0 404 Not Found');
+			echo 'Unknown attachment';
+			exit;
+		}
+		$attachment_meta = wp_get_attachment_metadata( $attachment_id );
+		if ( !$attachment_meta ) {
+			header('HTTP/1.0 404 Not Found');
+			echo 'No attachment meta data';
+			exit;
+		}
 		
 		$image = wp_get_image_editor( $basefile );
 		if ( ! is_wp_error( $image ) ) {
-			if ( !$crop ) {
-				// test if cropping is needed
-				$base_size = $image->get_size();
-				$new_size = wp_constrain_dimensions($base_size['width'], $base_size['height'], $width, $height);
-				if ( $new_size[0] !== $width || $new_size[1] !== $height ) {
-					$crop = true;
+
+			// search meta data for matching size
+			// without this test any image request would create intermediate images thus potentially filling up server space
+			$found = false;
+			foreach ( $attachment_meta['sizes'] as $size => $size_data ) {
+				$found = ( $size_data['width'] == $width ) && ( $size_data['height'] == $height );
+				if ( $found ) {
+					if ( isset( $sizes[$size] ) ) {
+						$crop = $sizes[$size]['crop'];
+					} // TODO: if size isn't in $sizes, then it's an "old" size and shouldn't be used any more... delete it?
+					break;
 				}
 			}
-			$image->set_quality( 80 );
+
+			if ( false === $found ) {
+				// Size not found in attachment meta data. Maybe meta data isn't up to date.
+				$base_size = $image->get_size();
+				foreach ( $sizes as $size => $size_data ) {
+					if ( !isset( $attachment_meta['sizes'][$size] ) ) {
+						// only check if size isn't in meta data
+						$new_size = image_resize_dimensions( $base_size['width'], $base_size['height'], $size_data['width'], $size_data['height'], $size_data['crop'] );
+						$found = ( $new_size[4] == $width ) && ( $new_size[5] == $height );
+						if ( $found ) {
+							$crop = $size_data['crop'];
+							break;
+						}
+					}
+				}
+				
+				if ( false === $found ) {
+					header('HTTP/1.0 404 Not Found');
+					echo 'Unknown image size';
+					exit;
+				}
+			}
+
+			$image->set_quality( 10 );
 			$image->resize( $width, $height, $crop );
 			if ( !isset( $wppp_opts['dynamic_images_nosave'] ) || !$wppp_opts['dynamic_images_nosave'] ) {
 				$image->save( $image->generate_filename( $suffix ) );
@@ -97,6 +211,6 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)(c)?\.(jpeg|jpg|png|gif)/i', $_SERVER['
 }
 
 // return 404 else
-header("Status: 404 Not Found");
-
+header('HTTP/1.0 404 Not Found');
+echo 'Unkown error';
 ?>

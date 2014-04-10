@@ -3,11 +3,11 @@ Contributors: greencp, linushoppe
 Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext
 Requires at least: 3.6
 Tested up to: 3.8.2
-Stable tag: 1.2.2
+Stable tag: 1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A collection of performance optimizations for WordPress. As of now it features options to improve performance of translated WordPress installations.
+A collection of performance optimizations for WordPress. Features options to improve performance of translated WordPress installations and dynamic image resizing.
 
 == Description ==
 
@@ -15,15 +15,22 @@ WP Performance Pack is your first choice for speeding up WordPress core the easy
 patching of core files. As of now it features options to improve performance of translated WordPress installations.
 
 = Features =
-* *NEW* Dynamic image resizing (based on [Dynamic Image Resizer](http://wordpress.org/plugins/dynamic-image-resizer/))
-* Simple user interface to automaticall set best available settings
+
+Dynamic image resizing
+* Don't create intermediate images on upload
+* Dynamically create intermediate images on access
+* Either save or cache created images for fast subsequent access
+* [Regenerate Thumbnails](http://wordpress.org/plugins/regenerate-thumbnails/) integration: Hook into the thumbnail regeneration process to delete existing intermediate images.
+
+Improve translation performance
+* Simple user interface to automatically set best available settings
 * Dynamic loading of translation files, only loading and translating used strings.
 * Use of PHP gettext extension if available.
 * Disable back end translation while maintaining front end translations.
 * Allow individual users to reactivate Dashboard translation via profile setting.
-* Just in time localization of javascripts (requires WordPress version 3.8.1).
-* [Debug Bar](http://wordpress.org/plugins/debug-bar/) integration
+* Just in time localization of javascripts (requires WordPress version >= 3.8.1).
 * Caching of translations to further improve translation performance. A persistent object cache has to be installed for this to be effective.
+* [Debug Bar](http://wordpress.org/plugins/debug-bar/) integration
 
 == Screenshots ==
 
@@ -44,7 +51,7 @@ patching of core files. As of now it features options to improve performance of 
 
 = How do I check if caching works? =
 
-Caching only works when using alternative MO implementation. To check if tha cache works, activate WPPP debugging (requires [Debug Bar](http://wordpress.org/plugins/debug-bar/)) Plugin). This adds the panel *WP Performance Pack* to the Debug Bar. Textdomains using *MO_dynamic* implementation show information about translations loaded from cache. If no translations are getting loaded from cache cache persistence isn't working.
+Caching only works when using alternative MO implementation. To check if the cache works, activate WPPP debugging (requires [Debug Bar](http://wordpress.org/plugins/debug-bar/)) Plugin). This adds the panel *WP Performance Pack* to the Debug Bar. Textdomains using *MO_dynamic* implementation show information about translations loaded from cache. If no translations are getting loaded from cache, cache persistence isn't working.
 
 = Which persisten object cache plugins are recommended? =
 
@@ -54,7 +61,9 @@ Any persisten object cache will do, but it has to be supported in your hosting e
 
 Yes, when installed network wide only the network admin can see and edit WPPP options.
 
-== How translation improvements work == 
+== Other notes == 
+
+= How translation improvements work =
 
 WPPP overrides WordPress' default implementation by using the *override_load_textdomain* hook. The fastest way for translations is using the native gettext implementation. This requires the PHP Gettext extension to be installed on the server. WPPPs gettext implementation is based on *Bernd Holzmuellers* [Translate_GetText_Native](http://oss.tiggerswelt.net/wordpress/3.3.1/) implementation (slightly modified). Gettext support is still a bit tricky and having the gettext extension installed doesn't mean it will work. 
 
@@ -62,7 +71,21 @@ As second option WPPP features a complete rewrite of WordPress' MO imlementation
 
 Caching can further improve performance. When using MO_dynamic with activated caching, translations get cached using WordPress Object Cache API. Front end pages usually don't use many translations, so for all front end pages one cache is used per textdomain. Back end pages on the other hand use many translations. So back end pages get each their own individual translation cache with one *base cache* for each textdomain. This *base cache* consists of those translations that are used on all back end pages (i.e. they have been used up to *admin_init* hook). Later used translations are cached for each page. All this is to reduce cache size, which is very limited on many caching methods like APC. To even further reduce cache size, the transaltions get compressed before being saved to cache.
 
+= How dynamic image resizing works =
+
+Dynamic image resizing is based on [Dynamic Image Resizer](http://wordpress.org/plugins/dynamic-image-resizer/) but uses a different method to serve intermediate images. Insted of using WordPress' 404 handler, it redirects requests to (not existing) intermediate images to a special PHP file which uses SHORTINIT to only load a minimum of necessary PHP code to improve performance. Redirection is done via htaccess. If the requested file does exists it is served directly.
+
+Images don't get resized on upload. Instead only the meta data for the resized images is created. Instead the actual images are created on demand. When requested WPPP checks first if the full size version of the requested image exists in the database. If it does, it is checked if the requested image size corresponds to a registered image size (either one of the default sizes "thumb", "medium" or "large" or any by themes or plugins registered sizes). This check also tells WPPP if to crop the image while resizing. Only if this check passes the intermediate image is then created. This prevents unwanted creation of thumbnails.
+
 == Changelog ==
+
+= 1.3 =
+
+* [dynimg] NEW! Regenerate Tumbnails integration to delete old/existing thumbnails
+* [dynimg] only serve images uploaded via media library and existing image sizes
+* [dynimg] bugfix for missing wp_basename
+* [general] misc. smaller fixes and changes
+* [general] ui changes (accordion removed)
 
 = 1.2.2 =
 

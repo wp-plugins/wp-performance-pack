@@ -1,9 +1,4 @@
 jQuery(document).ready(function($){
-	$( ".accordion" ).accordion({
-		collapsible: false,
-		heightStyle: "content"
-	});
-
 	var lastL10nSetting = null;
 	var lastL10nDesc = null;
 	var lastL10nHint = null;

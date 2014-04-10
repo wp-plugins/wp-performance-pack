@@ -16,10 +16,6 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 	 */
 
 	function enqueue_scripts_and_styles () {
-		wp_register_style( 'wppp-admin-styles', plugin_dir_url( __FILE__ ) . 'css/styles.css' );
-		wp_enqueue_style( 'wppp-admin-styles' );
-		wp_register_script( 'wppp-admin-script', plugin_dir_url( __FILE__ ) . 'js/wppp_advanced.js', array ( 'jquery-ui-accordion' ), false, true );
-		wp_enqueue_script( 'wppp-admin-script' );
 	}
 
 	function add_help_tab () {
@@ -133,6 +129,16 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 						<br/>
 						<label for="dynimg-cache"><input id="dynimg-cache" type="checkbox" <?php $this->e_opt_name( 'dynamic_images_cache' ); ?> value="true" <?php $this->e_checked( 'dynamic_images_cache' ); ?>/>Use WP Object Cache for (not saved) intermediate images.</label>
 						<p class="description">If you aren't using a file based object cache, make sure the cache memory limit isn't too low for this. This is best used in testing environments, not on production sites and is only applied if "<em>Don't save intermediate images</em>" is activated. Created images are cached for 30 minutes.</p>
+					</td>
+				</tr>
+				<tr valign="top">
+					<th scope="row">Regenerate Thumbnail integration</th>
+					<td>
+						<label for="dynimg-rthook"><input id="dynimg-rthook" type="checkbox" <?php $this->e_opt_name( 'dynamic_images_rthook' ); ?> value="true" <?php $this->e_checked( 'dynamic_images_rthook' ); ?>/>Delete intermediate images using Regenerate Tumbnails</label>
+						<p class="description">Activate this option to delete all existing intermediate images using <a href="http://wordpress.org/plugins/regenerate-thumbnails/" target="_blank">Regenerate Thumbnails</a> plugin. To do so, just regenerate thumbnails while this option is activated. This option won't do anything if Regenerate Thumbnails isn't installed.</p>
+						<br/>
+						<label for="dynimg-rtforce"><input id="dynimg-rtforce" type="checkbox" <?php $this->e_opt_name( 'dynamic_images_rthook_force' ); ?> value="true" <?php $this->e_checked( 'dynamic_images_rthook_force' ); ?>/>Force delete of all potential thumbnails</label>
+						<p class="description">This option only applies if the Regenerate Thumbnail hook is active. All potential thumbnail files (i.e. those matching the pattern "<em>filename-*x*.ext</em>") will be deleted while regenerating. Use this option to delete old files which aren't referenced from attachment meta data due to earlier thumbnail regeneration. <strong>Use with care as this option might delete files which aren't thumbnails!</strong></p>
 					</td>
 				</tr>
 			</table>

@@ -17,7 +17,7 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 
 	function enqueue_scripts_and_styles () {
 		wp_register_script( 'jquery-ui-slider-pips', plugin_dir_url( __FILE__ ) . 'js/jquery-ui-slider-pips.js', array ( 'jquery-ui-slider' ), false, true );
-		wp_register_script( 'wppp-admin-script', plugin_dir_url( __FILE__ ) . 'js/wppp_simple.js', array ( 'jquery-ui-slider-pips', 'jquery-ui-accordion' ), false, true );
+		wp_register_script( 'wppp-admin-script', plugin_dir_url( __FILE__ ) . 'js/wppp_simple.js', array ( 'jquery-ui-slider-pips' ), false, true );
 		wp_enqueue_script( 'wppp-admin-script' );
 
 		wp_register_style( 'jquery-ui-slider-pips-styles', plugin_dir_url( __FILE__ ) . 'css/jquery-ui-slider-pips.css' );

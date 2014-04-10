@@ -35,13 +35,9 @@ abstract class WPPP_Admin_Renderer {
 						wp_nonce_field( 'update_wppp', 'wppp_nonce' );
 					}
 					settings_fields( 'wppp_options' );
-				?>
-				<div class="accordion">
-				<?php
 					$this->render_options();
+					submit_button(); 
 				?>
-				</div>
-				<?php submit_button(); ?>
 			</form>
 			<?php $this->do_switch_view_button( $formaction, $this->wppp->options['advanced_admin_view'] ? 'false' : 'true' ); ?>
 		</div>
@@ -169,6 +165,9 @@ abstract class WPPP_Admin_Renderer {
 			<input type="hidden" <?php $this->e_opt_name('debug'); ?> value="<?php echo $this->wppp->options['debug'] ? 'true' : 'false' ?>" />
 			<input type="hidden" <?php $this->e_opt_name('dynamic_images'); ?> value="<?php echo $this->wppp->options['dynamic_images'] ? 'true' : 'false' ?>" />
 			<input type="hidden" <?php $this->e_opt_name('dynamic_images_nosave'); ?> value="<?php echo $this->wppp->options['dynamic_images_nosave'] ? 'true' : 'false' ?>" />
+			<input type="hidden" <?php $this->e_opt_name('dynamic_images_cache'); ?> value="<?php echo $this->wppp->options['dynamic_images_cache'] ? 'true' : 'false' ?>" />
+			<input type="hidden" <?php $this->e_opt_name('dynamic_images_rthook'); ?> value="<?php echo $this->wppp->options['dynamic_images_rthook'] ? 'true' : 'false' ?>" />
+			<input type="hidden" <?php $this->e_opt_name('dynamic_images_rthook'); ?> value="<?php echo $this->wppp->options['dynamic_images_rthook_force'] ? 'true' : 'false' ?>" />
 			<input type="submit" class="button" type="submit" value="<?php echo ( $value == 'true' ) ? __( 'Switch to advanced view', 'wppp') : __( 'Switch to simple view', 'wppp' ); ?>" />
 		</form>
 		<?php

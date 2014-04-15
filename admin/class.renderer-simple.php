@@ -71,7 +71,7 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 
 	function render_options () {
 		?>
-		<h3><?php _e( 'Improve translation performance', 'wppp' ); ?></h3>
+		<h3 class="title"><?php _e( 'Improve translation performance', 'wppp' ); ?></h3>
 		<div>
 			<input type="hidden" <?php $this->e_opt_name('use_mo_dynamic'); ?> value="<?php echo $this->wppp->options['use_mo_dynamic'] ? 'true' : 'false' ?>" />
 			<input type="hidden" <?php $this->e_opt_name('use_jit_localize'); ?> value="<?php echo $this->wppp->options['use_jit_localize'] ? 'true' : 'false' ?>" />
@@ -112,7 +112,7 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 							<?php 
 								$native = $this->do_hint_gettext( false );
 								if ( $native != 0 ) {
-									$this->do_hint_mo_cache();
+									$this->do_hint_caching();
 								}
 							?>
 						</div>

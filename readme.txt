@@ -3,26 +3,28 @@ Contributors: greencp, linushoppe
 Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext
 Requires at least: 3.6
 Tested up to: 3.8.2
-Stable tag: 1.3.1
+Stable tag: 1.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A collection of performance optimizations for WordPress. Features options to improve performance of translated WordPress installations and dynamic image resizing.
+Performance optimizations for WordPress. Features options to improve performance of translated WordPress installations and dynamic image resizing.
 
 == Description ==
 
-WP Performance Pack is your first choice for speeding up WordPress core the easy way. WP Performance Pack is a collection of performance optimizations for WordPress which don't need 
-patching of core files. As of now it features options to improve performance of translated WordPress installations.
+WP Performance Pack is your first choice for speeding up WordPress core the easy way. WP Performance Pack is a collection of performance optimizations for WordPress which don't need patching of core files. As of now it features options to improve performance of translated WordPress installations.
 
 = Features =
 
 Dynamic image resizing
-* Don't create intermediate images on upload
-* Dynamically create intermediate images on access
-* Either save or cache created images for fast subsequent access
+
+* Don't create intermediate images on upload.
+* Dynamically create intermediate images on access.
+* Either save or cache created images for fast subsequent access.
+* Use EXIF thumbnail (if available) as source for thumbnail images. This improves memory and cpu usage as the source for the thumbnail is much smaller.
 * [Regenerate Thumbnails](http://wordpress.org/plugins/regenerate-thumbnails/) integration: Hook into the thumbnail regeneration process to delete existing intermediate images.
 
 Improve translation performance
+
 * Simple user interface to automatically set best available settings
 * Dynamic loading of translation files, only loading and translating used strings.
 * Use of PHP gettext extension if available.
@@ -61,7 +63,7 @@ Any persisten object cache will do, but it has to be supported in your hosting e
 
 Yes, when installed network wide only the network admin can see and edit WPPP options.
 
-== Other notes == 
+== Other Notes == 
 
 = How translation improvements work =
 
@@ -75,9 +77,16 @@ Caching can further improve performance. When using MO_dynamic with activated ca
 
 Dynamic image resizing is based on [Dynamic Image Resizer](http://wordpress.org/plugins/dynamic-image-resizer/) but uses a different method to serve intermediate images. Insted of using WordPress' 404 handler, it redirects requests to (not existing) intermediate images to a special PHP file which uses SHORTINIT to only load a minimum of necessary PHP code to improve performance. Redirection is done via htaccess. If the requested file does exists it is served directly.
 
-Images don't get resized on upload. Instead only the meta data for the resized images is created. Instead the actual images are created on demand. When requested WPPP checks first if the full size version of the requested image exists in the database. If it does, it is checked if the requested image size corresponds to a registered image size (either one of the default sizes "thumb", "medium" or "large" or any by themes or plugins registered sizes). This check also tells WPPP if to crop the image while resizing. Only if this check passes the intermediate image is then created. This prevents unwanted creation of thumbnails.
+Images don't get resized on upload. Instead only the meta data for the resized images is created. Instead the actual images are created on demand. When requested WPPP checks first if the full size version of the requested image exists in the database. If it does, it is checked if the requested image size corresponds to a registered image size (either one of the default sizes "thumbnail", "medium" or "large" or any by themes or plugins registered sizes). This check also tells WPPP if to crop the image while resizing. Only if this check passes the intermediate image is then created. This prevents unwanted creation of thumbnails.
 
 == Changelog ==
+
+= 1.4 =
+
+* [jit] wordpress 3.8.3 included
+* [dynimg] use exif thumbnails for thumbail images, requires exif extension
+* [dynimg] check for pretty permalinks and regenrate thumbnails
+* [general] misc. ui changes
 
 = 1.3.1 =
 

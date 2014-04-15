@@ -56,6 +56,8 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 	require( ABSPATH . 'wp-includes/post.php' );
 	require( ABSPATH . 'wp-includes/meta.php' );
 
+	function __( $text ) { return $text; };
+	
 	/*
 	 * "Normalize" URLs to make them comparable. Partial copy from url_to_postid in rewrite.php
 	 */
@@ -136,45 +138,58 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 			echo 'No attachment meta data';
 			exit;
 		}
-		
-		$image = wp_get_image_editor( $basefile );
-		if ( ! is_wp_error( $image ) ) {
 
-			// search meta data for matching size
-			// without this test any image request would create intermediate images thus potentially filling up server space
-			$found = false;
-			foreach ( $attachment_meta['sizes'] as $size => $size_data ) {
-				$found = ( $size_data['width'] == $width ) && ( $size_data['height'] == $height );
-				if ( $found ) {
-					if ( isset( $sizes[$size] ) ) {
-						$crop = $sizes[$size]['crop'];
-					} // TODO: if size isn't in $sizes, then it's an "old" size and shouldn't be used any more... delete it?
-					break;
-				}
+		// search meta data for matching size
+		// without this test any image request would create intermediate images thus potentially filling up server space
+		$found = false;
+		foreach ( $attachment_meta['sizes'] as $size => $size_data ) {
+			$found = ( $size_data['width'] == $width ) && ( $size_data['height'] == $height );
+			if ( $found ) {
+				$found = $size;
+				if ( isset( $sizes[$size] ) ) {
+					$crop = $sizes[$size]['crop'];
+				} // TODO: if size isn't in $sizes, then it's an "old" size and shouldn't be used any more... delete it?
+				break;
 			}
-
-			if ( false === $found ) {
-				// Size not found in attachment meta data. Maybe meta data isn't up to date.
-				$base_size = $image->get_size();
-				foreach ( $sizes as $size => $size_data ) {
-					if ( !isset( $attachment_meta['sizes'][$size] ) ) {
-						// only check if size isn't in meta data
-						$new_size = image_resize_dimensions( $base_size['width'], $base_size['height'], $size_data['width'], $size_data['height'], $size_data['crop'] );
-						$found = ( $new_size[4] == $width ) && ( $new_size[5] == $height );
-						if ( $found ) {
-							$crop = $size_data['crop'];
-							break;
-						}
+		}
+		if ( false === $found ) {
+			// Size not found in attachment meta data. Maybe meta data isn't up to date.
+			$base_size = getimagesize( $basefile);
+			foreach ( $sizes as $size => $size_data ) {
+				if ( !isset( $attachment_meta['sizes'][$size] ) ) {
+					// only check if size isn't in meta data
+					$new_size = image_resize_dimensions( $base_size[0], $base_size[1], $size_data['width'], $size_data['height'], $size_data['crop'] );
+					$found = ( $new_size[4] == $width ) && ( $new_size[5] == $height );
+					if ( $found ) {
+						$found = $size;
+						$crop = $size_data['crop'];
+						break;
 					}
 				}
-				
-				if ( false === $found ) {
-					header('HTTP/1.0 404 Not Found');
-					echo 'Unknown image size';
-					exit;
-				}
 			}
+			if ( false === $found ) {
+				header('HTTP/1.0 404 Not Found');
+				echo 'Unknown image size';
+				exit;
+			}
+		}
 
+		if ( $wppp_opts['dynamic_images_exif_thumbs'] 
+				&& ( $found == 'thumbnail' )
+				&& extension_loaded( 'exif' )
+				&& function_exists( 'exif_thumbnail' )
+				&& function_exists( 'imagecreatefromstring' ) ) {
+			include( sprintf( "%s/class.wp-image-editor-gd-exif.php", dirname( __FILE__ ) ) );
+			$image = new WP_Image_Editor_GD_EXIF( $basefile );
+			if ( is_wp_error( $image->load() ) ) {
+				// exif load failed (maybe no exif data or no thumb), so load complete image
+				$image = wp_get_image_editor( $basefile );
+			}
+		} else {
+			$image = wp_get_image_editor( $basefile );
+		}
+
+		if ( ! is_wp_error( $image ) ) {
 			$image->set_quality( 80 );
 			$image->resize( $width, $height, $crop );
 			if ( !isset( $wppp_opts['dynamic_images_nosave'] ) || !$wppp_opts['dynamic_images_nosave'] ) {

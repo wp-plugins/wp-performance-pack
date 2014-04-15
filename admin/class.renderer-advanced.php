@@ -16,6 +16,8 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 	 */
 
 	function enqueue_scripts_and_styles () {
+		wp_register_style( 'wppp-admin-styles', plugin_dir_url( __FILE__ ) . 'css/styles.css' );
+		wp_enqueue_style( 'wppp-admin-styles' );
 	}
 
 	function add_help_tab () {
@@ -52,7 +54,7 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 
 	function render_options () {
 		?>
-		<h3><?php _e( 'Improve translation performance', 'wppp' ); ?></h3>
+		<h3 class="title"><?php _e( 'Improve translation performance', 'wppp' ); ?></h3>
 		<div>
 			<table class="form-table">
 				<tr valign="top">
@@ -73,7 +75,7 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 						<br/>
 						<label for="mo-caching"><input id="mo-caching" type="checkbox" <?php $this->e_opt_name( 'mo_caching' ); ?> value="true" <?php $this->e_checked( 'mo_caching' ); ?>/><?php _e( 'Use caching', 'wppp' ); ?></label>
 						<p class="description"><?php _e( 'Cache translations using WordPress Object Cache API', 'wppp' ); ?></p>
-						<?php $this->do_hint_mo_cache(); ?>
+						<?php $this->do_hint_caching(); ?>
 					</td>
 				</tr>
 				<tr valign="top">
@@ -110,35 +112,43 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 			</table>
 		</div>
 
-		<h3>Dynamic image resizing</h3>
+		<h3 class="title">Dynamic image resizing</h3>
 		<div>
 			<table class="form-table">
 				<tr valign="top">
 					<th scope="row">Dynamic image resizing</td>
 					<td>
-						<label for="dynimg-enabled"><input id="dynimg-enabled" type="radio" <?php $this->e_opt_name( 'dynamic_images' ); ?> value="true" <?php $this->e_checked( 'dynamic_images' ); ?>/><?php _e( 'Enabled', 'wppp' ); ?></label>&nbsp;
-						<label for="dynimg-disabled"><input id="dynimg-disabled" type="radio" <?php $this->e_opt_name( 'dynamic_images' ); ?> value="false" <?php $this->e_checked( 'dynamic_images', false ); ?>/><?php _e( 'Disabled', 'wppp' ); ?></label>&nbsp;
+						<?php
+							$this->e_radio_enable( 'dynimg', 'dynamic_images', !$this->is_dynamic_images_available() ); ?>
 						<p class="description">
 							If activated intermediate image sizes won't be generated on upload. Instead resizing is done dynamically when an intermediate image is accessed. This improves upload performance and reduces disk usage. <b>Requires pretty permalinks!</b> If you deactive this option after some time of usage you might have to recreate thumbnails using a plugin like Regenerate Thumbnails.
 						</p>
 						<br/>
-						<label for="dynimg-save"><input id="dynimg-save" type="checkbox" <?php $this->e_opt_name( 'dynamic_images_nosave' ); ?> value="true" <?php $this->e_checked( 'dynamic_images_nosave' ); ?>/>Don't save intermediate images</label>
+						<?php $this->e_checkbox( 'dynimg-save', 'dynamic_images_nosave', __( "Don't save intermediate images", 'wppp' ) ); ?>
 						<p class="description">
 							By default once created intermediate images are saved to disk and served directly on subsequent requests. Though this already reduces disk space usage you further reduce it by disabling saving, but this will slow down your blog as images get created on each access. Useful e.g. for test environments to reduce disk space usage.
 						</p>
 						<br/>
-						<label for="dynimg-cache"><input id="dynimg-cache" type="checkbox" <?php $this->e_opt_name( 'dynamic_images_cache' ); ?> value="true" <?php $this->e_checked( 'dynamic_images_cache' ); ?>/>Use WP Object Cache for (not saved) intermediate images.</label>
+						<?php $this->e_checkbox( 'dynimg-cache', 'dynamic_images_cache', __( "Use WP Object Cache for (not saved) intermediate images.", 'wppp' ) ); ?>
 						<p class="description">If you aren't using a file based object cache, make sure the cache memory limit isn't too low for this. This is best used in testing environments, not on production sites and is only applied if "<em>Don't save intermediate images</em>" is activated. Created images are cached for 30 minutes.</p>
+						<?php $this->do_hint_caching(); ?>
 					</td>
 				</tr>
 				<tr valign="top">
 					<th scope="row">Regenerate Thumbnail integration</th>
 					<td>
-						<label for="dynimg-rthook"><input id="dynimg-rthook" type="checkbox" <?php $this->e_opt_name( 'dynamic_images_rthook' ); ?> value="true" <?php $this->e_checked( 'dynamic_images_rthook' ); ?>/>Delete intermediate images using Regenerate Tumbnails</label>
+						<?php $this->e_radio_enable( 'dynimgrthook', 'dynamic_images_rthook', !$this->is_regen_thumbs_available() ); ?>
 						<p class="description">Activate this option to delete all existing intermediate images using <a href="http://wordpress.org/plugins/regenerate-thumbnails/" target="_blank">Regenerate Thumbnails</a> plugin. To do so, just regenerate thumbnails while this option is activated. This option won't do anything if Regenerate Thumbnails isn't installed.</p>
 						<br/>
-						<label for="dynimg-rtforce"><input id="dynimg-rtforce" type="checkbox" <?php $this->e_opt_name( 'dynamic_images_rthook_force' ); ?> value="true" <?php $this->e_checked( 'dynamic_images_rthook_force' ); ?>/>Force delete of all potential thumbnails</label>
+						<?php $this->e_checkbox( 'dynimg-rtforce', 'dynamic_images_rthook_force', __( 'Force delete of all potential thumbnails', 'wppp' ), !$this->is_regen_thumbs_available() ); ?>
 						<p class="description">This option only applies if the Regenerate Thumbnail hook is active. All potential thumbnail files (i.e. those matching the pattern "<em>filename-*x*.ext</em>") will be deleted while regenerating. Use this option to delete old files which aren't referenced from attachment meta data due to earlier thumbnail regeneration. <strong>Use with care as this option might delete files which aren't thumbnails!</strong></p>
+					</td>
+				</tr>
+				<tr valign="top">
+					<th scope="row">Use EXIF thumbnail</th>
+					<td>
+						<?php $this->e_radio_enable( 'dynimgexif', 'dynamic_images_exif_thumbs', !$this->is_exif_available() ); ?>
+						<p class="description">When creating "thumbnail" images try to use the thumbnail contained in EXIF data to create it, if available. As the contained thumbnail is much smaller than the full image this reduces memory consumption and improves performance. But not all image editing tool update the EXIF thumbnail when saving an image. As a result of this, the EXIF thumbnail can look different than the actual image.</p>
 					</td>
 				</tr>
 			</table>
@@ -180,7 +190,7 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 			</table>
 		</div>
 -->
-		<h3><?php _e( 'Debugging', 'wppp' ); ?></h3>
+		<h3 class="title"><?php _e( 'Debugging', 'wppp' ); ?></h3>
 		<div>
 			<table class="form-table">
 				<tr valign="top">

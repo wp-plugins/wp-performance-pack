@@ -99,6 +99,19 @@ abstract class WPPP_Admin_Renderer {
 		return in_array( $wp_version, WP_Performance_Pack::$jit_versions );
 	}
 
+	function is_dynamic_images_available () {
+		global $wp_rewrite;
+		return ($wp_rewrite->permalink_structure != '');
+	}
+
+	function is_regen_thumbs_available () {
+		return is_plugin_active( 'regenerate-thumbnails/regenerate-thumbnails.php' ) && $this->is_dynamic_images_available();
+	}
+
+	function is_exif_available () {
+		return extension_loaded( 'exif' ) && function_exists( 'exif_thumbnail' ) && function_exists( 'imagecreatefromstring' ) && $this->is_dynamic_images_available();
+	}
+
 	/*
 	 * Helper functions
 	 */
@@ -127,7 +140,7 @@ abstract class WPPP_Admin_Renderer {
 		return $native;
 	}
 
-	function do_hint_mo_cache () {
+	function do_hint_caching () {
 		if ( !$this->is_object_cache_installed() ) : ?>
 			<div class="ui-state-highlight ui-corner-all" style="padding:.5em">
 				<span class="ui-icon ui-icon-info" style="float:left; margin-right:.3em;"></span>
@@ -167,7 +180,8 @@ abstract class WPPP_Admin_Renderer {
 			<input type="hidden" <?php $this->e_opt_name('dynamic_images_nosave'); ?> value="<?php echo $this->wppp->options['dynamic_images_nosave'] ? 'true' : 'false' ?>" />
 			<input type="hidden" <?php $this->e_opt_name('dynamic_images_cache'); ?> value="<?php echo $this->wppp->options['dynamic_images_cache'] ? 'true' : 'false' ?>" />
 			<input type="hidden" <?php $this->e_opt_name('dynamic_images_rthook'); ?> value="<?php echo $this->wppp->options['dynamic_images_rthook'] ? 'true' : 'false' ?>" />
-			<input type="hidden" <?php $this->e_opt_name('dynamic_images_rthook'); ?> value="<?php echo $this->wppp->options['dynamic_images_rthook_force'] ? 'true' : 'false' ?>" />
+			<input type="hidden" <?php $this->e_opt_name('dynamic_images_rthook_force'); ?> value="<?php echo $this->wppp->options['dynamic_images_rthook_force'] ? 'true' : 'false' ?>" />
+			<input type="hidden" <?php $this->e_opt_name('dynamic_images_exif_thumbs'); ?> value="<?php echo $this->wppp->options['dynamic_images_exif_thumbs'] ? 'true' : 'false' ?>" />
 			<input type="submit" class="button" type="submit" value="<?php echo ( $value == 'true' ) ? __( 'Switch to advanced view', 'wppp') : __( 'Switch to simple view', 'wppp' ); ?>" />
 		</form>
 		<?php
@@ -187,6 +201,19 @@ abstract class WPPP_Admin_Renderer {
 
 	protected function e_checked_and ( $opt_name, $value = true, $and_val = true ) {
 		echo $this->wppp->options[$opt_name] === $value && $and_val ? 'checked="checked" ' : ' ';
+	}
+	
+	function e_radio_enable ( $id, $opt_name, $disabled = false ) {
+		?>
+		<label for="<?php echo $id; ?>-enabled"><input id="<?php echo $id; ?>-enabled" type="radio" <?php $this->e_opt_name( $opt_name ); ?> value="true" <?php if ( $disabled ) { echo 'disabled="true" '; } else { $this->e_checked( $opt_name ); } ?>/><?php _e( 'Enabled', 'wppp' ); ?></label>&nbsp;
+		<label for="<?php echo $id; ?>-disabled"><input id="<?php echo $id; ?>-disabled" type="radio" <?php $this->e_opt_name( $opt_name ); ?> value="false" <?php if( $disabled ) { echo 'disabled="true" checked="checked"'; } else { $this->e_checked( $opt_name, false ); } ?>/><?php _e( 'Disabled', 'wppp' ); ?></label>
+		<?php
+	}
+	
+	function e_checkbox ( $id, $opt_name, $label, $disabled = false ) {
+		?>
+		<label for="<?php echo $id; ?>"><input id="<?php echo $id; ?>" type="checkbox" <?php $this->e_opt_name( $opt_name ); ?> value="true" <?php if ( $disabled ) { echo 'disabled="true" '; } else { $this->e_checked( $opt_name ); } ?>/><?php echo $label; ?></label>
+		<?php
 	}
 }
 

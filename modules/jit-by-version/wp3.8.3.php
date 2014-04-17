@@ -3,7 +3,7 @@
  * JIT localization of scripts using LabelsObjects
  *
  * @author Björn Ahrens
- * @since 0.2.3
+ * @since 1.4
  */
  
 function wp_jit_default_scripts( &$scripts ) {

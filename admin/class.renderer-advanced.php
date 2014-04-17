@@ -16,7 +16,13 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 	 */
 
 	function enqueue_scripts_and_styles () {
+		wp_register_script( 'jquery-ui-slider-pips', plugin_dir_url( __FILE__ ) . 'js/jquery-ui-slider-pips.min.js', array ( 'jquery-ui-slider' ), false, true );
+		wp_register_script( 'wppp-admin-script', plugin_dir_url( __FILE__ ) . 'js/wppp_advanced.js', array ( 'jquery-ui-slider-pips' ), false, true );
+		wp_enqueue_script( 'wppp-admin-script' );
+
+		wp_register_style( 'jquery-ui-slider-pips-styles', plugin_dir_url( __FILE__ ) . 'css/jquery-ui-slider-pips.css' );
 		wp_register_style( 'wppp-admin-styles', plugin_dir_url( __FILE__ ) . 'css/styles.css' );
+		wp_enqueue_style( 'jquery-ui-slider-pips-styles' );
 		wp_enqueue_style( 'wppp-admin-styles' );
 	}
 
@@ -52,16 +58,23 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 	 * Setting page rendering functions
 	 */
 
+		public function on_do_options_page() {
+		wp_localize_script( 'wppp-admin-script', 'wpppData', array (
+			'dynimg-quality' => $this->wppp->options['dynimg_quality'],
+		));
+	}
+
 	function render_options () {
 		?>
+		<input type="hidden" <?php $this->e_opt_name('dynimg_quality'); ?> value="<?php echo $this->wppp->options['dynimg_quality']; ?>" />
+
 		<h3 class="title"><?php _e( 'Improve translation performance', 'wppp' ); ?></h3>
 		<div>
 			<table class="form-table">
 				<tr valign="top">
 					<th scope="row"><?php _e( 'Use gettext', 'wppp' ); ?></th>
 					<td>
-						<label for="native-gettext-true"><input id="native-gettext-true" type="radio" <?php $this->e_opt_name('use_native_gettext'); ?> value="true" <?php $this->e_checked_and( 'use_native_gettext', true, $this->is_native_gettext_available() == 0 ); echo $this->is_native_gettext_available() != 0 ? 'disabled="true"' : ''; ?>/><?php _e( 'Enabled', 'wppp' ); ?></label>&nbsp;
-						<label for="native-gettext-false"><input id="native-gettext-false" type="radio" <?php $this->e_opt_name('use_native_gettext'); ?> value="false" <?php $this->e_checked_or( 'use_native_gettext', false, $this->is_native_gettext_available() != 0 ); echo $this->is_native_gettext_available() != 0 ? 'disabled="true"' : ''; ?>/><?php _e( 'Disabled', 'wppp' ); ?></label>
+						<?php $this->e_radio_enable( 'native-gettext', 'use_native_gettext', $this->is_native_gettext_available() != 0 ); ?>
 						<p class="description"><?php _e( 'Use php gettext extension for translations. This is in most cases the fastest way to translate your blog.', 'wppp' ); ?></p>
 						<?php $this->do_hint_gettext( true ); ?>
 					</td>
@@ -69,11 +82,10 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 				<tr valign="top">
 					<th scope="row" style="width:15em"><?php _e( 'Use alternative MO reader', 'wppp' ); ?></th>
 					<td>
-						<label for="mo-dynamic-true"><input id="mo-dynamic-true" type="radio" <?php $this->e_opt_name( 'use_mo_dynamic' ); ?> value="true" <?php $this->e_checked( 'use_mo_dynamic' ); ?>/><?php _e( 'Enabled', 'wppp' ); ?></label>&nbsp;
-						<label for="mo-dynamic-false"><input id="mo-dynamic-false" type="radio" <?php $this->e_opt_name( 'use_mo_dynamic'); ?> value="false" <?php $this->e_checked ( 'use_mo_dynamic', false );?>/><?php _e( 'Disabled', 'wppp' ); ?></label>
+						<?php $this->e_radio_enable( 'mo-dynamic', 'use_mo_dynamic' ); ?>
 						<p class="description"><?php _e( 'Alternative MO reader using on demand translation and loading of translation files. Faster and less memory intense than the default WordPress implementation.' ,'wppp' ); ?></p>
 						<br/>
-						<label for="mo-caching"><input id="mo-caching" type="checkbox" <?php $this->e_opt_name( 'mo_caching' ); ?> value="true" <?php $this->e_checked( 'mo_caching' ); ?>/><?php _e( 'Use caching', 'wppp' ); ?></label>
+						<?php $this->e_checkbox( 'mo-caching', 'mo_caching', __( 'Use caching', 'wppp' ) ); ?>
 						<p class="description"><?php _e( 'Cache translations using WordPress Object Cache API', 'wppp' ); ?></p>
 						<?php $this->do_hint_caching(); ?>
 					</td>
@@ -83,8 +95,7 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 						<?php _e( 'Use JIT localize', 'wppp' ); ?>
 					</th>
 					<td>
-						<label for="jit-true"><input id="jit-true" type="radio" <?php $this->e_opt_name('use_jit_localize'); ?> value="true" <?php $this->e_checked_and( 'use_jit_localize', true, $this->is_jit_available() ); echo !$this->is_jit_available() ? 'disabled="true"' : '';?>/><?php _e( 'Enabled', 'wppp' ); ?></label>&nbsp;
-						<label for="jit-false"><input id="jit-false" type="radio" <?php $this->e_opt_name('use_jit_localize'); ?> value="false" <?php $this->e_checked_or( 'use_jit_localize', false, !$this->is_jit_available() ); echo !$this->is_jit_available() ? 'disabled="true"' : '';?>/><?php _e( 'Disabled', 'wppp' ); ?></label>
+						<?php $this->e_radio_enable( 'jit', 'use_jit_localize', !$this->is_jit_available() ); ?>
 						<p class="description"><?php _e( 'Just in time localization of scripts.', 'wppp' ); ?></p>
 						<?php $this->do_hint_jit( true ); ?>
 					</td>
@@ -94,17 +105,16 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 						<?php _e( 'Disable back end translation', 'wppp' ); ?>
 					</th>
 					<td>
-						<label for="backend-trans-true"><input id="backend-trans-true" type="radio" <?php $this->e_opt_name('disable_backend_translation'); ?> value="true" <?php $this->e_checked( 'disable_backend_translation' ); ?>/><?php _e( 'Enabled', 'wppp' );?></label>&nbsp;
-						<label for="backend-trans-false"><input id="backend-trans-false" type="radio" <?php $this->e_opt_name('disable_backend_translation'); ?> value="false" <?php $this->e_checked( 'disable_backend_translation', false); ?>/><?php _e( 'Disabled', 'wppp' ); ?></label>
+						<?php $this->e_radio_enable( 'backend-trans', 'disable_backend_translation' ); ?>
 						<p class="description"><?php _e('Disables translation of back end texts.', 'wppp' ); ?></p>
 						<br/>
-						<label for="allow-user-override"><input id="allow-user-override" type="checkbox" <?php $this->e_opt_name( 'dbt_allow_user_override'); ?> value="true" <?php $this->e_checked( 'dbt_allow_user_override' ); ?> /><?php _e( 'Allow user override', 'wppp' ); ?></label>
+						<?php $this->e_checkbox( 'allow-user-override', 'dbt_allow_user_override', __( 'Allow user override', 'wppp' ) ); ?>
 						<p class="description"><?php  _e( 'Allow users to reactivate back end translation in their profile settings.', 'wppp' ); ?></p>
 						<br/>
 						<p>
-						<?php _e( 'Default user language:', 'wppp' ); ?>&nbsp;
-						<label for="user-default-english"><input id="user-default-english" type="radio" <?php $this->e_opt_name( 'dbt_user_default_translated' ); ?> value="false" <?php $this->e_checked( 'dbt_user_default_translated', false ); ?>><?php _e( 'English', 'wppp' ); ?></label>&nbsp;
-						<label for="user-default-translated"><input id="user-default-translated" type="radio" <?php $this->e_opt_name( 'dbt_user_default_translated' ); ?> value="true" <?php $this->e_checked( 'dbt_user_default_translated' ); ?>><?php _e( 'Blog language', 'wppp' ); ?></label>
+							<?php _e( 'Default user language:', 'wppp' ); ?>&nbsp;
+							<label for="user-default-english"><input id="user-default-english" type="radio" <?php $this->e_opt_name( 'dbt_user_default_translated' ); ?> value="false" <?php $this->e_checked( 'dbt_user_default_translated', false ); ?>><?php _e( 'English', 'wppp' ); ?></label>&nbsp;
+							<label for="user-default-translated"><input id="user-default-translated" type="radio" <?php $this->e_opt_name( 'dbt_user_default_translated' ); ?> value="true" <?php $this->e_checked( 'dbt_user_default_translated' ); ?>><?php _e( 'Blog language', 'wppp' ); ?></label>
 						</p>
 						<p class="description"><?php _e( "Default back end language for new and existing users, who haven't updated their profile yet.", 'wppp' ); ?></p>
 					</td>
@@ -112,17 +122,19 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 			</table>
 		</div>
 
-		<h3 class="title">Dynamic image resizing</h3>
+		<h3 class="title"><?php _e( 'Improve image handling', 'wppp' ); ?></h3>
 		<div>
 			<table class="form-table">
 				<tr valign="top">
-					<th scope="row">Dynamic image resizing</td>
+					<th scope="row">Dynamic image resizing</th>
 					<td>
-						<?php
-							$this->e_radio_enable( 'dynimg', 'dynamic_images', !$this->is_dynamic_images_available() ); ?>
+						<?php $this->e_radio_enable( 'dynimg', 'dynamic_images', !$this->is_dynamic_images_available() ); ?>
 						<p class="description">
 							If activated intermediate image sizes won't be generated on upload. Instead resizing is done dynamically when an intermediate image is accessed. This improves upload performance and reduces disk usage. <b>Requires pretty permalinks!</b> If you deactive this option after some time of usage you might have to recreate thumbnails using a plugin like Regenerate Thumbnails.
 						</p>
+						<br/>
+						<?php $this->e_checkbox( 'dynimgexif', 'dynamic_images_exif_thumbs', __( 'Use EXIF thumbnail', 'wppp' ), !$this->is_exif_available() ); ?>
+						<p class="description">When creating "thumbnail" images try to use the thumbnail contained in EXIF data to create it, if available. As the contained thumbnail is much smaller than the full image this reduces memory consumption and improves performance. But not all image editing tools update the EXIF thumbnail when saving an image. As a result of this, the EXIF thumbnail can look different than the actual image.</p>
 						<br/>
 						<?php $this->e_checkbox( 'dynimg-save', 'dynamic_images_nosave', __( "Don't save intermediate images", 'wppp' ) ); ?>
 						<p class="description">
@@ -135,20 +147,20 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 					</td>
 				</tr>
 				<tr valign="top">
-					<th scope="row">Regenerate Thumbnail integration</th>
+					<th scope="row">Image quality</th>
+					<td>
+						<div id="dynimg-quality-slider" style="width:25em; margin-bottom:2em;"></div>
+						<p class="description">Quality setting for newly created intermediate images.</p>
+					</td>
+				</tr>
+				<tr valign="top">
+					<th scope="row">Regenerate Thumbnails integration</th>
 					<td>
 						<?php $this->e_radio_enable( 'dynimgrthook', 'dynamic_images_rthook', !$this->is_regen_thumbs_available() ); ?>
 						<p class="description">Activate this option to delete all existing intermediate images using <a href="http://wordpress.org/plugins/regenerate-thumbnails/" target="_blank">Regenerate Thumbnails</a> plugin. To do so, just regenerate thumbnails while this option is activated. This option won't do anything if Regenerate Thumbnails isn't installed.</p>
 						<br/>
 						<?php $this->e_checkbox( 'dynimg-rtforce', 'dynamic_images_rthook_force', __( 'Force delete of all potential thumbnails', 'wppp' ), !$this->is_regen_thumbs_available() ); ?>
 						<p class="description">This option only applies if the Regenerate Thumbnail hook is active. All potential thumbnail files (i.e. those matching the pattern "<em>filename-*x*.ext</em>") will be deleted while regenerating. Use this option to delete old files which aren't referenced from attachment meta data due to earlier thumbnail regeneration. <strong>Use with care as this option might delete files which aren't thumbnails!</strong></p>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row">Use EXIF thumbnail</th>
-					<td>
-						<?php $this->e_radio_enable( 'dynimgexif', 'dynamic_images_exif_thumbs', !$this->is_exif_available() ); ?>
-						<p class="description">When creating "thumbnail" images try to use the thumbnail contained in EXIF data to create it, if available. As the contained thumbnail is much smaller than the full image this reduces memory consumption and improves performance. But not all image editing tool update the EXIF thumbnail when saving an image. As a result of this, the EXIF thumbnail can look different than the actual image.</p>
 					</td>
 				</tr>
 			</table>
@@ -167,7 +179,7 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 				</thead>
 				<tbody>
 				<?php
-					$plugins = get_option( 'active_plugins' );
+					/* $plugins = get_option( 'active_plugins' );
 					$odd = false;
 					foreach ( $plugins as $plugin ) {
 						$odd = !$odd;
@@ -184,7 +196,7 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 							<td><input type="checkbox" name="splAjax[]" value="test" /></td>
 						</tr>
 						<?php
-					}
+					} */
 				?>
 				</tbody>
 			</table>
@@ -196,8 +208,7 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 				<tr valign="top">
 					<th scope="row"><?php _e( 'Debug Panel', 'wppp' ); ?></th>
 					<td>
-						<label for="debug-panel-true"><input id="debug-panel-true" type="radio" <?php $this->e_opt_name( 'debug' ); ?> value="true" <?php $this->e_checked( 'debug' ); echo class_exists( 'Debug_Bar' ) ? '' : 'disabled="true"'; ?> /><?php _e ( 'Enabled', 'wppp' ); ?>&nbsp;</label>
-						<label for="debug-panel-false"><input id="debug-panel-false" type="radio" <?php $this->e_opt_name( 'debug' ); ?> value="false" <?php $this->e_checked( 'debug', false ); echo class_exists( 'Debug_Bar' ) ? '' : 'disabled="true"'; ?> /><?php _e ( 'Disabled', 'wppp' ); ?>&nbsp;</label>
+						<?php $this->e_radio_enable( 'debug-panel', 'debug', !class_exists( 'Debug_Bar' ) ); ?>
 						<p class="description"><?php _e( 'Enables debugging, requires <a href="http://wordpress.org/plugins/debug-bar/">Debug Bar</a> Plugin.', 'wppp' ); ?></p>
 					</td>
 				</tr>

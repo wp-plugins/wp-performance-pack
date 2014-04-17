@@ -190,7 +190,7 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 		}
 
 		if ( ! is_wp_error( $image ) ) {
-			$image->set_quality( 80 );
+			$image->set_quality( $wppp_opts['dynimg_quality'] );
 			$image->resize( $width, $height, $crop );
 			if ( !isset( $wppp_opts['dynamic_images_nosave'] ) || !$wppp_opts['dynamic_images_nosave'] ) {
 				$image->save( $image->generate_filename( $suffix ) );

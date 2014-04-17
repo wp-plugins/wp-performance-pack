@@ -40,11 +40,36 @@ class WPPP_Admin_Admin extends WPPP_Admin_User {
 	public function validate( $input ) {
 		$output = array();
 		if ( isset( $input ) && is_array( $input ) ) {
+
+			// test if view mode has changed. if so, leave all other settings as they are
+			if ( isset( $input['advanced_admin_view'] ) ) {
+				$view = $input['advanced_admin_view'] == 'true' ? true : false;
+				if ( $view != $this->wppp->options['advanced_admin_view'] ) {
+					$output = $this->wppp->options;
+					$output['advanced_admin_view'] = $view;
+					return $output;
+				}
+			}
+
 			foreach ( WP_Performance_Pack::$options_default as $key => $val ) {
-				if ( isset ( $input[$key] ) ) {
-					$output[$key] = ( $input[$key] == 'true' ? true : false );
+				if ( isset( $input[$key] ) ) {
+					switch ( $key ) {
+						case 'advanced_admin_view' 	: $output[$key] = $this->wppp->options['advanced_admin_view'];
+													  break;
+						case 'dynimg_quality'		: $output[$key] = ( is_numeric( $input[$key] ) && $input[$key] >= 10 && $input[$key] <= 100 ) ? $input[ $key] : $val;
+													  break;
+						default						: $output[$key] = ( $input[$key] == 'true' ? true : false );
+													  break;
+					}
 				} else {
-					$output[$key] = false;
+					switch ( $key ) {
+						case 'advanced_admin_view' 	: $output[$key] = $this->wppp->options['advanced_admin_view'];
+													  break;
+						case 'dynimg_quality'		: $output[$key] = $val;
+													  break;
+						default						: $output[$key] = false;
+													  break;
+					}
 				}
 			}
 		}
@@ -54,7 +79,6 @@ class WPPP_Admin_Admin extends WPPP_Admin_User {
 	function update_wppp_settings () {
 		if ( current_user_can( 'manage_network_options' ) ) {
 			check_admin_referer( 'update_wppp', 'wppp_nonce' );
-			// process your fields from $_POST here and update_site_option
 			$input = array();
 			foreach ( WP_Performance_Pack::$options_default as $key => $value ) {
 				if ( isset( $_POST['wppp_option'][$key] ) ) {

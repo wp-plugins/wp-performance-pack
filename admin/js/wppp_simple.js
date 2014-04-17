@@ -10,7 +10,7 @@ jQuery(document).ready(function($){
 
 	function displayL10nSetting ( level ) {
 		if ( lastL10nSetting != null ) {
-			$(lastL10nSetting).css({"font-weight": "normal", "font-size": "100%"});
+			$(lastL10nSetting).css({"font-weight": "normal", "font-size": "100%", "color": ""});
 			$(lastL10nDesc).hide();
 			$(lastL10nHint).hide();
 		}
@@ -21,7 +21,7 @@ jQuery(document).ready(function($){
 
 		$(lastL10nDesc).show();
 		$(lastL10nHint).show();
-		$(lastL10nSetting).css({"font-weight": "bold", "font-size": "120%"});
+		$(lastL10nSetting).css({"font-weight": "bold", "font-size": "120%", "color": "#222"});
 	}
 
 	function setL10nSettingInputValues ( level ) {
@@ -65,6 +65,25 @@ jQuery(document).ready(function($){
 					wpppData['l10nLabelCustom']
 				]
 	});
+
+	/* $( "#dynimg-slider" ).slider({
+		orientation: "vertical",
+		value: 0, //wpppData["l10nSetting"],
+		min: 0,
+		max: 3,
+		step: 1,
+		slide: function( event, ui ) {
+			//displayL10nSetting(ui.value);
+			//setL10nSettingInputValues(ui.value);
+		}
+	}).slider( 'pips', {
+		rest: 'label',
+		labels:	[	'Off',
+					'Speed',
+					'Webspace',
+					'Custom',
+				]
+	}); */
 
 	displayL10nSetting( parseInt( wpppData["l10nSetting"] ) );
 });

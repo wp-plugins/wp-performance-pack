@@ -16,7 +16,7 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 	 */
 
 	function enqueue_scripts_and_styles () {
-		wp_register_script( 'jquery-ui-slider-pips', plugin_dir_url( __FILE__ ) . 'js/jquery-ui-slider-pips.js', array ( 'jquery-ui-slider' ), false, true );
+		wp_register_script( 'jquery-ui-slider-pips', plugin_dir_url( __FILE__ ) . 'js/jquery-ui-slider-pips.min.js', array ( 'jquery-ui-slider' ), false, true );
 		wp_register_script( 'wppp-admin-script', plugin_dir_url( __FILE__ ) . 'js/wppp_simple.js', array ( 'jquery-ui-slider-pips' ), false, true );
 		wp_enqueue_script( 'wppp-admin-script' );
 
@@ -24,7 +24,6 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 		wp_register_style( 'wppp-admin-styles', plugin_dir_url( __FILE__ ) . 'css/styles.css' );
 		wp_enqueue_style( 'jquery-ui-slider-pips-styles' );
 		wp_enqueue_style( 'wppp-admin-styles' );
-
 	}
 
 	function add_help_tab () {
@@ -82,10 +81,16 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 			<input type="hidden" <?php $this->e_opt_name('debug'); ?> value="<?php echo $this->wppp->options['debug'] ? 'true' : 'false' ?>" />
 			<input type="hidden" <?php $this->e_opt_name('dynamic_images'); ?> value="<?php echo $this->wppp->options['dynamic_images'] ? 'true' : 'false' ?>" />
 			<input type="hidden" <?php $this->e_opt_name('dynamic_images_nosave'); ?> value="<?php echo $this->wppp->options['dynamic_images_nosave'] ? 'true' : 'false' ?>" />
+			<input type="hidden" <?php $this->e_opt_name('dynamic_images_cache'); ?> value="<?php echo $this->wppp->options['dynamic_images_cache'] ? 'true' : 'false' ?>" />
+			<input type="hidden" <?php $this->e_opt_name('dynamic_images_rthook'); ?> value="<?php echo $this->wppp->options['dynamic_images_rthook'] ? 'true' : 'false' ?>" />
+			<input type="hidden" <?php $this->e_opt_name('dynamic_images_rthook_force'); ?> value="<?php echo $this->wppp->options['dynamic_images_rthook_force'] ? 'true' : 'false' ?>" />
+			<input type="hidden" <?php $this->e_opt_name('dynamic_images_exif_thumbs'); ?> value="<?php echo $this->wppp->options['dynamic_images_exif_thumbs'] ? 'true' : 'false' ?>" />
+			<input type="hidden" <?php $this->e_opt_name('dynimg_quality'); ?> value="<?php echo $this->wppp->options['dynimg_quality']; ?>" />
+
 			<table style="empty-cells:show; width:100%;">
 				<tr>
-					<td valign="top" style="width:8em; height:12em;"><div id="l10n-slider" style="height:8em; margin-top:2em;"></div></td>
-					<td valign="top">
+					<td valign="top" style="width:9em;"><div id="l10n-slider" style="margin-top:1em; margin-bottom: 1em;"></div></td>
+					<td valign="top" style="padding-left:2em;">
 						<div class="wppp-l10n-desc" style="display:none;">
 							<h4 style="margin-top:0;"><?php _e( 'Translation improvements turned off', 'wppp' ); ?></h4>
 							<?php $this->output_active_settings( 0 ); ?>
@@ -129,6 +134,16 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 					</td>
 				</tr>
 			</table>
+			
+			<!-- <h3 class="title">Improve image handling</h3>
+			<table style="empty-cells:show; width:100%;">
+				<tr>
+					<td valign="top" style="width:9em;"><div id="dynimg-slider" style="margin-top:1em; margin-bottom:1em;"></div></td>
+					<td valign="top" style="padding-left:2em;">
+						Text
+					</td>
+				</tr>
+			</table> -->
 		</div>
 		<?php
 	}

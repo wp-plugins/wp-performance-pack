@@ -1,37 +1,38 @@
 === WP Performance Pack ===
 Contributors: greencp, linushoppe
-Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext
+Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext, thumbnails, images, intermediate, resize, quality, regenerate, exif
 Requires at least: 3.6
 Tested up to: 3.8.2
-Stable tag: 1.4
+Stable tag: 1.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Performance optimizations for WordPress. Features options to improve performance of translated WordPress installations and dynamic image resizing.
+Performance optimizations for WordPress. Features options to improve localization performance and improved image handling.
 
 == Description ==
 
-WP Performance Pack is your first choice for speeding up WordPress core the easy way. WP Performance Pack is a collection of performance optimizations for WordPress which don't need patching of core files. As of now it features options to improve performance of translated WordPress installations.
+WP Performance Pack is your first choice for speeding up WordPress core the easy way. WP Performance Pack is a collection of performance optimizations for WordPress which don't need patching of core files. As of now it features options to improve localization performance and image handling (faster upload, reduced webspace usage).
 
 = Features =
 
-Dynamic image resizing
+**Improve image handling**
 
 * Don't create intermediate images on upload.
 * Dynamically create intermediate images on access.
 * Either save or cache created images for fast subsequent access.
 * Use EXIF thumbnail (if available) as source for thumbnail images. This improves memory and cpu usage as the source for the thumbnail is much smaller.
+* Adjust quality settings for intermediate images.
 * [Regenerate Thumbnails](http://wordpress.org/plugins/regenerate-thumbnails/) integration: Hook into the thumbnail regeneration process to delete existing intermediate images.
 
-Improve translation performance
+**Improve localization performance**
 
 * Simple user interface to automatically set best available settings
-* Dynamic loading of translation files, only loading and translating used strings.
+* Dynamic loading of translation files, only loading and localizing used strings.
 * Use of PHP gettext extension if available.
-* Disable back end translation while maintaining front end translations.
-* Allow individual users to reactivate Dashboard translation via profile setting.
+* Disable back end localization while maintaining front end localization.
+* Allow individual users to reactivate Dashboard localization via profile setting.
 * Just in time localization of javascripts (requires WordPress version >= 3.8.1).
-* Caching of translations to further improve translation performance. A persistent object cache has to be installed for this to be effective.
+* Caching of localizations to further improve translation performance. A persistent object cache has to be installed for this to be effective.
 * [Debug Bar](http://wordpress.org/plugins/debug-bar/) integration
 
 == Screenshots ==
@@ -65,7 +66,7 @@ Yes, when installed network wide only the network admin can see and edit WPPP op
 
 == Other Notes == 
 
-= How translation improvements work =
+= How localization improvements work =
 
 WPPP overrides WordPress' default implementation by using the *override_load_textdomain* hook. The fastest way for translations is using the native gettext implementation. This requires the PHP Gettext extension to be installed on the server. WPPPs gettext implementation is based on *Bernd Holzmuellers* [Translate_GetText_Native](http://oss.tiggerswelt.net/wordpress/3.3.1/) implementation (slightly modified). Gettext support is still a bit tricky and having the gettext extension installed doesn't mean it will work. 
 
@@ -81,10 +82,18 @@ Images don't get resized on upload. Instead only the meta data for the resized i
 
 == Changelog ==
 
+= 1.5 =
+
+* [jit] WordPress 3.9 support
+* [dynimg] NEW! Adjust quality for newly created intermediate images.
+* [general] misc. code cleanup
+* [general] misc. UI changes
+* [general] jQuery UI Slider Pips updated to 1.4.0
+
 = 1.4 =
 
-* [jit] wordpress 3.8.3 included
-* [dynimg] use exif thumbnails for thumbail images, requires exif extension
+* [jit] WordPress 3.8.3 included
+* [dynimg] NEW! use exif thumbnails for thumbail images, requires exif extension
 * [dynimg] check for pretty permalinks and regenrate thumbnails
 * [general] misc. ui changes
 
@@ -98,7 +107,7 @@ Images don't get resized on upload. Instead only the meta data for the resized i
 * [dynimg] only serve images uploaded via media library and existing image sizes
 * [dynimg] bugfix for missing wp_basename
 * [general] misc. smaller fixes and changes
-* [general] ui changes (accordion removed)
+* [general] UI changes (accordion removed)
 
 = 1.2.2 =
 

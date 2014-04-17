@@ -167,7 +167,6 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 					<th scope="row">OS</th>
 					<td><?php echo php_uname(); ?></td>
 				</tr>
-				</tr>
 				<tr>
 					<th scope="row">PHP gettext extension is</th>
 					<td><?php echo extension_loaded('gettext') ? 'Available' : 'Not available'; ?></td>

@@ -128,7 +128,10 @@ class WPPP_Dynamic_Images {
 
 	function rebuild_thumbnails_delete_hook ($data, $postID) {
 		global $wp_current_filter;
-		if ( is_array( $wp_current_filter ) && in_array( 'wp_ajax_regeneratethumbnail', $wp_current_filter ) ) {
+		if ( is_array( $wp_current_filter ) && 
+			( in_array( 'wp_ajax_regeneratethumbnail', $wp_current_filter ) 
+			 || in_array( 'wp_ajax_ajax_thumbnail_rebuild', $wp_current_filter )
+			 || in_array( 'wp_ajax_sis_rebuild_images', $wp_current_filter ) ) ) {
 			if ( $attach_meta = wp_get_attachment_metadata( $postID ) ) {
 				global $wp_performance_pack;
 				if ( $wp_performance_pack->options['dynamic_images_rthook_force'] ) {
@@ -162,7 +165,9 @@ class WPPP_Dynamic_Images {
 	function rthook_notice () { 
 		// display message on Rebuild Thumbnails page
 		$screen = get_current_screen(); 
-		if ( $screen->id == 'tools_page_regenerate-thumbnails' ) : ?>
+		if ( $screen->id == 'tools_page_regenerate-thumbnails' 
+			|| $screen->id == 'tools_page_ajax-thumbnail-rebuild' 
+			|| ( $screen->id == 'options-media' && is_plugin_active( 'simple-image-sizes/simple_image_sizes.php' ) ) ) : ?>
 			<div class="update-nag"> 
 				<p>
 					WPPP Regenerate Thumbnails integration active. Existing intermediate images will be deleted while regenerating thumbnails.

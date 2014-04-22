@@ -104,7 +104,10 @@ abstract class WPPP_Admin_Renderer {
 	}
 
 	function is_regen_thumbs_available () {
-		return is_plugin_active( 'regenerate-thumbnails/regenerate-thumbnails.php' ) && $this->is_dynamic_images_available();
+		return	$this->is_dynamic_images_available() &&
+				( is_plugin_active( 'regenerate-thumbnails/regenerate-thumbnails.php' )
+				 || is_plugin_active( 'ajax-thumbnail-rebuild/ajax-thumbnail-rebuild.php' )
+				 || is_plugin_active( 'simple-image-sizes/simple_image_sizes.php' ) );
 	}
 
 	function is_exif_available () {

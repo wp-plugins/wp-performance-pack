@@ -76,8 +76,7 @@ abstract class WPPP_Admin_Renderer {
 		}
 
 		// load test translation and test if it translates correct
-		require_once( sprintf( '%s/../modules/class.native-gettext.php', dirname( __FILE__ ) ) );
-		$mo = new Translate_GetText_Native();
+		$mo = new WPPP_Native_Gettext();
 		if ( !$mo->import_from_file( sprintf( '%s/native-gettext-test.mo', dirname( __FILE__ ) ) ) ) {
 			$result = 3;
 			return 3;
@@ -159,6 +158,42 @@ abstract class WPPP_Admin_Renderer {
 				echo '<div class="ui-state-highlight ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-info" style="float:left; margin-right:.3em;"></span>';
 			}
 			printf( __( 'JIT localization of scripts is only available for WordPress versions %s .', 'wppp' ), implode( ', ', WP_Performance_Pack::$jit_versions ) );
+			echo '</div>';
+		}
+	}
+
+	function do_hint_permalinks ( $as_error ) {
+		if ( !$this->is_dynamic_images_available() ) {
+			if ( $as_error ) {
+				echo '<div class="ui-state-error ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-alert" style="float:left; margin-right:.3em;"></span>';
+			} else {
+				echo '<div class="ui-state-highlight ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-info" style="float:left; margin-right:.3em;"></span>';
+			}
+			_e( 'Dynamic image handling requires Pretty Permalinks', 'wppp' );
+			echo '</div>';
+		}
+	}
+
+	function do_hint_exif ( $as_error ) {
+		if ( !$this->is_exif_available() ) {
+			if ( $as_error ) {
+				echo '<div class="ui-state-error ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-alert" style="float:left; margin-right:.3em;"></span>';
+			} else {
+				echo '<div class="ui-state-highlight ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-info" style="float:left; margin-right:.3em;"></span>';
+			}
+			_e( 'Use of EXIF thumbnails requires the EXIF extension to be installed and GD support.', 'wppp' );
+			echo '</div>';
+		}
+	}
+
+	function do_hint_regen_thumbs ( $as_error ) {
+		if ( !$this->is_regen_thumbs_available() ) {
+			if ( $as_error ) {
+				echo '<div class="ui-state-error ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-alert" style="float:left; margin-right:.3em;"></span>';
+			} else {
+				echo '<div class="ui-state-highlight ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-info" style="float:left; margin-right:.3em;"></span>';
+			}
+			 printf( __( 'One of the following plugins has to be installed and activated for Regenerate Thumbnails integration: %s', 'wppp' ), '<a href="http://wordpress.org/plugins/regenerate-thumbnails/" target="_blank">Regenerate Thumbnails</a>, <a href="http://wordpress.org/plugins/ajax-thumbnail-rebuild/">AJAX Thumbnail Rebuild</a>, <a href="http://wordpress.org/plugins/simple-image-sizes/">Simple Image Sizes</a>' );
 			echo '</div>';
 		}
 	}

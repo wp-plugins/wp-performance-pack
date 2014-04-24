@@ -1,9 +1,9 @@
 === WP Performance Pack ===
 Contributors: greencp, linushoppe
-Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext, thumbnails, images, intermediate, resize, quality, regenerate, exif
+Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext, thumbnails, images, intermediate, resize, quality, regenerate, exif, fast, upload
 Requires at least: 3.6
-Tested up to: 3.8.2
-Stable tag: 1.5
+Tested up to: 3.9
+Stable tag: 1.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -11,7 +11,7 @@ Performance optimizations for WordPress. Features options to improve localizatio
 
 == Description ==
 
-WP Performance Pack is your first choice for speeding up WordPress core the easy way. WP Performance Pack is a collection of performance optimizations for WordPress which don't need patching of core files. As of now it features options to improve localization performance and image handling (faster upload, reduced webspace usage).
+WP Performance Pack is your first choice for speeding up WordPress core the easy way, no core patching required. As of now it features options to improve localization performance and image handling (faster upload, reduced webspace usage).
 
 = Features =
 
@@ -22,7 +22,7 @@ WP Performance Pack is your first choice for speeding up WordPress core the easy
 * Either save or cache created images for fast subsequent access.
 * Use EXIF thumbnail (if available) as source for thumbnail images. This improves memory and cpu usage as the source for the thumbnail is much smaller.
 * Adjust quality settings for intermediate images.
-* [Regenerate Thumbnails](http://wordpress.org/plugins/regenerate-thumbnails/) integration: Hook into the thumbnail regeneration process to delete existing intermediate images.
+* Regenerate Thumbnails integration: Hook into the thumbnail regeneration process to delete existing intermediate images. Supported plugins: [Regenerate Thumbnails](http://wordpress.org/plugins/regenerate-thumbnails/), [AJAX Thumbnail Rebuild](http://wordpress.org/plugins/ajax-thumbnail-rebuild/), [Simple Image Sizes](http://wordpress.org/plugins/simple-image-sizes/)
 
 **Improve localization performance**
 
@@ -38,9 +38,10 @@ WP Performance Pack is your first choice for speeding up WordPress core the easy
 == Screenshots ==
 
 1. MO-Dynamic benchmark: Comparing front page of a "fresh" WordPress 3.8.1 installation with active apc cache using different configurations. As you can see, using MO-Dynamic with active caching is just as fast as not translating the blog or using native gettext. Benchmarked version 0.6, times are mean of four test runs measured using XDebug.
-2. Settings, advanced view (v1.0)
-3. Debug Bar integration (v1.0)
-4. Settings, simple view (v1.0)
+2. Settings, simple view (v1.6)
+3. Localization settings, advanced view (v1.6)
+4. Image settings and debugging, advanced view (v1.6)
+5. Debug Bar integration (v1.0)
 
 == Installation ==
 
@@ -68,7 +69,7 @@ Yes, when installed network wide only the network admin can see and edit WPPP op
 
 = How localization improvements work =
 
-WPPP overrides WordPress' default implementation by using the *override_load_textdomain* hook. The fastest way for translations is using the native gettext implementation. This requires the PHP Gettext extension to be installed on the server. WPPPs gettext implementation is based on *Bernd Holzmuellers* [Translate_GetText_Native](http://oss.tiggerswelt.net/wordpress/3.3.1/) implementation (slightly modified). Gettext support is still a bit tricky and having the gettext extension installed doesn't mean it will work. 
+WPPP overrides WordPress' default implementation by using the *override_load_textdomain* hook. The fastest way for translations is using the native gettext implementation. This requires the PHP Gettext extension to be installed on the server. WPPPs Gettext implementation is based on *Bernd Holzmuellers* [Translate_GetText_Native](http://oss.tiggerswelt.net/wordpress/3.3.1/) implementation. Gettext support is still a bit tricky and having the gettext extension installed doesn't mean it will work. 
 
 As second option WPPP features a complete rewrite of WordPress' MO imlementation: MO_dynamic (the alternative MO reader). The default WordPress implementaion loads the complete mo file right after a call to *load_textdomain*, whether any transaltions from this textdomain are needed or not. This needs quite some time and even more memory. Mo_dynamic features on demand loading. It doesn't load a mo file until the first translation call to that specific textdomain. And it doesn't load the entire mo file either, only the requested translation. Though the (highly optimized) search for an individual translation is slower, the vastly improved loading time and reduced memory foot print result in an overall performance gain.
 
@@ -76,11 +77,20 @@ Caching can further improve performance. When using MO_dynamic with activated ca
 
 = How dynamic image resizing works =
 
-Dynamic image resizing is based on [Dynamic Image Resizer](http://wordpress.org/plugins/dynamic-image-resizer/) but uses a different method to serve intermediate images. Insted of using WordPress' 404 handler, it redirects requests to (not existing) intermediate images to a special PHP file which uses SHORTINIT to only load a minimum of necessary PHP code to improve performance. Redirection is done via htaccess. If the requested file does exists it is served directly.
+Dynamic image resizing is based on [Dynamic Image Resizer](http://wordpress.org/plugins/dynamic-image-resizer/): Images don't get resized on upload, instead only the meta data for the resized images is created and the actual images are created on demand. This is done using rewrite rules. Requests to none existent intermediate images are redirected to a special PHP file which uses SHORTINIT to only load a minimum of necessary PHP code to improve performance. Redirection is done via htaccess. If the requested file does exists it is served directly.
 
-Images don't get resized on upload. Instead only the meta data for the resized images is created. Instead the actual images are created on demand. When requested WPPP checks first if the full size version of the requested image exists in the database. If it does, it is checked if the requested image size corresponds to a registered image size (either one of the default sizes "thumbnail", "medium" or "large" or any by themes or plugins registered sizes). This check also tells WPPP if to crop the image while resizing. Only if this check passes the intermediate image is then created. This prevents unwanted creation of thumbnails.
+When a none existend image is requested WPPP first checks if the full size version of the requested image exists in the database. If it does, next is checked if the requested image size corresponds to a registered image size (either one of the default sizes "thumbnail", "medium" or "large" or any by themes or plugins registered sizes). This check also tells WPPP if to crop the image while resizing (even using the new 3.9 crop settings). Only if this check passes the intermediate image is created. This prevents unwanted creation of thumbnails.
 
 == Changelog ==
+
+= 1.6 =
+
+* [dynimg] Added AJAX Thumbnail Rebuild and Simple Image Sizes integration
+* [dynimg] EXIF use for all image sizes smaller than 321x321 (if the EXIF thumbnail is bigger)
+* [dynimg] added simple view for dynamic image resizing
+* [general] misc. code refactoring
+* [general] misc. ui changes
+* [l10n] removed plugin translations as too many texts have changed (will be readded with the next update)
 
 = 1.5 =
 

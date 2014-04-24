@@ -10,7 +10,7 @@
  */
 
  
-class WP_Scripts_Override extends WP_Scripts {
+class WPPP_Scripts_Override extends WP_Scripts {
 	var $l10ns = array ();
 
 	function print_extra_script( $handle, $echo = true ) {

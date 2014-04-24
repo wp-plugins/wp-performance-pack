@@ -12,7 +12,7 @@
  * @license GNU General Public License version 3 or later
  */
   
-class Translate_GetText_Native extends Gettext_Translations {
+class WPPP_Native_Gettext extends Gettext_Translations {
 	private $Domain = null;
    
 	// Merged domains

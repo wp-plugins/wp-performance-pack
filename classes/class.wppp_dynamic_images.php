@@ -170,7 +170,8 @@ class WPPP_Dynamic_Images {
 			|| ( $screen->id == 'options-media' && is_plugin_active( 'simple-image-sizes/simple_image_sizes.php' ) ) ) : ?>
 			<div class="update-nag"> 
 				<p>
-					WPPP Regenerate Thumbnails integration active. Existing intermediate images will be deleted while regenerating thumbnails.
+					WPPP Regenerate Thumbnails integration active.<br/>
+					Existing intermediate images will be deleted while regenerating thumbnails.
 					<?php
 						global $wp_performance_pack;
 						if ( $wp_performance_pack->options['dynamic_images_rthook_force'] ) : 
@@ -179,6 +180,8 @@ class WPPP_Dynamic_Images {
 							<?php 
 						endif;
 					?>
+					<br/>
+					<a href="options-general.php?page=wppp_options_page">Change WPPP settings</a>
 				</p> 
 			</div>
 		<?php endif; 

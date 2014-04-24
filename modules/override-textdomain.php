@@ -42,7 +42,7 @@ function wppp_load_textdomain_override( $retval, $domain, $mofile ) {
 		$mofile = apply_filters( 'load_textdomain_mofile', $mofile, $domain );
 
 		if ( isset( $l10n[$domain] ) ) {
-			if ( $l10n[$domain] instanceof MO_dynamic && $l10n[$domain]->Mo_file_loaded( $mofile ) ) {
+			if ( $l10n[$domain] instanceof WPPP_MO_dynamic && $l10n[$domain]->Mo_file_loaded( $mofile ) ) {
 				return true;
 			}
 		}
@@ -65,15 +65,14 @@ function wppp_load_textdomain_override( $retval, $domain, $mofile ) {
 		if ( $wp_performance_pack->options['debug'] ) {
 			$callers=debug_backtrace();
 			$wp_performance_pack->dbg_textdomains[$domain]['mofiles'][] = $mofile;
-			$wp_performance_pack->dbg_textdomains[$domain]['mofileexists'][] = 'disabled';
+			$wp_performance_pack->dbg_textdomains[$domain]['mofileexists'][] = '-';
 			$wp_performance_pack->dbg_textdomains[$domain]['callers'][] = $callers;
 		}
 	}
 
 
 	if ( $mo === NULL && $wp_performance_pack->options['use_native_gettext'] && extension_loaded( 'gettext' ) ) {
-		require_once(sprintf( "%s/class.native-gettext.php", dirname( __FILE__ ) ) );
-		$mo = new Translate_GetText_Native ();
+		$mo = new WPPP_Native_Gettext ();
 		if ( $mo->import_from_file( $mofile ) ) { 
 			$result = true;
 		} else {
@@ -82,11 +81,10 @@ function wppp_load_textdomain_override( $retval, $domain, $mofile ) {
 	}
 	
 	if ( $mo === NULL && $wp_performance_pack->options['use_mo_dynamic'] ) {
-		require_once(sprintf( "%s/class.mo-dynamic.php", dirname( __FILE__ ) ) );
 		if ( $wp_performance_pack->options['debug'] ) {
-			$mo = new MO_dynamic_Debug ( $domain, $wp_performance_pack->options['mo_caching'] );
+			$mo = new WPPP_MO_dynamic_Debug ( $domain, $wp_performance_pack->options['mo_caching'] );
 		} else {
-			$mo = new MO_dynamic ( $domain, $wp_performance_pack->options['mo_caching'] );
+			$mo = new WPPP_MO_dynamic ( $domain, $wp_performance_pack->options['mo_caching'] );
 		}
 		if ( $mo->import_from_file( $mofile ) ) { 
 			$result = true;
@@ -99,7 +97,7 @@ function wppp_load_textdomain_override( $retval, $domain, $mofile ) {
 	if ( $mo !== NULL ) {
 		if ( isset( $l10n[$domain] ) ) {
 			$mo->merge_with( $l10n[$domain] );
-			if ( $l10n[$domain] instanceof MO_dynamic ) {
+			if ( $l10n[$domain] instanceof WPPP_MO_dynamic ) {
 				$l10n[$domain]->unhook_and_close();
 			}
 		}

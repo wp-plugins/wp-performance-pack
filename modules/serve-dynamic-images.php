@@ -175,7 +175,7 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 		}
 
 		if ( $wppp_opts['dynamic_images_exif_thumbs'] 
-				&& ( $found == 'thumbnail' )
+				&& $width <= 320 && $height <= 320 //( $found == 'thumbnail' )
 				&& extension_loaded( 'exif' )
 				&& function_exists( 'exif_thumbnail' )
 				&& function_exists( 'imagecreatefromstring' ) ) {
@@ -184,6 +184,13 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 			if ( is_wp_error( $image->load() ) ) {
 				// exif load failed (maybe no exif data or no thumb), so load complete image
 				$image = wp_get_image_editor( $basefile );
+			} else {
+				// test if EXIF thumb is big enough
+				$exif_size = $image->get_size();
+				if ( $width > $exif_size['width'] || $height > $exif_size['height'] ) {
+					// EXIF thumb too small, load original
+					$image = wp_get_image_editor( $basefile );
+				}
 			}
 		} else {
 			$image = wp_get_image_editor( $basefile );

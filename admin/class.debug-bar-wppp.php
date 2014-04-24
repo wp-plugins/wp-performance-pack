@@ -65,6 +65,7 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 		$locale=get_locale();
 		$Path = WP_LANG_DIR . '/' . $locale . '/LC_MESSAGES';
 		$direxists = false;
+		$show_hitcount_hint = false;
 		?>
 		<div id="debug-bar-wppp">
 			<h3>General</h3>
@@ -105,7 +106,7 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 									global $l10n;
 									if ( isset( $l10n[$domain] ) ) {
 										$mo_class = $l10n[$domain];
-										if ( $mo_class instanceof MO_dynamic_Debug )
+										if ( $mo_class instanceof WPPP_MO_dynamic_Debug )
 											// Hide use of ...Debug class from user, as it doesn't matter and possibly confuses
 											echo get_parent_class ( $mo_class );
 										else
@@ -120,7 +121,9 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 						<?php
 						}
 						
-						if ($mo_class instanceof MO_dynamic_Debug) { ?>
+						if ($mo_class instanceof MO_dynamic_Debug) {
+							$show_hitcount_hint = true;
+							?>
 							<tr <?php echo $odd ? 'class="alternate" ' : ' '; ?> >
 								<td></td>
 								<td colspan="4">
@@ -159,7 +162,9 @@ class Debug_Bar_WPPP extends Debug_Bar_Panel {
 					?>
 				</tbody>
 			</table>
-			<small><sup><a id="wppp-hit-count-hint" style="text-decoration:none !important;">*</a></sup>Hit counts are actually higher because some translations occur after debug panel is rendered.</small>
+			<?php if ( $show_hitcount_hint ) : ?>
+				<small><sup><a id="wppp-hit-count-hint" style="text-decoration:none !important;">*</a></sup>Hit counts are actually higher because some translations occur after debug panel is rendered.</small>
+			<?php endif; ?>
 
 			<h3>Native gettext support</h3>
 			<table class="widefat">

@@ -32,13 +32,19 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 		$screen->add_help_tab( array(
 			'id'	=> 'wppp_simple_general',
 			'title'	=> __('Overview'),
-			'content'	=> '<p>' . __( "Welcome to WP Performance Pack, your first choice for speeding up WordPress core the easy way. The simple view helps you to easily apply  the optimal settings for your blog. Advanced view offers more in depth control of WPPP settings.", 'wppp' ) .'</p>',
+			'content'	=> '<p>' . __( "When you select an option, optimal settings will be applied. Applied settings will be displayed. If some settings couldn't be applied, e.g. due to missing requirements, these will be displayed in red and the next best setting (if available) will be chosen. Also hints as to why a setting couldn't be applied will be displayed. Advanced view offers more in depth control of WPPP settings.", 'wppp' ) .'</p>',
 		) );
 
 		$screen->add_help_tab( array(
 			'id'	=> 'wppp_simple_l10n',
 			'title'	=> __( 'Improve translation performance', 'wppp' ),
-			'content'	=>	'<p>' . __( "WPPP offers different levels of improving translation performance. When you select an option, optimal settings will be applied. Applied settings will be displayed. If some settings couldn't be applied, e.g. due to missing requirements, these will be displayed in red and the next best setting (if available) will be chosen. Also hints as to why a setting couldn't be applied will be displayed.", 'wppp' ) . '</p>',
+			'content'	=>	'<p>' . __( "WPPP offers different levels of improving translation performance. <em>Stable</em> should work on any WordPress blog, <em>Fast</em> further improves performance, but JIT script localization might cause issues with some plugins (if you encounter any problems please report them in the support forums).", 'wppp' ) . '</p>',
+		) );
+
+		$screen->add_help_tab( array(
+			'id'	=> 'wppp_simple_dynimg',
+			'title'	=> __( 'Improve image handling', 'wppp' ),
+			'content'	=> '<p>' . __( "Improve image upload speed and web space usage using this setting. Creation of different image sizes will be delayed upon the first access to the respective image. <em>Fast</em> uses EXIF thumbs to create small image sizes, which might cause issues as EXIF thumbs and actual images might differ (depending on used image editing software). Use <em>Webspace</em> only for testing environments or if you are really low on webspace, as this option will slow down your blog because intermediate images don't get saved to disc.", 'wppp' ) . '</p>',
 		) );
 
 		$screen->set_help_sidebar(
@@ -54,97 +60,194 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 	public function on_do_options_page() {
 		$option_keys = array_keys( WP_Performance_Pack::$options_default );
 		unset ( $option_keys [ array_search( 'advanced_admin_view', $option_keys ) ] );
-		wp_localize_script( 'wppp-admin-script', 'wpppData', array (
-			'l10nSetting' => $this->detect_current_setting(),
-			'l10nStableSettings' => implode( ',', $this->get_settings_for_level( 1 ) ),
-			'l10nSpeedSettings' => implode( ',', $this->get_settings_for_level( 2 ) ),
-			'l10nCustomSettings' => implode( ',', $this->get_settings_for_level( 3 ) ),
-			'l10nAllSettings' => implode( ',', $option_keys ),
+		wp_localize_script( 'wppp-admin-script', 'wpppData', array( json_encode( array(
+			'l10n' => array( 'current' => $this->l10n_detect_current_setting(),
+							// sequence: stable, speed, current
+							'settings' => array( 'use_mo_dynamic' => array(	$this->is_native_gettext_available() != 0,
+																			$this->is_native_gettext_available() != 0,
+																			$this->wppp->options['use_mo_dynamic'] ),
+												'use_jit_localize' => array(	false,
+																				$this->is_jit_available(),
+																				$this->wppp->options['use_jit_localize'] ),
+												'disable_backend_translation' => array(	false,
+																						true,
+																						$this->wppp->options['disable_backend_translation'] ),
+												'dbt_allow_user_override' => array(	false,
+																					true,
+																					$this->wppp->options['dbt_allow_user_override'] ),
+												'dbt_user_default_translated' => array(	true,
+																						false,
+																						$this->wppp->options['dbt_user_default_translated'] ),
+												'use_native_gettext' => array(	$this->is_native_gettext_available() == 0,
+																				$this->is_native_gettext_available() == 0,
+																				$this->wppp->options['use_native_gettext'] ),
+												'mo_caching' => array(	$this->is_native_gettext_available() != 0 && $this->is_object_cache_installed(),
+																		$this->is_native_gettext_available() != 0 && $this->is_object_cache_installed(),
+																		$this->wppp->options['mo_caching'] ),
+							),
+			),
 
-			'l10nLabelOff' => __( 'Off', 'wppp' ),
-			'l10nLabelStable' => __( 'Stable', 'wppp' ),
-			'l10nLabelSpeed' => __( 'Speed', 'wppp' ),
-			'l10nLabelCustom' => __( 'Custom', 'wppp' ),
-		));
+			'dynimg' => array( 'current' => $this->dynimg_detect_current_setting(),
+								// sequence: stable, speed, webspace, current
+								'settings' => array(	'dynamic_images' => array(	$this->is_dynamic_images_available(),
+																					$this->is_dynamic_images_available(),
+																					$this->is_dynamic_images_available(),
+																					$this->wppp->options['dynamic_images'] ),
+														'dynamic_images_nosave' => array(	false,
+																							false,
+																							true,
+																							$this->wppp->options['dynamic_images_nosave'] ),
+														'dynamic_images_cache' => array(	false,
+																							false,
+																							$this->is_object_cache_installed(),
+																							$this->wppp->options['dynamic_images_cache'] ),
+														'dynamic_images_rthook' => array(	false,
+																							false,
+																							$this->is_regen_thumbs_available(),
+																							$this->wppp->options['dynamic_images_rthook'] ),
+														'dynamic_images_rthook_force' => array(	false,
+																								false,
+																								false,
+																								$this->wppp->options['dynamic_images_rthook'] ),
+														'dynamic_images_exif_thumbs' => array(	false,
+																								$this->is_exif_available(),
+																								$this->is_exif_available(),
+																								$this->wppp->options['dynamic_images_exif_thumbs'] ),
+														'dynimg_quality' => array(	80,
+																					80,
+																					80,
+																					$this->wppp->options['dynimg_quality'] ),
+								),
+			),
+
+			'labels' => array( 'Off' => __( 'Off', 'wppp' ),
+								'Stable' => __( 'Stable', 'wppp' ),
+								'Speed' => __( 'Speed', 'wppp' ),
+								'Custom' => __( 'Custom', 'wppp' ), 
+								'Webspace' => __( 'Webspace', 'wppp' )
+			),
+		) ) ) );
 	}
 
 	function render_options () {
 		?>
-		<h3 class="title"><?php _e( 'Improve translation performance', 'wppp' ); ?></h3>
-		<div>
-			<input type="hidden" <?php $this->e_opt_name('use_mo_dynamic'); ?> value="<?php echo $this->wppp->options['use_mo_dynamic'] ? 'true' : 'false' ?>" />
-			<input type="hidden" <?php $this->e_opt_name('use_jit_localize'); ?> value="<?php echo $this->wppp->options['use_jit_localize'] ? 'true' : 'false' ?>" />
-			<input type="hidden" <?php $this->e_opt_name('disable_backend_translation'); ?> value="<?php echo $this->wppp->options['disable_backend_translation'] ? 'true' : 'false' ?>" />
-			<input type="hidden" <?php $this->e_opt_name('dbt_allow_user_override'); ?> value="<?php echo $this->wppp->options['dbt_allow_user_override'] ? 'true' : 'false' ?>" />
-			<input type="hidden" <?php $this->e_opt_name('use_native_gettext'); ?> value="<?php echo $this->wppp->options['use_native_gettext'] ? 'true' : 'false' ?>" />
-			<input type="hidden" <?php $this->e_opt_name('mo_caching'); ?> value="<?php echo $this->wppp->options['mo_caching'] ? 'true' : 'false' ?>" />
-			<input type="hidden" <?php $this->e_opt_name('debug'); ?> value="<?php echo $this->wppp->options['debug'] ? 'true' : 'false' ?>" />
-			<input type="hidden" <?php $this->e_opt_name('dynamic_images'); ?> value="<?php echo $this->wppp->options['dynamic_images'] ? 'true' : 'false' ?>" />
-			<input type="hidden" <?php $this->e_opt_name('dynamic_images_nosave'); ?> value="<?php echo $this->wppp->options['dynamic_images_nosave'] ? 'true' : 'false' ?>" />
-			<input type="hidden" <?php $this->e_opt_name('dynamic_images_cache'); ?> value="<?php echo $this->wppp->options['dynamic_images_cache'] ? 'true' : 'false' ?>" />
-			<input type="hidden" <?php $this->e_opt_name('dynamic_images_rthook'); ?> value="<?php echo $this->wppp->options['dynamic_images_rthook'] ? 'true' : 'false' ?>" />
-			<input type="hidden" <?php $this->e_opt_name('dynamic_images_rthook_force'); ?> value="<?php echo $this->wppp->options['dynamic_images_rthook_force'] ? 'true' : 'false' ?>" />
-			<input type="hidden" <?php $this->e_opt_name('dynamic_images_exif_thumbs'); ?> value="<?php echo $this->wppp->options['dynamic_images_exif_thumbs'] ? 'true' : 'false' ?>" />
-			<input type="hidden" <?php $this->e_opt_name('dynimg_quality'); ?> value="<?php echo $this->wppp->options['dynimg_quality']; ?>" />
+		<input type="hidden" <?php $this->e_opt_name('use_mo_dynamic'); ?> value="<?php echo $this->wppp->options['use_mo_dynamic'] ? 'true' : 'false' ?>" />
+		<input type="hidden" <?php $this->e_opt_name('use_jit_localize'); ?> value="<?php echo $this->wppp->options['use_jit_localize'] ? 'true' : 'false' ?>" />
+		<input type="hidden" <?php $this->e_opt_name('disable_backend_translation'); ?> value="<?php echo $this->wppp->options['disable_backend_translation'] ? 'true' : 'false' ?>" />
+		<input type="hidden" <?php $this->e_opt_name('dbt_allow_user_override'); ?> value="<?php echo $this->wppp->options['dbt_allow_user_override'] ? 'true' : 'false' ?>" />
+		<input type="hidden" <?php $this->e_opt_name('use_native_gettext'); ?> value="<?php echo $this->wppp->options['use_native_gettext'] ? 'true' : 'false' ?>" />
+		<input type="hidden" <?php $this->e_opt_name('mo_caching'); ?> value="<?php echo $this->wppp->options['mo_caching'] ? 'true' : 'false' ?>" />
+		<input type="hidden" <?php $this->e_opt_name('debug'); ?> value="<?php echo $this->wppp->options['debug'] ? 'true' : 'false' ?>" />
+		<input type="hidden" <?php $this->e_opt_name('dynamic_images'); ?> value="<?php echo $this->wppp->options['dynamic_images'] ? 'true' : 'false' ?>" />
+		<input type="hidden" <?php $this->e_opt_name('dynamic_images_nosave'); ?> value="<?php echo $this->wppp->options['dynamic_images_nosave'] ? 'true' : 'false' ?>" />
+		<input type="hidden" <?php $this->e_opt_name('dynamic_images_cache'); ?> value="<?php echo $this->wppp->options['dynamic_images_cache'] ? 'true' : 'false' ?>" />
+		<input type="hidden" <?php $this->e_opt_name('dynamic_images_rthook'); ?> value="<?php echo $this->wppp->options['dynamic_images_rthook'] ? 'true' : 'false' ?>" />
+		<input type="hidden" <?php $this->e_opt_name('dynamic_images_rthook_force'); ?> value="<?php echo $this->wppp->options['dynamic_images_rthook_force'] ? 'true' : 'false' ?>" />
+		<input type="hidden" <?php $this->e_opt_name('dynamic_images_exif_thumbs'); ?> value="<?php echo $this->wppp->options['dynamic_images_exif_thumbs'] ? 'true' : 'false' ?>" />
+		<input type="hidden" <?php $this->e_opt_name('dynimg_quality'); ?> value="<?php echo $this->wppp->options['dynimg_quality']; ?>" />
 
-			<table style="empty-cells:show; width:100%;">
-				<tr>
-					<td valign="top" style="width:9em;"><div id="l10n-slider" style="margin-top:1em; margin-bottom: 1em;"></div></td>
-					<td valign="top" style="padding-left:2em;">
-						<div class="wppp-l10n-desc" style="display:none;">
-							<h4 style="margin-top:0;"><?php _e( 'Translation improvements turned off', 'wppp' ); ?></h4>
-							<?php $this->output_active_settings( 0 ); ?>
-						</div>
-						<div class="wppp-l10n-desc" style="display:none;">
-							<h4 style="margin-top:0;"><?php _e( 'Fast WordPress translation', 'wppp' ); ?></h4>
-							<p class="description"><?php _e( 'Safe settings that should work with any WordPress install.', 'wppp' );?></p>
-							<?php $this->output_active_settings( 1 ); ?>
-						</div>
-						<div class="wppp-l10n-desc" style="display:none;">
-							<h4 style="margin-top:0;"><?php _e( 'Fastest WordPress translation', 'wppp' ); ?></h4>
-							<p class="description"><?php _e( 'Fastest translation settings. If any problems occur after activating, switch to stable setting.', 'wppp' ); ?></p>
-							<?php $this->output_active_settings( 2 ); ?>
-						</div>
-						<div class="wppp-l10n-desc" style="display:none;">
-							<h4 style="margin-top:0;"><?php _e( 'Custom settings', 'wppp' ); ?></h4>
-							<p class="description"><?php _e( 'Select your own settings. Customize via advanced view.', 'wppp' ); ?></p>
-							<?php $this->output_active_settings( 3 ); ?>
-						</div>
-					</td>
-					<td valign="top" style="width:30%">
-						<div class="wppp-l10n-hint" style="display:none"></div>
-						<div class="wppp-l10n-hint" style="display:none">
-							<?php 
-								$native = $this->do_hint_gettext( false );
-								if ( $native != 0 ) {
-									$this->do_hint_caching();
-								}
-							?>
-						</div>
-						<div class="wppp-l10n-hint" style="display:none">
-							<?php 
-								$this->do_hint_gettext( false ); 
-								if ( $native != 0 ) {
-									$this->do_hint_mo_cache();
-								}
-								$this->do_hint_jit( false );
-							?>
-						</div>
-						<div class="wppp-l10n-hint" style="display:none"></div>
-					</td>
-				</tr>
-			</table>
-			
-			<!-- <h3 class="title">Improve image handling</h3>
-			<table style="empty-cells:show; width:100%;">
-				<tr>
-					<td valign="top" style="width:9em;"><div id="dynimg-slider" style="margin-top:1em; margin-bottom:1em;"></div></td>
-					<td valign="top" style="padding-left:2em;">
-						Text
-					</td>
-				</tr>
-			</table> -->
-		</div>
+		<hr/>
+		<h3 class="title"><?php _e( 'Improve localization performance', 'wppp' ); ?></h3>
+		<table style="empty-cells:show; width:100%;">
+			<tr>
+				<td valign="top" style="width:9em;"><div id="l10n-slider" style="margin-top:1em; margin-bottom: 1em;"></div></td>
+				<td valign="top" style="padding-left:2em;">
+					<div class="wppp-l10n-desc" style="display:none;">
+						<h4 style="margin-top:0;"><?php _e( 'Localization improvements turned off', 'wppp' ); ?></h4>
+						<?php $this->l10n_output_active_settings( 0 ); ?>
+					</div>
+					<div class="wppp-l10n-desc" style="display:none;">
+						<h4 style="margin-top:0;"><?php _e( 'Fast WordPress localization', 'wppp' ); ?></h4>
+						<p class="description"><?php _e( 'Safe settings that should work with any WordPress installation.', 'wppp' );?></p>
+						<?php $this->l10n_output_active_settings( 1 ); ?>
+					</div>
+					<div class="wppp-l10n-desc" style="display:none;">
+						<h4 style="margin-top:0;"><?php _e( 'Fastest WordPress localization', 'wppp' ); ?></h4>
+						<p class="description"><?php _e( 'Fastest localization settings. If any problems occur after activating, switch to stable setting.', 'wppp' ); ?></p>
+						<?php $this->l10n_output_active_settings( 2 ); ?>
+					</div>
+					<div class="wppp-l10n-desc" style="display:none;">
+						<h4 style="margin-top:0;"><?php _e( 'Custom settings', 'wppp' ); ?></h4>
+						<p class="description"><?php _e( 'Select your own settings. Customize via advanced view.', 'wppp' ); ?></p>
+						<?php $this->l10n_output_active_settings( 3 ); ?>
+					</div>
+				</td>
+				<td valign="top" style="width:30%">
+					<div class="wppp-l10n-hint" style="display:none"></div>
+					<div class="wppp-l10n-hint" style="display:none">
+						<?php 
+							$native = $this->do_hint_gettext( false );
+							if ( $native != 0 ) {
+								$this->do_hint_caching();
+							}
+						?>
+					</div>
+					<div class="wppp-l10n-hint" style="display:none">
+						<?php 
+							$this->do_hint_gettext( false ); 
+							if ( $native != 0 ) {
+								$this->do_hint_mo_cache();
+							}
+							$this->do_hint_jit( false );
+						?>
+					</div>
+					<div class="wppp-l10n-hint" style="display:none"></div>
+				</td>
+			</tr>
+		</table>
+		<hr/>
+		<h3 class="title"><?php _e( 'Improve image handling', 'wppp' );?></h3>
+		<?php if ( $this->is_dynamic_images_available() ) : ?>
+		<table style="empty-cells:show; width:100%;">
+			<tr>
+				<td valign="top" style="width:9em;"><div id="dynimg-slider" style="margin-top:1em; margin-bottom:1em;"></div></td>
+				<td valign="top" style="padding-left:2em;">
+					<div class="wppp-dynimg-desc" style="display:none;">
+						<h4 style="margin-top:0;"><?php _e( 'All image handling improvements turned off', 'wppp' );?></h4>
+						<?php $this->dynimg_output_active_settings( 0 ); ?>
+					</div>
+					<div class="wppp-dynimg-desc" style="display:none;">
+						<h4 style="margin-top:0;"><?php _e( 'Faster image upload', 'wppp' );?></h4>
+						<p class="description"><?php _e( 'Improved upload performance due to dynamically created intermediate images. Once created images are saved to disc and served directly.', 'wppp' );?></p>
+						<?php $this->dynimg_output_active_settings( 1 ); ?>
+					</div>
+					<div class="wppp-dynimg-desc" style="display:none;">
+						<h4 style="margin-top:0;"><?php _e( 'Faster image upload and thumbnail creation', 'wppp' );?></h4>
+						<p class="description"><?php _e( 'Dynamically created intermediate images, use of EXIF thumbnails if available.<br/><strong>Thumbnails may differ from actual image depending on EXIF thumbnail.</strong>', 'wppp' );?></p>
+						<?php $this->dynimg_output_active_settings( 2 ); ?>
+					</div>
+					<div class="wppp-dynimg-desc" style="display:none;">
+						<h4 style="margin-top:0;"><?php _e( 'Faster upload and creation and reduced disc space usage.', 'wppp' );?></h4>
+						<p class="description"><?php _e( '<strong>Not recommended for production sites!</strong><br/>Intermediate images are created on demand but are not saved to disc.', 'wppp' );?></p>
+						<?php $this->dynimg_output_active_settings( 3 ); ?>
+					</div>
+					<div class="wppp-dynimg-desc" style="display:none;">
+						<h4 style="margin-top:0;"><?php _e( 'Custom settings', 'wppp' ); ?></h4>
+						<p class="description"><?php _e( 'Select your own settings. Customize via advanced view.', 'wppp' ); ?></p>
+						<?php $this->dynimg_output_active_settings( 4 ); ?>
+					</div>
+				</td>
+				<td valign="top" style="width:30%">
+					<div class="wppp-dynimg-hint" style="display:none"></div>
+					<div class="wppp-dynimg-hint" style="display:none"></div>
+					<div class="wppp-dynimg-hint" style="display:none">
+						<?php $this->do_hint_exif( false ); ?>
+					</div>
+					<div class="wppp-dynimg-hint" style="display:none">
+						<?php 
+							$this->do_hint_exif( false ); 
+							$this->do_hint_caching();
+							$this->do_hint_regen_thumbs( false );
+						?>
+					</div>
+					<div class="wppp-dynimg-hint" style="display:none"></div>
+				</td>
+			</tr>
+		</table>
+		<?php else : ?>
+			<?php $this->do_hint_permalinks( true ); ?>
+		<?php endif; ?>
+		<hr/>
 		<?php
 	}
 
@@ -152,7 +255,7 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 	 * Simple view helper functions
 	 */
 
-	function detect_current_setting () {
+	function l10n_detect_current_setting () {
 		// off - all options turned off
 		if ( !$this->wppp->options['use_mo_dynamic']
 			&& !$this->wppp->options['use_jit_localize']
@@ -184,88 +287,153 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 		return 3;
 	}
 
-	function get_settings_for_level ( $level ) {
-		$result = array();
-		if ( $level == 0 ) {
-			// Off
-			return $result;
-		} else if ( $level < 3 ) {
-			// Stable and Speed
-			if ( $this->is_native_gettext_available() == 0 ) {
-				$result[] = 'use_native_gettext';
-			} else {
-				$result[] = 'use_mo_dynamic';
-				if ( $this->is_object_cache_installed() ) {
-					$result[] = 'mo_caching';
-				}
-			}
-
-			if ( $level > 1 ) {
-				// Speed
-				if ( $this->is_jit_available() ) {
-					$result[] = 'use_jit_localize';
-				}
-				$result[] = 'disable_backend_translation';
-				$result[] = 'dbt_allow_user_override';
-			}
-		} else {
-			// Custom
-			foreach ( $this->wppp->options as $key => $value ) {
-				if ( $value )
-					$result[] = $key;
-			}
+	function dynimg_detect_current_setting () {
+		// off - all options turend off
+		if ( !$this->wppp->options['dynamic_images'] ) {
+			return 0;
 		}
-		return $result;
+		
+		// stable - dynimg enabled, image quality 80%
+		if ( $this->wppp->options['dynamic_images']
+			&& $this->wppp->options['dynimg_quality'] == 80
+			&& !$this->wppp->options['dynamic_images_nosave']
+			&& !$this->wppp->options['dynamic_images_rthook']
+			&& !$this->wppp->options['dynamic_images_exif_thumbs'] ) {
+			return 1;
+		}
+
+		// speed - same as stable, including exif
+		if ( $this->wppp->options['dynamic_images']
+			&& $this->wppp->options['dynimg_quality'] == 80
+			&& !$this->wppp->options['dynamic_images_nosave']
+			&& !$this->wppp->options['dynamic_images_rthook']
+			&& $this->wppp->options['dynamic_images_exif_thumbs'] ) {
+			return 2;
+		}
+
+		// webspace - same as speed, including no_save, cache and regen-integration
+		if ( $this->wppp->options['dynamic_images']
+			&& $this->wppp->options['dynimg_quality'] == 80
+			&& $this->wppp->options['dynamic_images_nosave']
+			&& ( $this->wppp->options['dynamic_images_cache'] || !$this->is_object_cache_installed() )
+			&& ( $this->wppp->options['dynamic_images_rthook'] || !$this->is_regen_thumbs_available() )
+			&& !$this->wppp->options['dynamic_images_rthook_force']
+			&& ( $this->wppp->options['dynamic_images_exif_thumbs'] || !$this->is_exif_available() ) ) {
+			return 3;
+		}
+
+		// else custom
+		return 4;
 	}
 
-	function output_active_settings ( $level ) {
+	function e_li_error ( $text ) {
+		echo '<li class="ui-state-error" style="border:none; background:none;"><span class="ui-icon ui-icon-closethick" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>' . $text . '</li>';
+	}
+
+	function e_li_check ( $text ) {
+		echo '<li class="ui-state-highlight" style="border:none; background:none;"><span class="ui-icon ui-icon-check" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>' . $text . '</li>';
+	}
+
+	function dynimg_output_active_settings ( $level ) {
 		echo '<ul>';
 		if ( $level == 0 ) {
 			// Off
-			echo '<li class="ui-state-error" style="border:none; background:none;"><span class="ui-icon ui-icon-closethick" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>' . __( 'All translation settings turned off.', 'wppp' ) . '</li>';
+			$this->e_li_error( __( 'All improved image handling settings disabled.', 'wppp' ) );
+		} else {
+			if ( !$this->is_dynamic_images_available() ) {
+				$this->e_li_error( 'Pretty Permalinks must be enabled for improved image handling' );
+			} else {
+				$this->e_li_check( 'Dynamic image resizing enabled' );
+				if ( $level < 4 ) {
+					$this->e_li_check( 'Intermediate image quality set to 80%' );
+					if ( $level > 1 ) {
+						if ( $this->is_exif_available() ) {
+							$this->e_li_check( 'Use EXIF thumbnails if available.' );
+						} else {
+							$this->e_li_error( 'EXIF extension not installed' );
+						}
+						if ( $level > 2 ) {
+							$this->e_li_check( "Don't save intermediate images" );
+							if ( $this->is_object_cache_installed() ) {
+								$this->e_li_check( __( 'Use caching', 'wppp' ) );
+							} else {
+								$this->e_li_error( __( 'No persistent object cache installed.', 'wppp' ) );
+							}
+							if ( $this->is_regen_thumbs_available() ) {
+								$this->e_li_check( 'Regenerate thumbnails integration' );
+							} else {
+								$this->e_li_error( 'No regenerate thumbnails plugin installed' );
+							}
+						}
+					}
+				} else {
+					// custom
+					if ( $this->wppp->options['dynamic_images_nosave'] ) {
+						$this->e_li_check( "Don't save intermediate images" );
+					}
+					if ( $this->wppp->options['dynamic_images_cache'] ) {
+						$this->e_li_check( __( 'Use caching', 'wppp' ) );
+					}
+					if ( $this->wppp->options['dynamic_images_rthook'] ) {
+						$this->e_li_check( 'Regenerate thumbnail integration' );
+						if ( $this->wppp->options['dynamic_images_rthook_force'] ) {
+							$this->e_li_check( 'Force delte all on regenerate thumbnails' );
+						}
+					}
+					if ( $this->wppp->options['dynamic_images_exif_thumbs'] ) {
+						$this->e_li_check( 'Use EXIF thumbnails if available.' );
+					}
+					$this->e_li_check( 'Intermediate image quality set to '.$this->wppp->options['dynimg_quality'].'%' );
+				}
+			}
+		}
+		echo '</ul>';
+	}
+
+	function l10n_output_active_settings ( $level ) {
+		echo '<ul>';
+		if ( $level == 0 ) {
+			// Off
+			$this->e_li_error( __( 'All translation settings turned off.', 'wppp' ) );
 		} else if ( $level < 3 ) {
 			// Stable and Speed
 			if ( $this->is_native_gettext_available() == 0 ) {
-				echo '<li class="ui-state-highlight" style="border:none; background:none;"><span class="ui-icon ui-icon-check" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>' . __( 'Use gettext', 'wppp' ) . '</li>';
+				$this->e_li_check( __( 'Use gettext', 'wppp' ) );
 			} else {
-				echo '<li class="ui-state-error" style="border:none; background:none;"><span class="ui-icon ui-icon-closethick" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>' . __( 'Gettext not available.', 'wppp' ) . '</li>';
-				echo '<li class="ui-state-highlight" style="border:none; background:none;"><span class="ui-icon ui-icon-check" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>' . __( 'Use alternative MO reader', 'wppp' ) . '</li>';
+				$this->e_li_error( __( 'Gettext not available.', 'wppp' ) );
+				$this->e_li_check( __( 'Use alternative MO reader', 'wppp' ) );
 				if ( $this->is_object_cache_installed() ) {
-					echo '<li class="ui-state-highlight" style="border:none; background:none;"><span class="ui-icon ui-icon-check" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>' . __( 'Use caching', 'wppp' ) . '</li>';
+					$this->e_li_check( __( 'Use caching', 'wppp' ) );
 				} else {
-					echo '<li class="ui-state-error" style="border:none; background:none;"><span class="ui-icon ui-icon-closethick" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>' . __( 'No persistent object cache installed.', 'wppp' ) . '</li>';
+					$this->e_li_error( __( 'No persistent object cache installed.', 'wppp' ) );
 				}
 			}
 
 			if ( $level > 1 ) {
 				if ( $this->is_jit_available() ) {
-					echo '<li class="ui-state-highlight" style="border:none; background:none;"><span class="ui-icon ui-icon-check" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>' . __( 'Use JIT localize', 'wppp' ) . '</li>';
+					$this->e_li_check( __( 'Use JIT localize', 'wppp' ) );
 				} else {
-					echo '<li class="ui-state-error" style="border:none; background:none;"><span class="ui-icon ui-icon-closethick" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>' . __( 'JIT localize not available', 'wppp' ) . '</li>';
+					$this->e_li_error( __( 'JIT localize not available', 'wppp' ) );
 				}
 
-				echo '<li class="ui-state-highlight" style="border:none; background:none;"><span class="ui-icon ui-icon-check" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>' . __( 'Disable back end translation', 'wppp' ) . ' (' . __( 'Allow user override', 'wppp' ) . ')</li>';
+				$this->e_li_check( __( 'Disable back end translation', 'wppp' ) . ' (' . __( 'Allow user override', 'wppp' ) . ')' );
 			}
 		} else {
 			// Custom
 			if ( $this->wppp->options['use_native_gettext'] ) {
-				echo '<li class="ui-state-highlight" style="border:none; background:none;"><span class="ui-icon ui-icon-check" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>' . __( 'Use gettext', 'wppp' ) . '</li>';
+				$this->e_li_check( __( 'Use gettext', 'wppp' ) );
 			}
 			if ( $this->wppp->options['use_mo_dynamic'] ) {
-				echo '<li class="ui-state-highlight" style="border:none; background:none;"><span class="ui-icon ui-icon-check" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>' . __( 'Use alternative MO reader', 'wppp' ) . '</li>';
+				$this->e_li_check( __( 'Use alternative MO reader', 'wppp' ) );
 			}
 			if ( $this->wppp->options['mo_caching'] ) {
-				echo '<li class="ui-state-highlight" style="border:none; background:none;"><span class="ui-icon ui-icon-check" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>' . __( 'Use caching', 'wppp' ) . '</li>';
+				$this->e_li_check( __( 'Use caching', 'wppp' ) );
 			}
 			if ( $this->wppp->options['use_jit_localize'] ) {
-				echo '<li class="ui-state-highlight" style="border:none; background:none;"><span class="ui-icon ui-icon-check" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>' . __( 'Use JIT localize', 'wppp' ) . '</li>';
+				$this->e_li_check( __( 'Use JIT localize', 'wppp' ) );
 			}
 			if ( $this->wppp->options['disable_backend_translation'] ) {
-				echo '<li class="ui-state-highlight" style="border:none; background:none;"><span class="ui-icon ui-icon-check" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>' . __( 'Disable back end translation', 'wppp' );
-				if ( $this->wppp->options['dbt_allow_user_override'] ) {
-					echo  ' (' . __( 'Allow user override', 'wppp' ) . ')';
-				} 
-				echo '</li>';
+				$this->e_li_check( __( 'Disable back end translation', 'wppp' ) . ( $this->wppp->options['dbt_allow_user_override'] ? ' (' . __( 'Allow user override', 'wppp' ) . ')' : '' ) );
 			}
 		}
 		echo '</ul>';

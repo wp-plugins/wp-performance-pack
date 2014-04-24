@@ -38,8 +38,14 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 
 		$screen->add_help_tab( array(
 			'id'	=> 'wppp_advanced_l10n',
-			'title'	=> __( 'Improve translation performance', 'wppp' ),
+			'title'	=> __( 'Improve localization performance', 'wppp' ),
 			'content'	=> '<p>' . __( 'WPPP offers different options to significantly improve translation performance. These only affect localization of WordPress core, themes and plugins, not translation of content (e.g. when using plugins like WPML). To automatically apply optimal settings for your blog, use the simple view. For implementation details refer to the WordPress plugin page or the development blog.', 'wppp' ) . '</p>',
+		) );
+
+		$screen->add_help_tab( array(
+			'id'	=> 'wppp_advanced_dynimg',
+			'title'	=> __( 'Improve image handling', 'wppp' ),
+			'content'	=> '<p>' . __( "Using dynamic image resizing images don't get resized on upload. Instead resizing is done when an intermediate image size is first requested. This can significantly improve upload speed. Once created the image gets saved and is subsequently served directly. Further improvements include adjustable image quality and usage of EXIF thumbnails for creation of smaller intermediate images (when using this option be aware that EXIF thumbnail and actual image can differ), which improves memory and cpu usage when creating intermediate images. To conserve webspace or for use in testing environments saving of intermediate images can be turned off. This will result in a performance hit as images are resized on each request. Using the caching option and an object cache can reduce this performance penalty.", 'wppp' ) . '</p>',
 		) );
 
 		$screen->add_help_tab( array(
@@ -68,106 +74,103 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 		?>
 		<input type="hidden" <?php $this->e_opt_name('dynimg_quality'); ?> value="<?php echo $this->wppp->options['dynimg_quality']; ?>" />
 
-		<h3 class="title"><?php _e( 'Improve translation performance', 'wppp' ); ?></h3>
-		<div>
-			<table class="form-table">
-				<tr valign="top">
-					<th scope="row"><?php _e( 'Use gettext', 'wppp' ); ?></th>
-					<td>
-						<?php $this->e_radio_enable( 'native-gettext', 'use_native_gettext', $this->is_native_gettext_available() != 0 ); ?>
-						<p class="description"><?php _e( 'Use php gettext extension for translations. This is in most cases the fastest way to translate your blog.', 'wppp' ); ?></p>
-						<?php $this->do_hint_gettext( true ); ?>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row" style="width:15em"><?php _e( 'Use alternative MO reader', 'wppp' ); ?></th>
-					<td>
-						<?php $this->e_radio_enable( 'mo-dynamic', 'use_mo_dynamic' ); ?>
-						<p class="description"><?php _e( 'Alternative MO reader using on demand translation and loading of translation files. Faster and less memory intense than the default WordPress implementation.' ,'wppp' ); ?></p>
-						<br/>
-						<?php $this->e_checkbox( 'mo-caching', 'mo_caching', __( 'Use caching', 'wppp' ) ); ?>
-						<p class="description"><?php _e( 'Cache translations using WordPress Object Cache API', 'wppp' ); ?></p>
-						<?php $this->do_hint_caching(); ?>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row">
-						<?php _e( 'Use JIT localize', 'wppp' ); ?>
-					</th>
-					<td>
-						<?php $this->e_radio_enable( 'jit', 'use_jit_localize', !$this->is_jit_available() ); ?>
-						<p class="description"><?php _e( 'Just in time localization of scripts.', 'wppp' ); ?></p>
-						<?php $this->do_hint_jit( true ); ?>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row">
-						<?php _e( 'Disable back end translation', 'wppp' ); ?>
-					</th>
-					<td>
-						<?php $this->e_radio_enable( 'backend-trans', 'disable_backend_translation' ); ?>
-						<p class="description"><?php _e('Disables translation of back end texts.', 'wppp' ); ?></p>
-						<br/>
-						<?php $this->e_checkbox( 'allow-user-override', 'dbt_allow_user_override', __( 'Allow user override', 'wppp' ) ); ?>
-						<p class="description"><?php  _e( 'Allow users to reactivate back end translation in their profile settings.', 'wppp' ); ?></p>
-						<br/>
-						<p>
-							<?php _e( 'Default user language:', 'wppp' ); ?>&nbsp;
-							<label for="user-default-english"><input id="user-default-english" type="radio" <?php $this->e_opt_name( 'dbt_user_default_translated' ); ?> value="false" <?php $this->e_checked( 'dbt_user_default_translated', false ); ?>><?php _e( 'English', 'wppp' ); ?></label>&nbsp;
-							<label for="user-default-translated"><input id="user-default-translated" type="radio" <?php $this->e_opt_name( 'dbt_user_default_translated' ); ?> value="true" <?php $this->e_checked( 'dbt_user_default_translated' ); ?>><?php _e( 'Blog language', 'wppp' ); ?></label>
-						</p>
-						<p class="description"><?php _e( "Default back end language for new and existing users, who haven't updated their profile yet.", 'wppp' ); ?></p>
-					</td>
-				</tr>
-			</table>
-		</div>
+		<hr/>
+
+		<h3 class="title"><?php _e( 'Improve localization performance', 'wppp' ); ?></h3>
+		<table class="form-table">
+			<tr valign="top">
+				<th scope="row"><?php _e( 'Use gettext', 'wppp' ); ?></th>
+				<td>
+					<?php $this->e_radio_enable( 'native-gettext', 'use_native_gettext', $this->is_native_gettext_available() != 0 ); ?>
+					<p class="description"><?php _e( 'Use php gettext extension for localization. This is in most cases the fastest way to localize your blog.', 'wppp' ); ?></p>
+					<?php $this->do_hint_gettext( true ); ?>
+				</td>
+			</tr>
+			<tr valign="top">
+				<th scope="row" style="width:15em"><?php _e( 'Use alternative MO reader', 'wppp' ); ?></th>
+				<td>
+					<?php $this->e_radio_enable( 'mo-dynamic', 'use_mo_dynamic' ); ?>
+					<p class="description"><?php _e( 'Alternative MO reader using on demand translation and loading of localization files (.mo). Faster and less memory intense than the default WordPress implementation.' ,'wppp' ); ?></p>
+					<br/>
+					<?php $this->e_checkbox( 'mo-caching', 'mo_caching', __( 'Use caching', 'wppp' ) ); ?>
+					<p class="description"><?php _e( "Cache translations using WordPress' Object Cache API", 'wppp' ); ?></p>
+					<?php $this->do_hint_caching(); ?>
+				</td>
+			</tr>
+			<tr valign="top">
+				<th scope="row">
+					<?php _e( 'Use JIT localize', 'wppp' ); ?>
+				</th>
+				<td>
+					<?php $this->e_radio_enable( 'jit', 'use_jit_localize', !$this->is_jit_available() ); ?>
+					<p class="description"><?php _e( 'Just in time localization of scripts.', 'wppp' ); ?></p>
+					<?php $this->do_hint_jit( true ); ?>
+				</td>
+			</tr>
+			<tr valign="top">
+				<th scope="row">
+					<?php _e( 'Disable back end localization', 'wppp' ); ?>
+				</th>
+				<td>
+					<?php $this->e_radio_enable( 'backend-trans', 'disable_backend_translation' ); ?>
+					<p class="description"><?php _e('Disables localization of back end texts.', 'wppp' ); ?></p>
+					<br/>
+					<?php $this->e_checkbox( 'allow-user-override', 'dbt_allow_user_override', __( 'Allow user override', 'wppp' ) ); ?>
+					<p class="description"><?php  _e( 'Allow users to reactivate back end localization in their profile settings.', 'wppp' ); ?></p>
+					<br/>
+					<p>
+						<?php _e( 'Default user language:', 'wppp' ); ?>&nbsp;
+						<label for="user-default-english"><input id="user-default-english" type="radio" <?php $this->e_opt_name( 'dbt_user_default_translated' ); ?> value="false" <?php $this->e_checked( 'dbt_user_default_translated', false ); ?>><?php _e( 'English', 'wppp' ); ?></label>&nbsp;
+						<label for="user-default-translated"><input id="user-default-translated" type="radio" <?php $this->e_opt_name( 'dbt_user_default_translated' ); ?> value="true" <?php $this->e_checked( 'dbt_user_default_translated' ); ?>><?php _e( 'Blog language', 'wppp' ); ?></label>
+					</p>
+					<p class="description"><?php _e( "Default back end language for new and existing users, who haven't updated their profile yet.", 'wppp' ); ?></p>
+				</td>
+			</tr>
+		</table>
+
+		<hr/>
 
 		<h3 class="title"><?php _e( 'Improve image handling', 'wppp' ); ?></h3>
-		<div>
-			<table class="form-table">
-				<tr valign="top">
-					<th scope="row">Dynamic image resizing</th>
-					<td>
-						<?php $this->e_radio_enable( 'dynimg', 'dynamic_images', !$this->is_dynamic_images_available() ); ?>
-						<p class="description">
-							If activated intermediate image sizes won't be generated on upload. Instead resizing is done dynamically when an intermediate image is accessed. This improves upload performance and reduces disk usage. <b>Requires pretty permalinks!</b> If you deactive this option after some time of usage you might have to recreate thumbnails using a plugin like Regenerate Thumbnails.
-						</p>
-						<br/>
-						<?php $this->e_checkbox( 'dynimgexif', 'dynamic_images_exif_thumbs', __( 'Use EXIF thumbnail', 'wppp' ), !$this->is_exif_available() ); ?>
-						<p class="description">When creating "thumbnail" images try to use the thumbnail contained in EXIF data to create it, if available. As the contained thumbnail is much smaller than the full image this reduces memory consumption and improves performance. But not all image editing tools update the EXIF thumbnail when saving an image. As a result of this, the EXIF thumbnail can look different than the actual image.</p>
-						<br/>
-						<?php $this->e_checkbox( 'dynimg-save', 'dynamic_images_nosave', __( "Don't save intermediate images", 'wppp' ) ); ?>
-						<p class="description">
-							By default once created intermediate images are saved to disk and served directly on subsequent requests. Though this already reduces disk space usage you further reduce it by disabling saving, but this will slow down your blog as images get created on each access. Useful e.g. for test environments to reduce disk space usage.
-						</p>
-						<br/>
-						<?php $this->e_checkbox( 'dynimg-cache', 'dynamic_images_cache', __( "Use WP Object Cache for (not saved) intermediate images.", 'wppp' ) ); ?>
-						<p class="description">If you aren't using a file based object cache, make sure the cache memory limit isn't too low for this. This is best used in testing environments, not on production sites and is only applied if "<em>Don't save intermediate images</em>" is activated. Created images are cached for 30 minutes.</p>
-						<?php $this->do_hint_caching(); ?>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row">Image quality</th>
-					<td>
-						<div id="dynimg-quality-slider" style="width:25em; margin-bottom:2em;"></div>
-						<p class="description">Quality setting for newly created intermediate images.</p>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row">Regenerate Thumbnails integration</th>
-					<td>
-						<?php $this->e_radio_enable( 'dynimgrthook', 'dynamic_images_rthook', !$this->is_regen_thumbs_available() ); ?>
-						<p class="description">Activate this option to delete all existing intermediate images using <a href="http://wordpress.org/plugins/regenerate-thumbnails/" target="_blank">Regenerate Thumbnails</a> plugin. To do so, just regenerate thumbnails while this option is activated. This option won't do anything if Regenerate Thumbnails isn't installed.</p>
-						<br/>
-						<?php $this->e_checkbox( 'dynimg-rtforce', 'dynamic_images_rthook_force', __( 'Force delete of all potential thumbnails', 'wppp' ), !$this->is_regen_thumbs_available() ); ?>
-						<p class="description">This option only applies if the Regenerate Thumbnail hook is active. All potential thumbnail files (i.e. those matching the pattern "<em>filename-*x*.ext</em>") will be deleted while regenerating. Use this option to delete old files which aren't referenced from attachment meta data due to earlier thumbnail regeneration. <strong>Use with care as this option might delete files which aren't thumbnails!</strong></p>
-					</td>
-				</tr>
-			</table>
-		</div>
+		<table class="form-table">
+			<tr valign="top">
+				<th scope="row"><?php _e( 'Dynamic image resizing', 'wppp' ); ?></th>
+				<td>
+					<?php $this->e_radio_enable( 'dynimg', 'dynamic_images', !$this->is_dynamic_images_available() ); ?>
+					<p class="description"><?php _e( "Create intermediate images on demand, not on upload. If you deactive this option after some time of usage you might have to recreate thumbnails using a plugin like Regenerate Thumbnails.", 'wppp' ); ?></p>
+					<?php $this->do_hint_permalinks( true ); ?>
+					<br/>
+					<?php $this->e_checkbox( 'dynimgexif', 'dynamic_images_exif_thumbs', __( 'Use EXIF thumbnail', 'wppp' ), !$this->is_exif_available() ); ?>
+					<p class="description"><?php _e( 'If available use EXIF thumbnail to create image sizes smaller than the EXIF thumbnail. <strong>Note that, depending on image editing software, the EXIF thumbnail might differ from the actual image!</strong>', 'wppp'); ?></p>
+					<br/>
+					<?php $this->e_checkbox( 'dynimg-save', 'dynamic_images_nosave', __( "Don't save intermediate images", 'wppp' ), !$this->is_dynamic_images_available() ); ?>
+					<p class="description"><?php _e( 'Dynamically recreate intermediate images on each request.', 'wppp' ); ?></p>
+					<br/>
+					<?php $this->e_checkbox( 'dynimg-cache', 'dynamic_images_cache', __( 'Use caching', 'wppp' ), !$this->is_dynamic_images_available() ); ?>
+					<p class="description"><?php printf( __( "Cache intermediate images using Use WordPress' Object Cache API. Only applied if %s is activated.", 'wppp' ), '"' . __( "Don't save intermediate images", 'wppp' ) . '"' ) ; ?></p>
+					<?php $this->do_hint_caching(); ?>
+				</td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><?php _e( 'Image quality', 'wppp' );?></th>
+				<td>
+					<div id="dynimg-quality-slider" style="width:25em; margin-bottom:2em;"></div>
+					<p class="description"><?php _e( 'Quality setting for newly created intermediate images.', 'wppp' );?></p>
+				</td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><?php _e( 'Regenerate Thumbnails integration', 'wppp' );?></th>
+				<td>
+					<?php $this->e_radio_enable( 'dynimgrthook', 'dynamic_images_rthook', !$this->is_regen_thumbs_available() || !$this->is_dynamic_images_available() ); ?>
+					<p class="description"><?php _e( 'Integrate into thumbnail regeneration plugins to delete existing intermediate images.', 'wppp' ); ?></p>
+					<?php $this->do_hint_regen_thumbs( false ); ?>
+					<br/>
+					<?php $this->e_checkbox( 'dynimg-rtforce', 'dynamic_images_rthook_force', __( 'Force delete of all potential thumbnails', 'wppp' ), !$this->is_regen_thumbs_available() || !$this->is_dynamic_images_available() ); ?>
+					<p class="description"><?php _e( 'Delete all potential intermediate images (i.e. those matching the pattern "<em>imagefilename-*x*.ext</em>") while regenerating. <strong>Use with care as this option might delete files which are no thumbnails!</strong>', 'wppp' );?></p>
+				</td>
+			</tr>
+		</table>
 
 <!--		<h3>Selective plugin loading</h3>
-		<div>
 			<table class="widefat">
 				<thead>
 					<tr>
@@ -200,20 +203,21 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 				?>
 				</tbody>
 			</table>
-		</div>
 -->
+		<hr/>
+
 		<h3 class="title"><?php _e( 'Debugging', 'wppp' ); ?></h3>
-		<div>
-			<table class="form-table">
-				<tr valign="top">
-					<th scope="row"><?php _e( 'Debug Panel', 'wppp' ); ?></th>
-					<td>
-						<?php $this->e_radio_enable( 'debug-panel', 'debug', !class_exists( 'Debug_Bar' ) ); ?>
-						<p class="description"><?php _e( 'Enables debugging, requires <a href="http://wordpress.org/plugins/debug-bar/">Debug Bar</a> Plugin.', 'wppp' ); ?></p>
-					</td>
-				</tr>
-			</table>
-		</div>
+		<table class="form-table">
+			<tr valign="top">
+				<th scope="row"><?php _e( 'Debug Panel', 'wppp' ); ?></th>
+				<td>
+					<?php $this->e_radio_enable( 'debug-panel', 'debug', !class_exists( 'Debug_Bar' ) ); ?>
+					<p class="description"><?php _e( 'Enables debugging, requires <a href="http://wordpress.org/plugins/debug-bar/">Debug Bar</a> Plugin.', 'wppp' ); ?></p>
+				</td>
+			</tr>
+		</table>
+
+		<hr/>
 		<?php
 	}
 }

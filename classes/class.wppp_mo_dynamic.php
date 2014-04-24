@@ -37,7 +37,7 @@ class MO_item {
  * Translation entries are created dynamically.
  * Due to this export and save functions are not implemented.
  */
-class MO_dynamic extends Gettext_Translations {
+class WPPP_MO_dynamic extends Gettext_Translations {
 	private $caching = false;
 	private $modified = false;
 
@@ -499,7 +499,7 @@ class MO_dynamic extends Gettext_Translations {
 	}
 
 	function merge_with( &$other ) {
-		if ( $other instanceof MO_dynamic ) {
+		if ( $other instanceof WPPP_MO_dynamic ) {
 			if ( $other->translations !== NULL ) {
 				foreach( $other->translations as $key => $translation ) {
 					$this->translations[$key] = $translation;
@@ -534,48 +534,4 @@ class MO_dynamic extends Gettext_Translations {
 		return false;
 	}
 }
-
-class MO_dynamic_Debug extends Mo_dynamic {
-	public $translate_hits = 0;
-	public $translate_plural_hits = 0;
-	public $search_translation_hits = 0;
-
-	function import_domain_from_cache () {
-		global $wp_performance_pack;
-		if ( $wp_performance_pack->options['mo_caching'] ) {
-			parent::import_domain_from_cache ();
-			if ( ($c = count( $this->translations ) ) > 0 ) {
-				$wp_performance_pack->dbg_textdomains[$this->domain]['cache'] = $c;
-			}
-			if ( $this->base_translations !== NULL ) {
-				$wp_performance_pack->dbg_textdomains[$this->domain]['basecache'] = count( $this->base_translations );
-			}
-		}
-	}
-
-	function translate_plural ($singular, $plural, $count, $context = null) {
-		$this->translate_plural_hits++;
-		return parent::translate_plural($singular, $plural, $count, $context);
-	}
-
-	function translate ($singular, $context = null) {
-		$this->translate_hits++;
-		return parent::translate ($singular, $context);
-	}
-	
-	protected function search_translation ( $key ) {
-		$this->search_translation_hits++;
-		return parent::search_translation( $key );
-	}
-
-	function merge_with( &$other ) {
-		if ( $other instanceof MO_dynamic_Debug ) {
-			$this->translate_hits += $other->translate_hits;
-			$this->translate_plural_hits += $other->translate_plural_hits;
-			$this->search_translation_hits += $other->search_translation_hits;
-		}
-		parent::merge_with( $other );
-	}
-}
-
 ?>

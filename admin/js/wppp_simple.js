@@ -1,89 +1,76 @@
 jQuery(document).ready(function($){
-	var lastL10nSetting = null;
-	var lastL10nDesc = null;
-	var lastL10nHint = null;
 
-	wpppData['l10nAllSettings'] = wpppData['l10nAllSettings'].split(",");
-	wpppData['l10nStableSettings'] = wpppData['l10nStableSettings'].split(",");
-	wpppData['l10nSpeedSettings'] = wpppData['l10nSpeedSettings'].split(",");
-	wpppData['l10nCustomSettings'] = wpppData['l10nCustomSettings'].split(",");
-
-	function displayL10nSetting ( level ) {
-		if ( lastL10nSetting != null ) {
-			$(lastL10nSetting).css({"font-weight": "normal", "font-size": "100%", "color": ""});
-			$(lastL10nDesc).hide();
-			$(lastL10nHint).hide();
-		}
-
-		lastL10nSetting = $("#l10n-slider .ui-slider-label:eq("+level+")");
-		lastL10nDesc = $(".wppp-l10n-desc:eq("+level+")");
-		lastL10nHint = $(".wppp-l10n-hint:eq("+level+")");
-
-		$(lastL10nDesc).show();
-		$(lastL10nHint).show();
-		$(lastL10nSetting).css({"font-weight": "bold", "font-size": "120%", "color": "#222"});
+	function lastDisplayedObject () {
+		this.Label = null;
+		this.Desc = null;
+		this.Hint = null;
 	}
 
-	function setL10nSettingInputValues ( level ) {
-		if ( level == 0 ) {
-			for ( i = 0; i < wpppData['l10nAllSettings'].length; i++ ) {
-				$( "#wppp-settings input[name='wppp_option[" + wpppData['l10nAllSettings'][i] + "]']").val("false");
-			}
-		} else {
-			var selSettings = [];
-			switch ( level ) {
-				case 1 :	selSettings = wpppData['l10nStableSettings'];
-							break;
-				case 2 :	selSettings = wpppData['l10nSpeedSettings'];
-							break;
-				case 3 :	selSettings = wpppData['l10nCustomSettings'];
-							break;
-			}
-			for ( i = 0; i < wpppData['l10nAllSettings'].length; i++ ) {
-				$( "#wppp-settings input[name='wppp_option[" + wpppData['l10nAllSettings'][i] + "]']").val(
-					$.inArray( wpppData['l10nAllSettings'][i], selSettings ) >= 0 ? "true" : "false"
-				);
-			}
+	var lastL10n = new lastDisplayedObject();
+	var lastDynimg = new lastDisplayedObject();
+	wpppData = $.parseJSON( wpppData );
+
+	function displaySetting ( last, idPrefix, level ) {
+		if ( last.Label != null ) {
+			$(last.Label).css({"font-weight": "normal", "font-size": "100%", "color": ""});
+			$(last.Desc).hide();
+			$(last.Hint).hide();
+		}
+
+		last.Label = $("#"+idPrefix+"-slider .ui-slider-label:eq("+level+")");
+		last.Desc = $(".wppp-"+idPrefix+"-desc:eq("+level+")");
+		last.Hint = $(".wppp-"+idPrefix+"-hint:eq("+level+")");
+
+		$(last.Desc).show();
+		$(last.Hint).show();
+		$(last.Label).css({"font-weight": "bold", "font-size": "120%", "color": "#222"});
+	}
+
+	function setSettingInputValues ( settings, level ) {
+		for ( var option in settings ) {
+			$( "#wppp-settings input[name='wppp_option[" + option + "]']").val( level == 0 ? "false" : settings[option][level-1] );
 		}
 	}
 
 	$( "#l10n-slider" ).slider({
 		orientation: "vertical",
-		value: wpppData["l10nSetting"],
+		value: wpppData.l10n.current,
 		min: 0,
 		max: 3,
 		step: 1,
 		slide: function( event, ui ) {
-			displayL10nSetting(ui.value);
-			setL10nSettingInputValues(ui.value);
+			displaySetting(lastL10n, 'l10n', ui.value);
+			setSettingInputValues( wpppData.l10n.settings, ui.value);
 		}
 	}).slider( 'pips', {
 		rest: 'label',
-		labels: [ 	wpppData['l10nLabelOff'],
-					wpppData['l10nLabelStable'],
-					wpppData['l10nLabelSpeed'],
-					wpppData['l10nLabelCustom']
+		labels: [ 	wpppData.labels.Off,
+					wpppData.labels.Stable,
+					wpppData.labels.Speed,
+					wpppData.labels.Custom
 				]
 	});
 
-	/* $( "#dynimg-slider" ).slider({
+	$( "#dynimg-slider" ).slider({
 		orientation: "vertical",
-		value: 0, //wpppData["l10nSetting"],
+		value: wpppData.dynimg.current,
 		min: 0,
-		max: 3,
+		max: 4,
 		step: 1,
 		slide: function( event, ui ) {
-			//displayL10nSetting(ui.value);
-			//setL10nSettingInputValues(ui.value);
+			displaySetting(lastDynimg, 'dynimg', ui.value);
+			setSettingInputValues( wpppData.dynimg.settings, ui.value);
 		}
 	}).slider( 'pips', {
 		rest: 'label',
-		labels:	[	'Off',
-					'Speed',
-					'Webspace',
-					'Custom',
+		labels:	[	wpppData.labels.Off,
+					wpppData.labels.Stable,
+					wpppData.labels.Speed,
+					wpppData.labels.Webspace,
+					wpppData.labels.Custom,
 				]
-	}); */
+	});
 
-	displayL10nSetting( parseInt( wpppData["l10nSetting"] ) );
+	displaySetting( lastL10n, "l10n", wpppData.l10n.current );
+	displaySetting ( lastDynimg, "dynimg", wpppData.dynimg.current );
 });

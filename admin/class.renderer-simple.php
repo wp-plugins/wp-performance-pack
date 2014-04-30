@@ -186,7 +186,7 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 						<?php 
 							$this->do_hint_gettext( false ); 
 							if ( $native != 0 ) {
-								$this->do_hint_mo_cache();
+								$this->do_hint_caching();
 							}
 							$this->do_hint_jit( false );
 						?>

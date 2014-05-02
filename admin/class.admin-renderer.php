@@ -99,7 +99,7 @@ abstract class WPPP_Admin_Renderer {
 
 	function is_dynamic_images_available () {
 		global $wp_rewrite;
-		return ($wp_rewrite->permalink_structure != '');
+		return ( !is_multisite() ) && ($wp_rewrite->permalink_structure != '');
 	}
 
 	function is_regen_thumbs_available () {
@@ -169,7 +169,7 @@ abstract class WPPP_Admin_Renderer {
 			} else {
 				echo '<div class="ui-state-highlight ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-info" style="float:left; margin-right:.3em;"></span>';
 			}
-			_e( 'Dynamic image handling requires Pretty Permalinks', 'wppp' );
+			_e( 'Improved image handling requires Pretty Permalinks and is not available on multisite installations.', 'wppp' );
 			echo '</div>';
 		}
 	}

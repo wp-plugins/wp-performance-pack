@@ -13,6 +13,7 @@ include( sprintf( '%s/class.wppp-admin-user.php', dirname( __FILE__ ) ) );
 class WPPP_Admin_Admin extends WPPP_Admin_User {
 
 	private $renderer = NULL;
+	private $show_update_info = false;
 
 	public function __construct($wppp_parent) {
 		parent::__construct($wppp_parent);
@@ -85,14 +86,7 @@ class WPPP_Admin_Admin extends WPPP_Admin_User {
 					$input[$key] = sanitize_text_field( $_POST['wppp_option'][$key] );
 				}
 			}
-			$input = $this->validate( $input );
-			foreach ( WP_Performance_Pack::$options_default as $key => $value ) {
-				if ( !isset( $input[$key] ) ) {
-					$this->wppp->options[$key] = false;
-				} else {
-					$this->wppp->options[$key] = $input[$key];
-				}
-			}
+			$this->wppp->options = $this->validate( $input );
 			update_site_option( WP_Performance_Pack::$options_name, $this->wppp->options );
 		}
 	}
@@ -114,24 +108,30 @@ class WPPP_Admin_Admin extends WPPP_Admin_User {
 	}
 
 	function load_admin_page () {
+		if ( $this->wppp->is_network ) {
+			if ( isset( $_GET['action'] ) && $_GET['action'] === 'update_wppp' ) {
+				$this->update_wppp_settings();
+				$this->show_update_info = true;
+			}
+		}
 		$this->load_renderer();
 		$this->renderer->enqueue_scripts_and_styles();
 		$this->renderer->add_help_tab();
 	}
 
 	public function do_options_page() {
-		$this->load_renderer();
-		$this->renderer->on_do_options_page();
 		if ( $this->wppp->is_network ) {
-			if ( isset( $_GET['action'] ) && $_GET['action'] === 'update_wppp' ) {
-				$this->update_wppp_settings();
-			}
 			$formaction = network_admin_url('settings.php?page=wppp_options_page&action=update_wppp');
 		} else {
 			$formaction = 'options.php';
 		}
 
+		if ( $this->show_update_info ) {
+			echo '<div class="updated"><p>', __( 'Settings saved.' ), '</p></div>';
+		}
+
 		$this->load_renderer();
+		$this->renderer->on_do_options_page();
 		$this->renderer->render_page( $formaction );
 	}
 }

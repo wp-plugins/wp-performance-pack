@@ -3,7 +3,7 @@ Contributors: greencp, linushoppe
 Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext, thumbnails, images, intermediate, resize, quality, regenerate, exif, fast, upload
 Requires at least: 3.6
 Tested up to: 3.9
-Stable tag: 1.6.2
+Stable tag: 1.6.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,6 +23,7 @@ WP Performance Pack is your first choice for speeding up WordPress core the easy
 * Use EXIF thumbnail (if available) as source for thumbnail images. This improves memory and cpu usage as the source for the thumbnail is much smaller.
 * Adjust quality settings for intermediate images.
 * Regenerate Thumbnails integration: Hook into the thumbnail regeneration process to delete existing intermediate images. Supported plugins: [Regenerate Thumbnails](http://wordpress.org/plugins/regenerate-thumbnails/), [AJAX Thumbnail Rebuild](http://wordpress.org/plugins/ajax-thumbnail-rebuild/), [Simple Image Sizes](http://wordpress.org/plugins/simple-image-sizes/)
+* [EWWW Image Optimizer](https://wordpress.org/plugins/ewww-image-optimizer/) support. If installed and activated EWWW Image Optimizer (and it's Cloud version) will be used to optimized saved intermediate images. Not saved images won't get optimized!
 
 **Improve localization performance**
 
@@ -45,10 +46,11 @@ WP Performance Pack is your first choice for speeding up WordPress core the easy
 
 == Installation ==
 
+**Requires PHP >= 5.3 and WordPress >= 3.8.1**
+
 * Download, install and activate. Usage of MO-Dynamic is enabled by default.
 * Gettext support requires PHP Gettext extension and the languages folder (*wp-content/languages*) must be writeable for php.
 * Caching is only effective if a persisten object cache is installed
-* JIT requires PHP >= 5.3 and WordPress >= 3.8.1
 * Debugging requires [Debug Bar](http://wordpress.org/plugins/debug-bar/) to be installed and activated
 
 == Frequently Asked Questions ==
@@ -83,6 +85,11 @@ Dynamic image resizing is based on [Dynamic Image Resizer](http://wordpress.org/
 When a none existend image is requested WPPP first checks if the full size version of the requested image exists in the database. If it does, next is checked if the requested image size corresponds to a registered image size (either one of the default sizes "thumbnail", "medium" or "large" or any by themes or plugins registered sizes). This check also tells WPPP if to crop the image while resizing (even using the new 3.9 crop settings). Only if this check passes the intermediate image is created. This prevents unwanted creation of thumbnails.
 
 == Changelog ==
+
+= 1.6.3 =
+
+* [dynimg] EWWW Image Optimizer support (only when "No Save" option is disabled!)
+* [general] misc. code refactoring
 
 = 1.6.2 =
 

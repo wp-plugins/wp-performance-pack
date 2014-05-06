@@ -1,9 +1,14 @@
 <?php
 
-require_once ABSPATH . WPINC . '/class-wp-image-editor.php';
-require_once ABSPATH . WPINC . '/class-wp-image-editor-gd.php';
+if ( class_exists( 'EWWWIO_GD_Editor' ) ) {
+	class WP_Image_Editor_GD_EXIF_Base extends EWWWIO_GD_Editor {}
+} else {
+	require_once ABSPATH . WPINC . '/class-wp-image-editor.php';
+	require_once ABSPATH . WPINC . '/class-wp-image-editor-gd.php';
+	class WP_Image_Editor_GD_EXIF_Base extends WP_Image_Editor_GD {}
+}
 
-class WP_Image_Editor_GD_EXIF extends WP_Image_Editor_GD {
+class WP_Image_Editor_GD_EXIF extends WP_Image_Editor_GD_EXIF_Base {
 	public function load() {
 		if ( $this->image )
 			return true;

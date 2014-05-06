@@ -30,7 +30,7 @@ class WPPP_Dynamic_Images {
 	}
 
 	public static function set_rewrite_rules () {
-		$path = substr( plugins_url( 'modules/serve-dynamic-images.php', dirname( __FILE__ ) ), strlen( site_url() ) + 1 ); // cut wp-content including trailing slash
+		$path = substr( plugins_url( 'serve-dynamic-images.php', dirname( __FILE__ ) ), strlen( site_url() ) + 1 ); // cut wp-content including trailing slash
 		add_rewrite_rule( '(.*)-([0-9]+)x([0-9]+)?\.((?i)jpeg|jpg|png|gif)' , $path, 'top' );
 		add_filter ( 'mod_rewrite_rules', array ( 'WPPP_Dynamic_Images', 'mod_rewrite_rules' ) );
 	}

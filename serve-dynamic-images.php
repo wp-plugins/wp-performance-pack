@@ -56,8 +56,6 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 	require( ABSPATH . 'wp-includes/post.php' );
 	require( ABSPATH . 'wp-includes/meta.php' );
 
-	function __( $text ) { return $text; };
-	
 	/*
 	 * "Normalize" URLs to make them comparable. Partial copy from url_to_postid in rewrite.php
 	 */
@@ -113,17 +111,19 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 		$height 		= $matches[3];
 		$crop 			= false;
 		$suffix 		= $width . 'x' . $height;
-		$wppp_opts 		= get_option( 'wppp_option' );
+		include( sprintf( "%s/common.php", dirname( __FILE__ ) ) );
+		$wppp = new WP_Performance_Pack_Commons();
+		$wppp->load_options();
 
-		if ( isset( $wppp_opts['dynamic_images_cache'] ) && $wppp_opts['dynamic_images_cache'] && ( false !== ( $data = wp_cache_get ( $basefile . $suffix, 'wppp' ) ) ) ) {
+		if ( $wppp->options['dynamic_images_cache'] && ( false !== ( $data = wp_cache_get ( $basefile . $suffix, 'wppp' ) ) ) ) {
 			header( 'Content-Type: ' . $data['mimetype'] );
 			echo $data['data'];
 			exit;
 		}
 
-		$sizes 			= get_option( 'wppp_dynimg_sizes' );	// defined image sizes - no way to get them all here, because
-																// this would require to initialize the template and all plugins
-																// that's why they are stored as an option
+		$sizes = get_option( 'wppp_dynimg_sizes' );	// defined image sizes - no way to get them all here, because
+													// this would require to initialize the template and all plugins
+													// that's why they are stored as an option
 
 		// test if image is an attachment and get its meta data
 		$attachment_id = pn_get_attachment_id_from_url( $filename );
@@ -174,21 +174,49 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 			}
 		}
 
-		if ( $wppp_opts['dynamic_images_exif_thumbs'] 
+		// the requested image size could be found so load and resize it
+
+		if ( !$wppp->options['dynamic_images_nosave'] ) {
+			// test for EWWW Image optimizer
+			$plugins = get_option( 'active_plugins' );
+			$ewww = false;
+			if ( is_array( $plugins ) ) {
+				if ( in_array( 'ewww-image-optimizer/ewww-image-optimizer.php', $plugins ) ) {
+					$ewww = '/ewww-image-optimizer/ewww-image-optimizer.php';
+				} else if ( in_array( 'ewww-image-optimizer-cloud/ewww-image-optimizer-cloud.php', $plugins ) ) {
+					$ewww = '/ewww-image-optimizer-cloud/ewww-image-optimizer-cloud.php';
+				}
+			}
+		}
+
+		if ( !$wppp->options['dynamic_images_nosave'] && $ewww !== false ) {
+			// load EWWW IO 
+			require( ABSPATH . 'wp-includes/default-constants.php' );
+			wp_plugin_directory_constants();
+			wp_load_translations_early();
+			$GLOBALS['wp_plugin_paths'] = array();
+			wp_register_plugin_realpath( dirname( dirname( __FILE__ ) ) . $ewww );
+			include ( dirname( dirname( __FILE__ ) ) . $ewww );
+		} else {
+			// dummy definition, required for ?
+			function __( $text ) { return $text; };
+		}
+
+		if ( $wppp->options['dynamic_images_exif_thumbs'] 
 				&& $width <= 320 && $height <= 320 //( $found == 'thumbnail' )
 				&& extension_loaded( 'exif' )
 				&& function_exists( 'exif_thumbnail' )
 				&& function_exists( 'imagecreatefromstring' ) ) {
-			include( sprintf( "%s/class.wp-image-editor-gd-exif.php", dirname( __FILE__ ) ) );
+			include( sprintf( "%s/classes/class.wp-image-editor-gd-exif.php", dirname( __FILE__ ) ) );
 			$image = new WP_Image_Editor_GD_EXIF( $basefile );
 			if ( is_wp_error( $image->load() ) ) {
-				// exif load failed (maybe no exif data or no thumb), so load complete image
+				// exif load failed (maybe no exif data or no thumb), so load full image
 				$image = wp_get_image_editor( $basefile );
 			} else {
 				// test if EXIF thumb is big enough
 				$exif_size = $image->get_size();
 				if ( $width > $exif_size['width'] || $height > $exif_size['height'] ) {
-					// EXIF thumb too small, load original
+					// EXIF thumb too small, load full image
 					$image = wp_get_image_editor( $basefile );
 				}
 			}
@@ -197,12 +225,12 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 		}
 
 		if ( ! is_wp_error( $image ) ) {
-			$image->set_quality( $wppp_opts['dynimg_quality'] );
+			$image->set_quality( $wppp->options['dynimg_quality'] );
 			$image->resize( $width, $height, $crop );
-			if ( !isset( $wppp_opts['dynamic_images_nosave'] ) || !$wppp_opts['dynamic_images_nosave'] ) {
+			if ( !$wppp->options['dynamic_images_nosave'] ) {
 				$image->save( $image->generate_filename( $suffix ) );
 			} else {
-				if ( isset( $wppp_opts['dynamic_images_cache'] ) && $wppp_opts['dynamic_images_cache'] ) {
+				if ( $wppp->options['dynamic_images_cache'] ) {
 					$data = array();
 					// get image mime type - WP_Image_Editor has functions for this, but they are all protected :(
 					// so use the code from get_mime_type directly

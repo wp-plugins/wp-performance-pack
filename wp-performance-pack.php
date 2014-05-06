@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
 	Description: A collection of performance optimizations for WordPress. As of now it features options to improve performance of translated WordPress installations. 
-	Version: 1.6.2
+	Version: 1.6.3
 	Text Domain: wppp
 	Domain Path: /languages/
 	Author: Bj&ouml;rn Ahrens
@@ -26,29 +26,14 @@
 */
 
 if( !class_exists( 'WP_Performance_Pack' ) ) {
-	class WP_Performance_Pack {
+	include ( sprintf( "%s/common.php", dirname( __FILE__ ) ) );
+
+	class WP_Performance_Pack extends WP_Performance_Pack_Commons {
 		const cache_group = 'wppp1.0'; 	// WPPP cache group name = wppp + version of last change to cache. 
 										// This way no cache conflicts occur while old cache entries just expire.
 
 		public static $options_name = 'wppp_option';
-		public static $options_default = array(
-			'use_mo_dynamic' => true,
-			'use_jit_localize' => false,
-			'disable_backend_translation' => false,
-			'dbt_allow_user_override' => false,
-			'dbt_user_default_translated' => false,
-			'use_native_gettext' => false,
-			'mo_caching' => false,
-			'debug' => false,
-			'advanced_admin_view' => false,
-			'dynamic_images' => false,
-			'dynamic_images_nosave' => false,
-			'dynamic_images_cache' => false,
-			'dynamic_images_rthook' => false,
-			'dynamic_images_rthook_force' => false,
-			'dynamic_images_exif_thumbs' => false,
-			'dynimg_quality' => 80,
-		);
+		public static $options_default = NULL;
 		public static $jit_versions = array(
 			'3.8.1',
 			'3.8.2',
@@ -59,26 +44,8 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 		private $admin_opts = NULL;
 		private $modules = array();
 
-		public $is_network = false;
-		public $options = NULL;
 		public $plugin_dir = NULL;
 		public $dbg_textdomains = array ();
-
-		private function load_options () {
-			if ( $this->options == NULL ) {
-				if ( $this->is_network ) {
-					$this->options = get_site_option( self::$options_name );
-				} else {
-					$this->options = get_option( self::$options_name );
-				}
-
-				foreach ( self::$options_default as $key => $value ) {
-					if ( !isset( $this->options[$key] ) ) {
-						$this->options[$key] = self::$options_default[$key];
-					}
-				}
-			}
-		}
 
 		function is_jit_available () {
 			global $wp_version;
@@ -95,6 +62,9 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 				require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
 			}
 			$this->is_network = is_multisite() && is_plugin_active_for_network( plugin_basename( __FILE__ ) );
+
+			$this->check_update();
+
 			$this->load_options();
 
 			// add actions
@@ -135,12 +105,16 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 		public function init () {
 			//wp_enqueue_script( 'wppp-media-manager-sizes', plugins_url( '/js/test.js', __FILE__ ), array( 'media-editor' ) );
 
+			// execute "late" updates
+			foreach ( $this->late_updates as $updatefunc ) {
+				$updatefunc['func']();
+			}
+
 			if ( $this->options['debug'] ) {
 				add_filter( 'debug_bar_panels', array ( $this, 'add_debug_bar_wppp' ), 10 );
 			}
 
 			if ( $this->options['dynamic_images'] && !is_multisite() ) {
-				//include( sprintf( "%s/modules/class.dynamic-images.php", dirname( __FILE__ ) ) );
 				$this->modules[] = new WPPP_Dynamic_Images ();
 			}
 
@@ -174,7 +148,7 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			$path = plugin_basename( __FILE__ );
 
 			if ( $plugins = get_option( 'active_plugins' ) ) {
-				if ( $key = array_search( $path, $plugins ) ) {
+				if ( 0 != ( $key = array_search( $path, $plugins ) ) ) {
 					array_splice( $plugins, $key, 1 );
 					array_unshift( $plugins, $path );
 					update_option( 'active_plugins', $plugins );
@@ -200,9 +174,6 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 		public function deactivate() {
 			if ( $this->options['dynamic_images'] ) {
 				// Delete rewrite rules from htaccess
-				if ( !class_exists( 'WPPP_Dynamic_Images' ) ) {
-					include( sprintf( "%s/modules/class.dynamic-images.php", dirname( __FILE__ ) ) );
-				}
 				WPPP_Dynamic_Images::flush_rewrite_rules( false ); // hopefully WPPP_Dynamic_images didn't get initialized elsewhere. Not shure at which point deactivation occurs, but I think it's save to assume DynImg didn't get initialized so rewrite rules didn't get set.
 			}
 
@@ -212,12 +183,37 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 				delete_option( self::$options_name );
 			}
 			delete_option( 'wppp_dynimg_sizes' );
+			delete_option( 'wppp_version' );
 		}
 
 		function wppp_autoloader ( $class ) {
 			$class = strtolower( $class );
 			if ( strncmp( $class, 'wppp_', 5 ) === 0 || $class == 'labelsobject' ) {
 				include( sprintf( "%s/classes/class.$class.php", dirname( __FILE__ ) ) );
+			}
+		}
+
+		private $late_updates = array();
+
+		function check_update () {
+			$installed = $this->get_option( 'wppp_version' );
+			if ( version_compare( $installed, self::wppp_version, '!=' ) ) {
+				// if installed version differs from version saved in options update
+				// it is assumed that the options-version is always less or equal to the installed version
+				if ( $installed === false || empty( $installed ) ) {
+					// pre 1.6.3 version didn't have the wppp_version option
+
+					// server-dynamic-images.php location has changed, so update rewrite-rules
+					$opts = $this->get_option( self::$options_name );
+					if ( isset( $opts['dynamic_images'] ) && $opts['dynamic_images'] ) {
+						$this->late_updates[] = array( 'func' => function () {
+							WPPP_Dynamic_Images::flush_rewrite_rules( true );
+						} );
+					}
+					$installed = '1.6.3';
+				}
+
+				$this->update_option ( 'wppp_version', self::wppp_version );
 			}
 		}
 	} 

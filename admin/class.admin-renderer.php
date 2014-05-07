@@ -212,7 +212,7 @@ abstract class WPPP_Admin_Renderer {
 	}
 
 	protected function e_opt_name ( $opt_name ) {
-		echo 'name="'.WP_Performance_Pack::$options_name.'['.$opt_name.']"';
+		echo 'name="'.WP_Performance_Pack_Commons::$options_name.'['.$opt_name.']"';
 	}
 
 	protected function e_checked ( $opt_name, $value = true ) {

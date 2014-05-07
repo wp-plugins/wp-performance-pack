@@ -17,7 +17,7 @@ class WPPP_Admin_Admin extends WPPP_Admin_User {
 
 	public function __construct($wppp_parent) {
 		parent::__construct($wppp_parent);
-		register_setting( 'wppp_options', WP_Performance_Pack::$options_name, array( $this, 'validate' ) );
+		register_setting( 'wppp_options', WP_Performance_Pack_Commons::$options_name, array( $this, 'validate' ) );
 		if ( $this->wppp->is_network ) {
 			add_action( 'network_admin_menu', array( $this, 'add_menu_page' ) );
 		} else {
@@ -52,7 +52,7 @@ class WPPP_Admin_Admin extends WPPP_Admin_User {
 				}
 			}
 
-			foreach ( WP_Performance_Pack::$options_default as $key => $val ) {
+			foreach ( WP_Performance_Pack_Commons::$options_default as $key => $val ) {
 				if ( isset( $input[$key] ) ) {
 					switch ( $key ) {
 						case 'advanced_admin_view' 	: $output[$key] = $this->wppp->options['advanced_admin_view'];
@@ -81,13 +81,13 @@ class WPPP_Admin_Admin extends WPPP_Admin_User {
 		if ( current_user_can( 'manage_network_options' ) ) {
 			check_admin_referer( 'update_wppp', 'wppp_nonce' );
 			$input = array();
-			foreach ( WP_Performance_Pack::$options_default as $key => $value ) {
+			foreach ( WP_Performance_Pack_Commons::$options_default as $key => $value ) {
 				if ( isset( $_POST['wppp_option'][$key] ) ) {
 					$input[$key] = sanitize_text_field( $_POST['wppp_option'][$key] );
 				}
 			}
 			$this->wppp->options = $this->validate( $input );
-			update_site_option( WP_Performance_Pack::$options_name, $this->wppp->options );
+			update_site_option( WP_Performance_Pack_Commons::$options_name, $this->wppp->options );
 		}
 	}
 

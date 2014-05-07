@@ -103,13 +103,13 @@ class WPPP_MO_dynamic extends Gettext_Translations {
 	}
 
 	private function cache_get ( $key, $cache_time ) {
-		$t = wp_cache_get( $key, WP_Performance_Pack::cache_group );
+		$t = wp_cache_get( $key, WP_Performance_Pack_Commons::cache_group );
 		if ( $t !== false && isset( $t['data'] ) ) {
 			// check soft expire
 			if ( $t['softexpire'] < time() ) {
 				// update cache with new soft expire time
 				$t['softexpire'] = time() + ( $cache_time - ( 5 * MINUTE_IN_SECONDS ) );
-				wp_cache_replace( $key, $t, WP_Performance_Pack::cache_group, $cache_time );
+				wp_cache_replace( $key, $t, WP_Performance_Pack_Commons::cache_group, $cache_time );
 			}
 			return json_decode( gzuncompress( $t['data'] ), true );
 		} else
@@ -120,7 +120,7 @@ class WPPP_MO_dynamic extends Gettext_Translations {
 		$t = array();
 		$t['softexpire'] = time() + ( $cache_time - ( 5 * MINUTE_IN_SECONDS ) );
 		$t['data'] = gzcompress( json_encode( $data ) );
-		wp_cache_set( $key, $t, WP_Performance_Pack::cache_group, $cache_time );
+		wp_cache_set( $key, $t, WP_Performance_Pack_Commons::cache_group, $cache_time );
 	}
 
 	function import_domain_from_cache () {

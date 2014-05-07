@@ -58,7 +58,7 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 	 */
 
 	public function on_do_options_page() {
-		$option_keys = array_keys( WP_Performance_Pack::$options_default );
+		$option_keys = array_keys( WP_Performance_Pack_Commons::$options_default );
 		unset ( $option_keys [ array_search( 'advanced_admin_view', $option_keys ) ] );
 		wp_localize_script( 'wppp-admin-script', 'wpppData', array( json_encode( array(
 			'l10n' => array( 'current' => $this->l10n_detect_current_setting(),

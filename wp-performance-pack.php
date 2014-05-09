@@ -97,7 +97,8 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 		function do_options_changed( $old_value, $new_value )
 		{
 			// flush rewrite rules if dynamic images setting changed
-			if ( $old_value['dynamic_images'] !== $new_value['dynamic_images'] ) {
+			if ( ( isset( $new_value['dynamic_images'] ) && $this->options['dynamic_images'] !== $new_value['dynamic_images'] )
+					|| ( !isset( $new_value['dynamic_images'] ) && $this->options['dynamic_images'] === true ) ) {
 				WPPP_Dynamic_Images::flush_rewrite_rules( $new_value['dynamic_images'] );
 			}
 		}

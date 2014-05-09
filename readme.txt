@@ -2,8 +2,8 @@
 Contributors: greencp, linushoppe
 Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext, thumbnails, images, intermediate, resize, quality, regenerate, exif, fast, upload
 Requires at least: 3.6
-Tested up to: 3.9
-Stable tag: 1.6.5
+Tested up to: 3.9.1
+Stable tag: 1.6.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,6 +85,11 @@ Dynamic image resizing is based on [Dynamic Image Resizer](http://wordpress.org/
 When a none existend image is requested WPPP first checks if the full size version of the requested image exists in the database. If it does, next is checked if the requested image size corresponds to a registered image size (either one of the default sizes "thumbnail", "medium" or "large" or any by themes or plugins registered sizes). This check also tells WPPP if to crop the image while resizing (even using the new 3.9 crop settings). Only if this check passes the intermediate image is created. This prevents unwanted creation of thumbnails.
 
 == Changelog ==
+
+= 1.6.6 =
+
+* [jit] added WordPress 3.9.1 support
+* [general] fixed issue that could cause a warning when switching views
 
 = 1.6.5 =
 

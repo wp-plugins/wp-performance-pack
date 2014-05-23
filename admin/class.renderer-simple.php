@@ -21,8 +21,10 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 		wp_enqueue_script( 'wppp-admin-script' );
 
 		wp_register_style( 'jquery-ui-slider-pips-styles', plugin_dir_url( __FILE__ ) . 'css/jquery-ui-slider-pips.css' );
-		wp_register_style( 'wppp-admin-styles', plugin_dir_url( __FILE__ ) . 'css/styles.css' );
+		wp_register_style( 'wppp-admin-styles-jqueryui', plugin_dir_url( __FILE__ ) . 'css/styles.css' );
+		wp_register_style( 'wppp-admin-styles', plugin_dir_url( __FILE__ ) . 'css/wppp.css' );
 		wp_enqueue_style( 'jquery-ui-slider-pips-styles' );
+		wp_enqueue_style( 'wppp-admin-styles-jqueryui' );
 		wp_enqueue_style( 'wppp-admin-styles' );
 	}
 
@@ -88,7 +90,7 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 			),
 
 			'dynimg' => array( 'current' => $this->dynimg_detect_current_setting(),
-								// sequence: stable, speed, webspace, current
+								// sequence: stable, speed, webspace, current, cdn_off, cdn_stable, cdn_speed, current
 								'settings' => array(	'dynamic_images' => array(	$this->is_dynamic_images_available(),
 																					$this->is_dynamic_images_available(),
 																					$this->is_dynamic_images_available(),
@@ -145,6 +147,9 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 		<input type="hidden" <?php $this->e_opt_name('dynamic_images_rthook_force'); ?> value="<?php echo $this->wppp->options['dynamic_images_rthook_force'] ? 'true' : 'false' ?>" />
 		<input type="hidden" <?php $this->e_opt_name('dynamic_images_exif_thumbs'); ?> value="<?php echo $this->wppp->options['dynamic_images_exif_thumbs'] ? 'true' : 'false' ?>" />
 		<input type="hidden" <?php $this->e_opt_name('dynimg_quality'); ?> value="<?php echo $this->wppp->options['dynimg_quality']; ?>" />
+		<input id="dynamic-links" type="hidden" <?php $this->e_opt_name( 'dyn_links' ); ?> value="<?php echo $this->wppp->options['dyn_links'] ? 'true' : 'false'; ?>" />
+		<input id="cdn-url" type="hidden" <?php $this->e_opt_name( 'cdnurl' ); ?> value="<?php echo $this->wppp->options['cdnurl']; ?>"/>
+		<input type="hidden" <?php $this->e_opt_name('cdn_images'); ?> value="<?php echo $this->wppp->options['cdn_images']; ?>"/>
 
 		<hr/>
 		<h3 class="title"><?php _e( 'Improve localization performance', 'wppp' ); ?></h3>
@@ -213,12 +218,12 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 					</div>
 					<div class="wppp-dynimg-desc" style="display:none;">
 						<h4 style="margin-top:0;"><?php _e( 'Faster image upload and thumbnail creation', 'wppp' );?></h4>
-						<p class="description"><?php _e( 'Dynamically created intermediate images, use of EXIF thumbnails if available.<br/><strong>Thumbnails may differ from actual image depending on EXIF thumbnail.</strong>', 'wppp' );?></p>
+						<p class="description"><?php _e( 'Dynamically created intermediate images, use of EXIF thumbnails if available. <strong>Thumbnails may differ from actual image depending on EXIF thumbnail.</strong>', 'wppp' );?></p>
 						<?php $this->dynimg_output_active_settings( 2 ); ?>
 					</div>
 					<div class="wppp-dynimg-desc" style="display:none;">
-						<h4 style="margin-top:0;"><?php _e( 'Faster upload and creation and reduced disc space usage.', 'wppp' );?></h4>
-						<p class="description"><?php _e( '<strong>Not recommended for production sites!</strong><br/>Intermediate images are created on demand but are not saved to disc.', 'wppp' );?></p>
+						<h4 style="margin-top:0;"><?php _e( 'Faster upload / thumbnail creation creation and reduced disc space usage.', 'wppp' );?></h4>
+						<p class="description"><?php _e( '<strong>Without CDN not recommended for production sites!</strong><br/>Intermediate images are created on demand but are not saved to disc.', 'wppp' );?></p>
 						<?php $this->dynimg_output_active_settings( 3 ); ?>
 					</div>
 					<div class="wppp-dynimg-desc" style="display:none;">
@@ -247,7 +252,46 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 		<?php else : ?>
 			<?php $this->do_hint_permalinks( true ); ?>
 		<?php endif; ?>
+		
 		<hr/>
+		
+		<h3 class="title">Use CDN for images</h3>
+		<p class="description">Using a CDN for images improves loading times and eliminates the need to save intermediate images locally (select Webspace). The default settings when activating CDN support are activate dynamic image linking and serving images through CDN on both front and back end. These settings can be adjusted via advanced view.</p>
+		<table>
+			<tr valign="top">
+				<th scope="row" style="text-align:left"><?php _e( 'Select CDN provider', 'wppp' ); ?></th>
+				<td style="padding-left:2em;">
+					<select id="wppp-cdn-select" <?php $this->e_opt_name( 'cdn' ) ?> >
+						<option value="false" <?php echo $this->wppp->options['cdn'] === false ? 'selected="selected"' : ''; ?>>None</option>
+						<option value="coralcdn" <?php echo $this->wppp->options['cdn'] === 'coralcdn' ? 'selected="selected"' : ''; ?>>CoralCDN (free)</option>
+						<option value="maxcdn" <?php echo $this->wppp->options['cdn'] === 'maxcdn' ? 'selected="selected"' : ''; ?>>MaxCDN</option>
+						<option value="customcdn" <?php echo $this->wppp->options['cdn'] === 'customcdn' ? 'selected="selected"' : ''; ?>>Custom</option>
+					</select>
+					<div id="wppp-nocdn" class="wppp-cdn-div" <?php echo $this->wppp->options['cdn'] !== false ? 'style="display:none"' : ''; ?>>
+						<p class="description">CDN support is disabled. Choose a CDN provider to activate serving images through the selected CDN.</p>
+					</div>
+					<div id="wppp-coralcdn" class="wppp-cdn-div" <?php echo $this->wppp->options['cdn'] !== 'coralcdn' ? 'style="display:none"' : ''; ?>>
+						<p class="description"><a href="http://www.coralcdn.org" target="_blank">CoralCDN</a> doesn't require any additional settings.</p>
+					</div>
+					<div id="wppp-maxcdn"  class="wppp-cdn-div" <?php echo $this->wppp->options['cdn'] !== 'maxcdn' ? 'style="display:none"' : ''; ?>>
+						<p><label for="cdn-url">MaxCDN Pull Zone URL:<br/><input id="maxcdn-url" type="text" value="<?php echo $this->wppp->options['cdnurl']; ?>" style="width:80%"/></label></p>
+						<p class="description">Log in to your MaxCDN account (or sign up for one), create a pull zone for your WordPress site and enter the CDN URL for that zone.</p>
+						<p>
+							<a class="button" href="https://cp.maxcdn.com" target="_blank">MaxCDN Login</a> <a class="button button-primary" href="http://tracking.maxcdn.com/c/92472/3982/378" target="_blank">Sign up with MaxCDN</a><br/>
+							<strong>Use <em>WPPP</em> as coupon code to save 25%!</strong>
+						</p>
+					</div>
+					<div id="wppp-customcdn" class="wppp-cdn-div" <?php echo $this->wppp->options['cdn'] !== 'customcdn' ? 'style="display:none"' : ''; ?>>
+						<p><label for="cdn-url">CDN URL:<br/><input id="customcdn-url" type="text" value="<?php echo $this->wppp->options['cdnurl']; ?>" style="width:80%"/></label></p>
+						<p class="description">Enter your CDN URL. This will be used to substitute the host name in image links.</p>
+					</div>
+					<br/>
+				</td>
+			</tr>
+		</table>
+		
+		<hr/>
+		
 		<?php
 	}
 
@@ -384,6 +428,9 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 						$this->e_li_check( 'Use EXIF thumbnails if available.' );
 					}
 					$this->e_li_check( 'Intermediate image quality set to '.$this->wppp->options['dynimg_quality'].'%' );
+					if ( $this->wppp->options['dyn_links'] ) {
+						$this->e_li_check( 'Dynamic image links' );
+					}
 				}
 			}
 		}

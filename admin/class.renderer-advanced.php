@@ -21,8 +21,10 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 		wp_enqueue_script( 'wppp-admin-script' );
 
 		wp_register_style( 'jquery-ui-slider-pips-styles', plugin_dir_url( __FILE__ ) . 'css/jquery-ui-slider-pips.css' );
-		wp_register_style( 'wppp-admin-styles', plugin_dir_url( __FILE__ ) . 'css/styles.css' );
+		wp_register_style( 'wppp-admin-styles-jqueryui', plugin_dir_url( __FILE__ ) . 'css/styles.css' );
+		wp_register_style( 'wppp-admin-styles', plugin_dir_url( __FILE__ ) . 'css/wppp.css' );
 		wp_enqueue_style( 'jquery-ui-slider-pips-styles' );
+		wp_enqueue_style( 'wppp-admin-styles-jqueryui' );
 		wp_enqueue_style( 'wppp-admin-styles' );
 	}
 
@@ -45,7 +47,15 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 		$screen->add_help_tab( array(
 			'id'	=> 'wppp_advanced_dynimg',
 			'title'	=> __( 'Improve image handling', 'wppp' ),
-			'content'	=> '<p>' . __( "Using dynamic image resizing images don't get resized on upload. Instead resizing is done when an intermediate image size is first requested. This can significantly improve upload speed. Once created the image gets saved and is subsequently served directly. Further improvements include adjustable image quality and usage of EXIF thumbnails for creation of smaller intermediate images (when using this option be aware that EXIF thumbnail and actual image can differ), which improves memory and cpu usage when creating intermediate images. To conserve webspace or for use in testing environments saving of intermediate images can be turned off. This will result in a performance hit as images are resized on each request. Using the caching option and an object cache can reduce this performance penalty.", 'wppp' ) . '</p>',
+			'content'	=> '<p>' . __( "Using dynamic image resizing images don't get resized on upload. Instead resizing is done when an intermediate image size is first requested. This can significantly improve upload speed. Once created, the image can get saved and is then subsequently served directly.", 'wppp' ) . '</p>'
+							. '<p>' . __ ( "Not saving intermediate images is only recommended for testing environments or when using caching or cdn for both front and back end.", 'wppp' ) . '</p>'
+							. '<p>' . __( "Usage of EXIF thumbs for thumbnail creation improves peformance but be aware that EXIF thumbs might differ from the actual image, depending on the editing software used to create the image.", 'wppp' ) . '</p>',
+		) );
+
+		$screen->add_help_tab( array(
+			'id'	=> 'wppp_advanced_cdn',
+			'title'	=>	__( 'CDN support', 'wppp' ),
+			'content'	=> '<p>' . __( "CDN support allows to serve images through a CDN, both on front and back end. This eliminates the need to save intermediate images locally, thus reducing web space usage. Use of dynamic image linking is highly recommended when using WPPP CDN support for front end.", 'wppp' ) . '</p>',
 		) );
 
 		$screen->add_help_tab( array(
@@ -77,7 +87,7 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 		<hr/>
 
 		<h3 class="title"><?php _e( 'Improve localization performance', 'wppp' ); ?></h3>
-		<table class="form-table">
+		<table class="form-table" style="clear:none">
 			<tr valign="top">
 				<th scope="row"><?php _e( 'Use gettext', 'wppp' ); ?></th>
 				<td>
@@ -142,7 +152,7 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 					<?php $this->e_checkbox( 'dynimgexif', 'dynamic_images_exif_thumbs', __( 'Use EXIF thumbnail', 'wppp' ), !$this->is_exif_available() ); ?>
 					<p class="description"><?php _e( 'If available use EXIF thumbnail to create image sizes smaller than the EXIF thumbnail. <strong>Note that, depending on image editing software, the EXIF thumbnail might differ from the actual image!</strong>', 'wppp'); ?></p>
 					<br/>
-					<?php $this->e_checkbox( 'dynimg-save', 'dynamic_images_nosave', __( "Don't save intermediate images", 'wppp' ), !$this->is_dynamic_images_available() ); ?>
+					<?php $this->e_checkbox( 'dynimg-save', 'dynamic_images_nosave', __( "Don't save intermediate images to disc", 'wppp' ), !$this->is_dynamic_images_available() ); ?>
 					<p class="description"><?php _e( 'Dynamically recreate intermediate images on each request.', 'wppp' ); ?></p>
 					<br/>
 					<?php $this->e_checkbox( 'dynimg-cache', 'dynamic_images_cache', __( 'Use caching', 'wppp' ), !$this->is_dynamic_images_available() ); ?>
@@ -165,11 +175,60 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 					<?php $this->do_hint_regen_thumbs( false ); ?>
 					<br/>
 					<?php $this->e_checkbox( 'dynimg-rtforce', 'dynamic_images_rthook_force', __( 'Force delete of all potential thumbnails', 'wppp' ), !$this->is_regen_thumbs_available() || !$this->is_dynamic_images_available() ); ?>
-					<p class="description"><?php _e( 'Delete all potential intermediate images (i.e. those matching the pattern "<em>imagefilename-*x*.ext</em>") while regenerating. <strong>Use with care as this option might delete files which are no thumbnails!</strong>', 'wppp' );?></p>
+					<p class="description"><?php _e( 'Delete all potential intermediate images (i.e. those matching the pattern "<em>imagefilename-*x*.ext</em>") while regenerating. <strong>Use with care as this option might delete files that are no thumbnails!</strong>', 'wppp' );?></p>
 				</td>
 			</tr>
 		</table>
 
+		<hr/>
+
+		<h3 class="title">CDN Support</h3>
+		<table class="form-table">
+			<tr valign="top">
+				<th scope="row"><?php _e( 'Select CDN provider', 'wppp' ); ?></th>
+				<td>
+					<input id="cdn-url" type="hidden" <?php $this->e_opt_name( 'cdnurl' ); ?> value="<?php echo $this->wppp->options['cdnurl']; ?>"/>
+					<select id="wppp-cdn-select" <?php $this->e_opt_name( 'cdn' ) ?> >
+						<option value="" <?php echo $this->wppp->options['cdn'] === false ? 'selected="selected"' : ''; ?>>None</option>
+						<option value="coralcdn" <?php echo $this->wppp->options['cdn'] === 'coralcdn' ? 'selected="selected"' : ''; ?>>CoralCDN (free)</option>
+						<option value="maxcdn" <?php echo $this->wppp->options['cdn'] === 'maxcdn' ? 'selected="selected"' : ''; ?>>MaxCDN</option>
+						<option value="customcdn" <?php echo $this->wppp->options['cdn'] === 'customcdn' ? 'selected="selected"' : ''; ?>>Custom</option>
+					</select>
+					<div id="wppp-nocdn" class="wppp-cdn-div" <?php echo $this->wppp->options['cdn'] !== false ? 'style="display:none"' : ''; ?>>
+						<p class="description">CDN support is disabled. Choose a CDN provider to activate serving images through the selected CDN.</p>
+					</div>
+					<div id="wppp-coralcdn" class="wppp-cdn-div" <?php echo $this->wppp->options['cdn'] !== 'coralcdn' ? 'style="display:none"' : ''; ?>>
+						<p class="description"><a href="http://www.coralcdn.org" target="_blank">CoralCDN</a> doesn't require any additional settings.</p>
+					</div>
+					<div id="wppp-maxcdn"  class="wppp-cdn-div" <?php echo $this->wppp->options['cdn'] !== 'maxcdn' ? 'style="display:none"' : ''; ?>>
+						<p><label for="cdn-url">MaxCDN Pull Zone URL: <input id="maxcdn-url" type="text" value="<?php echo $this->wppp->options['cdnurl']; ?>"/></label></p>
+						<p class="description">Log in to your MaxCDN account (or sign up for one), create a pull zone for your WordPress site and enter the CDN URL for that zone.</p>
+						<p>
+							<a class="button" href="https://cp.maxcdn.com" target="_blank">MaxCDN Login</a> <a class="button button-primary" href="http://tracking.maxcdn.com/c/92472/3982/378" target="_blank">Sign up with MaxCDN</a><br/>
+							<strong>Use <em>WPPP</em> as coupon code to save 25%!</strong>
+						</p>
+					</div>
+					<div id="wppp-customcdn" class="wppp-cdn-div" <?php echo $this->wppp->options['cdn'] !== 'customcdn' ? 'style="display:none"' : ''; ?>>
+						<p><label for="cdn-url">CDN URL: <input id="customcdn-url" type="text" value="<?php echo $this->wppp->options['cdnurl']; ?>"/></label></p>
+						<p class="description">Enter your CDN URL. This will be used to substitute the host name in image links.</p>
+					</div>
+			</tr>
+			<tr valign="top">
+				<th scope="row">Use CDN for images</th>
+				<td>
+					Use on <input type="radio" <?php $this->e_opt_name( 'cdn_images' ); ?> <?php echo $this->wppp->options['cdn_images'] === 'front' ? 'checked="checked"' : ''; ?> value="front">front end&nbsp;
+					<input type="radio" <?php $this->e_opt_name( 'cdn_images' ); ?> <?php echo $this->wppp->options['cdn_images'] === 'back' ? 'checked="checked"' : ''; ?> value="back">back end&nbsp;
+					<input type="radio" <?php $this->e_opt_name( 'cdn_images' ); ?> <?php echo $this->wppp->options['cdn_images'] === 'both' ? 'checked="checked"' : ''; ?> value="both">both<br/>
+					<p class="description">Select if CDN should be used for front end and/or back end images. You can deactivate front end CDN to avoid conflicts with other CDN plugins.</p>
+				</td>
+			<tr valign="top">
+				<th scope="row"><?php _e( 'Dynamic image linking', 'wppp' ); ?></th>
+				<td>
+					<?php $this->e_radio_enable( 'dynlinks', 'dyn_links' ); ?>
+					<p class="description">Instead of inserting fixed image urls into posts, urls get build dynamically when displaying the content. <strong>Highly recommended when using a CDN for front end images.</strong></p>
+				</td>
+			</tr>
+		</table>
 <!--		<h3>Selective plugin loading</h3>
 			<table class="widefat">
 				<thead>

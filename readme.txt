@@ -1,19 +1,26 @@
 === WP Performance Pack ===
 Contributors: greencp, linushoppe
-Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext, thumbnails, images, intermediate, resize, quality, regenerate, exif, fast, upload
+Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext, thumbnails, images, intermediate, resize, quality, regenerate, exif, fast, upload, cdn, maxcdn, coralcdn, photon, dynamic links
 Requires at least: 3.6
 Tested up to: 3.9.1
-Stable tag: 1.6.6
+Stable tag: 1.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Performance optimizations for WordPress. Features options to improve localization performance and improved image handling.
+Performance optimizations for WordPress. Improve localization performance and image handling, serve images through CDN. 
 
 == Description ==
 
-WP Performance Pack is your first choice for speeding up WordPress core the easy way, no core patching required. As of now it features options to improve localization performance and image handling (faster upload, reduced webspace usage).
+WP Performance Pack is your first choice for speeding up WordPress core the easy way, no core patching required. It features options to improve localization performance and image handling (faster upload, reduced webspace usage). Combined with CDN support for images, both on the site and in the admin area, this offers similar image acceleration as [Jetpack's Photon](http://jetpack.me/support/photon/).
 
 = Features =
+
+**NEW: CDN support**
+
+* Serve (dynamically generated) images through CDN. Applies to all images uploaded via media library both in posts and backend. No need to save thumbnails locally.
+* Fallback to local serving if CDN fails to return a valid response.
+* Dynamic image links: Image urls are generated dynamically when displaying post content.
+* Supported CDNs: CoralCDN, MaxCDN, Custom
 
 **Improve image handling**
 
@@ -85,6 +92,11 @@ Dynamic image resizing is based on [Dynamic Image Resizer](http://wordpress.org/
 When a none existend image is requested WPPP first checks if the full size version of the requested image exists in the database. If it does, next is checked if the requested image size corresponds to a registered image size (either one of the default sizes "thumbnail", "medium" or "large" or any by themes or plugins registered sizes). This check also tells WPPP if to crop the image while resizing (even using the new 3.9 crop settings). Only if this check passes the intermediate image is created. This prevents unwanted creation of thumbnails.
 
 == Changelog ==
+
+* 1.7 =
+
+* [dynimg] **NEW** CDN support
+* [dynlink] **NEW** Dynamic image linking
 
 = 1.6.6 =
 

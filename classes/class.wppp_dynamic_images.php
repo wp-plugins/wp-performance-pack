@@ -12,20 +12,25 @@
 class WPPP_Dynamic_Images {
 
 	private $dynimg_image_sizes = NULL;
+	private	$wppp = NULL;
 
-	function __construct () {
+	function __construct ( $wppp_parent ) {
 		// this gets called at init
 		self::set_rewrite_rules();
 		add_filter( 'intermediate_image_sizes_advanced', array ( $this, 'dynimg_image_sizes_advanced' ) );
 		add_filter( 'wp_generate_attachment_metadata', array ( $this, 'dynimg_generate_metadata' ) );
 		add_action( 'shutdown', array( $this, 'save_preset_image_sizes' ) );
 
-		global $wp_performance_pack;
-		if ( $wp_performance_pack->options['dynamic_images_rthook'] ) {
+		$this->wppp = $wppp_parent;
+		if ( $this->wppp->options['dynamic_images_rthook'] ) {
 			if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 				add_filter( 'wp_update_attachment_metadata', array ( $this, 'rebuild_thumbnails_delete_hook' ), 100, 2 );
 			}
-			add_action( 'admin_notices', array( $this, 'rthook_notice') ); 
+			add_action( 'admin_notices', array( $this, 'rthook_notice') );
+		}
+
+		if ( $this->wppp->options['cdn'] !== false ) {
+			add_filter( 'wp_get_attachment_url', array ( $this, 'cdn_get_attachment_url' ), 10, 2 );
 		}
 	}
 
@@ -161,7 +166,7 @@ class WPPP_Dynamic_Images {
 		}
 		return $data;
 	}
-	
+
 	function rthook_notice () { 
 		// display message on Rebuild Thumbnails page
 		$screen = get_current_screen(); 
@@ -185,7 +190,7 @@ class WPPP_Dynamic_Images {
 				</p> 
 			</div>
 		<?php endif; 
-	} 
+	}
 }
 
 ?>

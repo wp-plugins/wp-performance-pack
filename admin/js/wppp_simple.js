@@ -39,7 +39,7 @@ jQuery(document).ready(function($){
 		max: 3,
 		step: 1,
 		slide: function( event, ui ) {
-			displaySetting(lastL10n, 'l10n', ui.value);
+			displaySetting(lastL10n, 'l10n', ui.value );
 			setSettingInputValues( wpppData.l10n.settings, ui.value);
 		}
 	}).slider( 'pips', {
@@ -51,26 +51,98 @@ jQuery(document).ready(function($){
 				]
 	});
 
-	$( "#dynimg-slider" ).slider({
-		orientation: "vertical",
-		value: wpppData.dynimg.current,
-		min: 0,
-		max: 4,
-		step: 1,
-		slide: function( event, ui ) {
-			displaySetting(lastDynimg, 'dynimg', ui.value);
-			setSettingInputValues( wpppData.dynimg.settings, ui.value);
-		}
-	}).slider( 'pips', {
-		rest: 'label',
-		labels:	[	wpppData.labels.Off,
+	function updateDynImgSlider ( level ) {
+		$( "#dynimg-slider" ).slider({
+			orientation: "vertical",
+			value: level,
+			min: 0,
+			max: 4,
+			step: 1,
+			slide: function( event, ui ) {
+				displaySetting(lastDynimg, 'dynimg', ui.value);
+				setSettingInputValues( wpppData.dynimg.settings, ui.value);
+			}
+		}).slider( 'pips', {
+			rest: 'label',
+			labels: [ wpppData.labels.Off,
 					wpppData.labels.Stable,
 					wpppData.labels.Speed,
 					wpppData.labels.Webspace,
-					wpppData.labels.Custom,
-				]
+					wpppData.labels.Custom ],
+		});
+
+		displaySetting ( lastDynimg, "dynimg", level );
+	}
+
+	updateDynImgSlider( wpppData.dynimg.current );
+	displaySetting( lastL10n, "l10n", wpppData.l10n.current );
+	
+	// Support Sticky
+	var stickyNavTop = $('.wppp-sticky').offset().top - $('#wpadminbar').height();
+
+	var stickyNav = function(){
+		var scrollTop = $(window).scrollTop();
+   
+		if (scrollTop > stickyNavTop) { 
+			$('.wppp-sticky').addClass('sticky');
+		} else {
+			$('.wppp-sticky').removeClass('sticky'); 
+		}
+	};
+
+	stickyNav();
+
+	$(window).scroll(function() {
+		stickyNav();
 	});
 
-	displaySetting( lastL10n, "l10n", wpppData.l10n.current );
-	displaySetting ( lastDynimg, "dynimg", wpppData.dynimg.current );
+	// hide support box
+	$( "#hidesupportbox" ).click( function() {
+		var data = {
+			action: 'hidewpppsupportbox',
+		};
+		$.post(ajaxurl, data);
+		$( "#wppp-support-box" ).hide();
+	});
+
+	// CDN dropbox
+	$( "#wppp-cdn-select" ).change( function() {
+		$( ".wppp-cdn-div").hide();
+		
+		var value = $( "#wppp-cdn-select option:selected" ).val();
+
+		// show cdn info
+		if ( value == "coralcdn" )
+			$( "#wppp-coralcdn" ).show();
+		else if ( value == "maxcdn" ) {
+			$( "#wppp-maxcdn" ).show();
+		} else if ( value == "customcdn" )
+			$( "#wppp-customcdn" ).show();
+		else 
+			$( "#wppp-nocdn" ).show();
+
+		// set dynamic links
+		if ( value == "coralcdn" || value == "maxcdn" || value == "customcdn" ) {
+			$( "#dynamic-links" ).val( 'true' );
+		} else {
+			$( "#dynamic-links" ).val( 'false' );
+		}
+
+	});
+
+	// Set CDN url on submit
+	$( "#wppp-settings" ).submit(function( event ) {
+		var value = $( "#wppp-cdn-select option:selected" ).val();
+
+		// set cdn url
+		if ( value == "coralcdn" ) {
+			$( "#cdn-url" ).val('');
+		} else if ( value == "maxcdn" ) {
+			$( "#cdn-url" ).val( $( "#maxcdn-url" ).val() );
+		} else if ( value == "customcdn" ) {
+			$( "#cdn-url" ).val( $( "#customcdn-url" ).val() );
+		} else {
+			$( "#cdn-url" ).val( '' );
+		}
+	});
 });

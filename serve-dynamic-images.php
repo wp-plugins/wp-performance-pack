@@ -246,13 +246,13 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 					$image->stream();
 					$data['data'] = ob_get_contents(); // read from buffer
 					ob_end_clean();
-					wp_cache_set( $basefile . $suffix, $data, 'wppp', 30 * MINUTE_IN_SECONDS );
+					wp_cache_set( $basefile . $suffix, $data, 'wppp', HOUR_IN_SECONDS );
 				}
 
 				// if intermediate images are not saved, explicitly set cache headers for browser caching
 				header( 'Pragma: public' );
-				header( 'Cache-Control: max-age=' . HOUR_IN_SECONDS );
-				header( 'Expires: ' . gmdate( 'D, d M Y H:i:s', time() + HOUR_IN_SECONDS) . ' GMT' );
+				header( 'Cache-Control: max-age=' . 24 * HOUR_IN_SECONDS );
+				header( 'Expires: ' . gmdate( 'D, d M Y H:i:s', time() + 24 * HOUR_IN_SECONDS) . ' GMT' );
 			}
 			$image->stream();
 			exit;

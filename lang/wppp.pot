@@ -1,70 +1,92 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WP Performance Pack\n"
-"POT-Creation-Date: 2014-03-02 10:32+0100\n"
-"PO-Revision-Date: 2014-03-02 10:33+0100\n"
-"Last-Translator: Björn Ahrens <bjoern@ahrens.net>\n"
+"POT-Creation-Date: 2014-05-21 14:17+0100\n"
+"PO-Revision-Date: 2014-05-21 14:19+0100\n"
+"Last-Translator: Bjoern Ahrens <bjoern@ahrens.net>\n"
 "Language-Team:  <bjoern@ahrens.net>\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.6.5\n"
 "X-Poedit-KeywordsList: __:1,2t;_e:1,2t\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-msgid "A collection of performance optimizations for WordPress. As of now it features options to improve performance of translated WordPress installations."
-msgstr ""
-
-#: ../admin/class.admin-renderer.php:29
+#: ../admin/class.admin-renderer.php:35
 msgid "WP Performance Pack - Settings"
 msgstr ""
 
-#: ../admin/class.admin-renderer.php:118
+#: ../admin/class.admin-renderer.php:170
 #, php-format
 msgid "Gettext support requires the %s extension."
 msgstr ""
 
-#: ../admin/class.admin-renderer.php:121
+#: ../admin/class.admin-renderer.php:173
 #, php-format
 msgid ""
-"Gettext support requires the language directory %s to exists and to be "
-"writeable for php."
+"Gettext support requires the language directory %s to be writeable for php."
 msgstr ""
 
-#: ../admin/class.admin-renderer.php:123
+#: ../admin/class.admin-renderer.php:175
 msgid "Gettext test failed. Activate WPPP debugging for additional info."
 msgstr ""
 
-#: ../admin/class.admin-renderer.php:135
+#: ../admin/class.admin-renderer.php:187
 #, php-format
 msgid ""
 "Caching requires a persisten object cache to be effective. Different "
 "%sobject cache plugins%s are available for WordPress."
 msgstr ""
 
-#: ../admin/class.admin-renderer.php:147
+#: ../admin/class.admin-renderer.php:199
 #, php-format
 msgid ""
 "JIT localization of scripts is only available for WordPress versions %s ."
 msgstr ""
 
-#: ../admin/class.admin-renderer.php:167
+#: ../admin/class.admin-renderer.php:211
+msgid ""
+"Improved image handling requires Pretty Permalinks and is not available on "
+"multisite installations."
+msgstr ""
+
+#: ../admin/class.admin-renderer.php:223
+msgid ""
+"Use of EXIF thumbnails requires the EXIF extension to be installed and GD "
+"support."
+msgstr ""
+
+#: ../admin/class.admin-renderer.php:235
+#, php-format
+msgid ""
+"One of the following plugins has to be installed and activated for "
+"Regenerate Thumbnails integration: %s"
+msgstr ""
+
+#: ../admin/class.admin-renderer.php:248
 msgid "Switch to advanced view"
 msgstr ""
 
-#: ../admin/class.admin-renderer.php:167
+#: ../admin/class.admin-renderer.php:248
 msgid "Switch to simple view"
 msgstr ""
 
-#: ../admin/class.debug-bar-wppp.php:43 ../admin/class.wppp-admin-admin.php:30
-#: ../admin/class.wppp-admin-admin.php:32
+#: ../admin/class.admin-renderer.php:271
+msgid "Enabled"
+msgstr ""
+
+#: ../admin/class.admin-renderer.php:272
+msgid "Disabled"
+msgstr ""
+
+#: ../admin/class.debug-bar-wppp.php:43 ../admin/class.wppp-admin-admin.php:59
+#: ../admin/class.wppp-admin-admin.php:61
 msgid "WP Performance Pack"
 msgstr ""
 
-#: ../admin/class.renderer-advanced.php:32
-#: ../admin/class.renderer-simple.php:36
+#: ../admin/class.renderer-advanced.php:38
 msgid ""
 "Welcome to WP Performance Pack, your first choice for speeding up WordPress "
 "core the easy way. The simple view helps you to easily apply  the optimal "
@@ -72,13 +94,13 @@ msgid ""
 "settings."
 msgstr ""
 
-#: ../admin/class.renderer-advanced.php:37
-#: ../admin/class.renderer-advanced.php:59
-#: ../admin/class.renderer-simple.php:41 ../admin/class.renderer-simple.php:74
-msgid "Improve translation performance"
+#: ../admin/class.renderer-advanced.php:43
+#: ../admin/class.renderer-advanced.php:81
+#: ../admin/class.renderer-simple.php:155
+msgid "Improve localization performance"
 msgstr ""
 
-#: ../admin/class.renderer-advanced.php:38
+#: ../admin/class.renderer-advanced.php:44
 msgid ""
 "WPPP offers different options to significantly improve translation "
 "performance. These only affect localization of WordPress core, themes and "
@@ -88,12 +110,34 @@ msgid ""
 "blog."
 msgstr ""
 
-#: ../admin/class.renderer-advanced.php:43
-#: ../admin/class.renderer-advanced.php:116
+#: ../admin/class.renderer-advanced.php:49
+#: ../admin/class.renderer-advanced.php:135
+#: ../admin/class.renderer-simple.php:48
+#: ../admin/class.renderer-simple.php:204
+msgid "Improve image handling"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:50
+msgid ""
+"Using dynamic image resizing images don't get resized on upload. Instead "
+"resizing is done when an intermediate image size is first requested. This "
+"can significantly improve upload speed. Once created the image gets saved "
+"and is subsequently served directly. Further improvements include adjustable "
+"image quality and usage of EXIF thumbnails for creation of smaller "
+"intermediate images (when using this option be aware that EXIF thumbnail and "
+"actual image can differ), which improves memory and cpu usage when creating "
+"intermediate images. To conserve webspace or for use in testing environments "
+"saving of intermediate images can be turned off. This will result in a "
+"performance hit as images are resized on each request. Using the caching "
+"option and an object cache can reduce this performance penalty."
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:55
+#: ../admin/class.renderer-advanced.php:260
 msgid "Debugging"
 msgstr ""
 
-#: ../admin/class.renderer-advanced.php:44
+#: ../admin/class.renderer-advanced.php:56
 #, php-format
 msgid ""
 "WPPP supports debugging using the %s plugin. When installed and activated, "
@@ -102,209 +146,353 @@ msgid ""
 "as information about gettext support and other details."
 msgstr ""
 
-#: ../admin/class.renderer-advanced.php:49
-#: ../admin/class.renderer-simple.php:47
+#: ../admin/class.renderer-advanced.php:61
+#: ../admin/class.renderer-simple.php:54
 msgid "Development Blog (german)"
 msgstr ""
 
-#: ../admin/class.renderer-advanced.php:63
-#: ../admin/class.renderer-simple.php:212
-#: ../admin/class.renderer-simple.php:235
+#: ../admin/class.renderer-advanced.php:84
+#: ../admin/class.renderer-simple.php:442
+#: ../admin/class.renderer-simple.php:465
+#, fuzzy
 msgid "Use gettext"
-msgstr ""
+msgstr "success"
 
-#: ../admin/class.renderer-advanced.php:65
-#: ../admin/class.renderer-advanced.php:74
-#: ../admin/class.renderer-advanced.php:88
-#: ../admin/class.renderer-advanced.php:99
-#: ../admin/class.renderer-advanced.php:122
-#: ../admin/class.wppp-admin-user.php:52
-msgid "Enabled"
-msgstr ""
-
-#: ../admin/class.renderer-advanced.php:66
-#: ../admin/class.renderer-advanced.php:75
-#: ../admin/class.renderer-advanced.php:89
-#: ../admin/class.renderer-advanced.php:100
-#: ../admin/class.renderer-advanced.php:123
-#: ../admin/class.wppp-admin-user.php:53
-msgid "Disabled"
-msgstr ""
-
-#: ../admin/class.renderer-advanced.php:67
+#: ../admin/class.renderer-advanced.php:87
 msgid ""
-"Use php gettext extension for translations. This is in most cases the "
-"fastest way to translate your blog."
+"Use php gettext extension for localization. This is in most cases the "
+"fastest way to localize your blog."
 msgstr ""
 
-#: ../admin/class.renderer-advanced.php:72
-#: ../admin/class.renderer-simple.php:215
-#: ../admin/class.renderer-simple.php:238
+#: ../admin/class.renderer-advanced.php:92
+#: ../admin/class.renderer-simple.php:445
+#: ../admin/class.renderer-simple.php:468
 msgid "Use alternative MO reader"
 msgstr ""
 
-#: ../admin/class.renderer-advanced.php:76
+#: ../admin/class.renderer-advanced.php:95
 msgid ""
-"Alternative MO reader using on demand translation and loading of translation "
-"files. Faster and less memory intense than the default WordPress "
-"implementation."
+"Alternative MO reader using on demand translation and loading of "
+"localization files (.mo). Faster and less memory intense than the default "
+"WordPress implementation."
 msgstr ""
 
-#: ../admin/class.renderer-advanced.php:78
-#: ../admin/class.renderer-simple.php:217
-#: ../admin/class.renderer-simple.php:241
+#: ../admin/class.renderer-advanced.php:97
+#: ../admin/class.renderer-advanced.php:150
+#: ../admin/class.renderer-simple.php:396
+#: ../admin/class.renderer-simple.php:413
+#: ../admin/class.renderer-simple.php:447
+#: ../admin/class.renderer-simple.php:471
 msgid "Use caching"
 msgstr ""
 
-#: ../admin/class.renderer-advanced.php:79
-msgid "Cache translations using WordPress Object Cache API"
-msgstr ""
-
-#: ../admin/class.renderer-advanced.php:85
-#: ../admin/class.renderer-simple.php:225
-#: ../admin/class.renderer-simple.php:244
-msgid "Use JIT localize"
-msgstr ""
-
-#: ../admin/class.renderer-advanced.php:90
-msgid "Just in time localization of scripts."
-msgstr ""
-
-#: ../admin/class.renderer-advanced.php:96
-#: ../admin/class.renderer-simple.php:230
-#: ../admin/class.renderer-simple.php:247
-msgid "Disable back end translation"
-msgstr ""
-
-#: ../admin/class.renderer-advanced.php:101
-msgid "Disables translation of back end texts."
-msgstr ""
-
-#: ../admin/class.renderer-advanced.php:103
-#: ../admin/class.renderer-simple.php:230
-#: ../admin/class.renderer-simple.php:249
-msgid "Allow user override"
+#: ../admin/class.renderer-advanced.php:98
+msgid "Cache translations using WordPress' Object Cache API"
 msgstr ""
 
 #: ../admin/class.renderer-advanced.php:104
-msgid ""
-"Allow users to reactivate back end translation in their profile settings."
-msgstr ""
-
-#: ../admin/class.renderer-advanced.php:107
-msgid "Default user language:"
+#: ../admin/class.renderer-simple.php:455
+#: ../admin/class.renderer-simple.php:474
+msgid "Use JIT localize"
 msgstr ""
 
 #: ../admin/class.renderer-advanced.php:108
+msgid "Just in time localization of scripts."
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:114
+msgid "Disable back end localization"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:118
+msgid "Disables localization of back end texts."
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:120
+#: ../admin/class.renderer-simple.php:460
+#: ../admin/class.renderer-simple.php:477
+msgid "Allow user override"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:121
+msgid ""
+"Allow users to reactivate back end localization in their profile settings."
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:124
+msgid "Default user language:"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:125
 msgid "English"
 msgstr ""
 
-#: ../admin/class.renderer-advanced.php:109
+#: ../admin/class.renderer-advanced.php:126
 msgid "Blog language"
 msgstr ""
 
-#: ../admin/class.renderer-advanced.php:111
+#: ../admin/class.renderer-advanced.php:128
 msgid ""
 "Default back end language for new and existing users, who haven't updated "
 "their profile yet."
 msgstr ""
 
-#: ../admin/class.renderer-advanced.php:120
+#: ../admin/class.renderer-advanced.php:138
+msgid "Dynamic image resizing"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:141
+msgid ""
+"Create intermediate images on demand, not on upload. If you deactive this "
+"option after some time of usage you might have to recreate thumbnails using "
+"a plugin like Regenerate Thumbnails."
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:144
+msgid "Use EXIF thumbnail"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:145
+msgid ""
+"If available use EXIF thumbnail to create image sizes smaller than the EXIF "
+"thumbnail. <strong>Note that, depending on image editing software, the EXIF "
+"thumbnail might differ from the actual image!</strong>"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:147
+msgid "Don't save intermediate images to disc"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:148
+msgid "Dynamically recreate intermediate images on each request."
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:151
+#, php-format
+msgid ""
+"Cache intermediate images using Use WordPress' Object Cache API. Only "
+"applied if %s is activated."
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:151
+msgid "Don't save intermediate images"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:156
+msgid "Image quality"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:159
+msgid "Quality setting for newly created intermediate images."
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:163
+msgid "Regenerate Thumbnails integration"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:166
+msgid ""
+"Integrate into thumbnail regeneration plugins to delete existing "
+"intermediate images."
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:169
+msgid "Force delete of all potential thumbnails"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:170
+msgid ""
+"Delete all potential intermediate images (i.e. those matching the pattern "
+"\"<em>imagefilename-*x*.ext</em>\") while regenerating. <strong>Use with "
+"care as this option might delete files that are no thumbnails!</strong>"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:180
+msgid "Select CDN provider"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:217
+msgid "Dynamic image linking"
+msgstr ""
+
+#: ../admin/class.renderer-advanced.php:263
 msgid "Debug Panel"
 msgstr ""
 
-#: ../admin/class.renderer-advanced.php:124
+#: ../admin/class.renderer-advanced.php:266
 msgid ""
 "Enables debugging, requires <a href=\"http://wordpress.org/plugins/debug-bar/"
 "\">Debug Bar</a> Plugin."
 msgstr ""
 
-#: ../admin/class.renderer-simple.php:42
+#: ../admin/class.renderer-simple.php:37
 msgid ""
-"WPPP offers different levels of improving translation performance. When you "
-"select an option, optimal settings will be applied. Applied settings will be "
-"displayed. If some settings couldn't be applied, e.g. due to missing "
-"requirements, these will be displayed in red and the next best setting (if "
-"available) will be chosen. Also hints as to why a setting couldn't be "
-"applied will be displayed."
+"When you select an option, optimal settings will be applied. Applied "
+"settings will be displayed. If some settings couldn't be applied, e.g. due "
+"to missing requirements, these will be displayed in red and the next best "
+"setting (if available) will be chosen. Also hints as to why a setting "
+"couldn't be applied will be displayed. Advanced view offers more in depth "
+"control of WPPP settings."
 msgstr ""
 
-#: ../admin/class.renderer-simple.php:65
+#: ../admin/class.renderer-simple.php:42
+msgid "Improve translation performance"
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:43
+msgid ""
+"WPPP offers different levels of improving translation performance. "
+"<em>Stable</em> should work on any WordPress blog, <em>Fast</em> further "
+"improves performance, but JIT script localization might cause issues with "
+"some plugins (if you encounter any problems please report them in the "
+"support forums)."
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:49
+msgid ""
+"Improve image upload speed and web space usage using this setting. Creation "
+"of different image sizes will be delayed upon the first access to the "
+"respective image. <em>Fast</em> uses EXIF thumbs to create small image "
+"sizes, which might cause issues as EXIF thumbs and actual images might "
+"differ (depending on used image editing software). Use <em>Webspace</em> "
+"only for testing environments or if you are really low on webspace, as this "
+"option will slow down your blog because intermediate images don't get saved "
+"to disc."
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:125
 msgid "Off"
 msgstr ""
 
-#: ../admin/class.renderer-simple.php:66
+#: ../admin/class.renderer-simple.php:126
 msgid "Stable"
 msgstr ""
 
-#: ../admin/class.renderer-simple.php:67
+#: ../admin/class.renderer-simple.php:127
 msgid "Speed"
 msgstr ""
 
-#: ../admin/class.renderer-simple.php:68
+#: ../admin/class.renderer-simple.php:128
 msgid "Custom"
 msgstr ""
 
-#: ../admin/class.renderer-simple.php:88
-msgid "Translation improvements turned off"
+#: ../admin/class.renderer-simple.php:129
+msgid "Webspace"
 msgstr ""
 
-#: ../admin/class.renderer-simple.php:92
-msgid "Fast WordPress translation"
+#: ../admin/class.renderer-simple.php:161
+msgid "Localization improvements turned off"
 msgstr ""
 
-#: ../admin/class.renderer-simple.php:93
-msgid "Safe settings that should work with any WordPress install."
+#: ../admin/class.renderer-simple.php:165
+msgid "Fast WordPress localization"
 msgstr ""
 
-#: ../admin/class.renderer-simple.php:97
-msgid "Fastest WordPress translation"
+#: ../admin/class.renderer-simple.php:166
+msgid "Safe settings that should work with any WordPress installation."
 msgstr ""
 
-#: ../admin/class.renderer-simple.php:98
+#: ../admin/class.renderer-simple.php:170
+msgid "Fastest WordPress localization"
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:171
 msgid ""
-"Fastest translation settings. If any problems occur after activating, switch "
-"to stable setting."
+"Fastest localization settings. If any problems occur after activating, "
+"switch to stable setting."
 msgstr ""
 
-#: ../admin/class.renderer-simple.php:102
+#: ../admin/class.renderer-simple.php:175
+#: ../admin/class.renderer-simple.php:263
 msgid "Custom settings"
 msgstr ""
 
-#: ../admin/class.renderer-simple.php:103
+#: ../admin/class.renderer-simple.php:176
+#: ../admin/class.renderer-simple.php:264
 msgid "Select your own settings. Customize via advanced view."
 msgstr ""
 
 #: ../admin/class.renderer-simple.php:208
-msgid "All translation settings turned off."
+msgid "Use CDN"
 msgstr ""
 
-#: ../admin/class.renderer-simple.php:214
-msgid "Gettext not available."
+#: ../admin/class.renderer-simple.php:244
+msgid "All image handling improvements turned off"
 msgstr ""
 
-#: ../admin/class.renderer-simple.php:219
+#: ../admin/class.renderer-simple.php:248
+msgid "Faster image upload"
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:249
+msgid ""
+"Improved upload performance due to dynamically created intermediate images. "
+"Once created images are saved to disc and served directly."
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:253
+msgid "Faster image upload and thumbnail creation"
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:254
+msgid ""
+"Dynamically created intermediate images, use of EXIF thumbnails if "
+"available. <strong>Thumbnails may differ from actual image depending on EXIF "
+"thumbnail.</strong>"
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:258
+msgid ""
+"Faster upload / thumbnail creation creation and reduced disc space usage."
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:259
+msgid ""
+"<strong>Without CDN not recommended for production sites!</strong><br/"
+">Intermediate images are created on demand but are not saved to disc."
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:379
+msgid "All improved image handling settings disabled."
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:398
+#: ../admin/class.renderer-simple.php:449
 msgid "No persistent object cache installed."
 msgstr ""
 
-#: ../admin/class.renderer-simple.php:227
+#: ../admin/class.renderer-simple.php:438
+msgid "All translation settings turned off."
+msgstr ""
+
+#: ../admin/class.renderer-simple.php:444
+#, fuzzy
+msgid "Gettext not available."
+msgstr "success"
+
+#: ../admin/class.renderer-simple.php:457
 msgid "JIT localize not available"
 msgstr ""
 
-#: ../admin/class.wppp-admin-admin.php:30
-#: ../admin/class.wppp-admin-admin.php:32
+#: ../admin/class.renderer-simple.php:460
+#: ../admin/class.renderer-simple.php:477
+msgid "Disable back end translation"
+msgstr ""
+
+#: ../admin/class.wppp-admin-admin.php:59
+#: ../admin/class.wppp-admin-admin.php:61
 msgid "Performance Pack"
 msgstr ""
 
-#: ../admin/class.wppp-admin-user.php:47
-msgid "Back end language"
-msgstr ""
-
-#: ../admin/class.wppp-admin-user.php:50
+#: ../admin/class.wppp-admin-user.php:43
 msgid "Translate back end"
 msgstr ""
 
-#: ../admin/class.wppp-admin-user.php:54
+#: ../admin/class.wppp-admin-user.php:45
+msgid "Enable back end translation"
+msgstr ""
+
+#: ../admin/class.wppp-admin-user.php:46
 msgid ""
 "Enable or disable back end translation. When disabled, back end will be "
 "displayed in english, else it will be translated to the blog language."

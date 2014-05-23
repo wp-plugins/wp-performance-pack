@@ -24,21 +24,61 @@ abstract class WPPP_Admin_Renderer {
 	public function on_do_options_page() {}
 
 	public function render_page ( $formaction ) {
+		//add_thickbox();
 		?>
+		<div id="wppp-support-dialog" style="display:none">
+			<h3>Support!</h3>
+		</div>
+		
 		<div class="wrap">
 			<img src="<?php echo plugins_url( 'img/wppp_logo_150.png' , __FILE__ ); ?>" style="float:left; margin-right:10px;" />
 			<h2 style="height:80px"><?php _e( 'WP Performance Pack - Settings', 'wppp' ); ?></h2>
-			<form id="wppp-settings" action="<?php echo $formaction; ?>" method="post">
-				<?php 
-					if ( $this->wppp->is_network ) {
-						wp_nonce_field( 'update_wppp', 'wppp_nonce' );
-					}
-					settings_fields( 'wppp_options' );
-					$this->render_options();
-					submit_button(); 
+			<div style="clear:right"></div>
+			
+			<div class="wppp-sticky" style="float:right; width:195px;">
+				<?php
+				$show_support = get_transient( 'wppp-support-box' );
+				$today = new DateTime();
+				if ( $show_support !== $today->format('Y-m-d') ) :
 				?>
-			</form>
-			<?php $this->do_switch_view_button( $formaction, $this->wppp->options['advanced_admin_view'] ? 'false' : 'true' ); ?>
+				<div id="wppp-support-box" class="wppp-support" style="width:95%; border: 1px solid #ddd; background: #fff; padding: 5px; text-align:center; margin-bottom:2em;">
+					<h3>Support WPPP</h3>
+					<p>Do you like this Plugin? If so, please support its development.</p>
+					<p><a href="http://wordpress.org/support/view/plugin-reviews/wp-performance-pack">Rate WPPP</a></p>
+
+					<div>
+						<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
+							<input type="hidden" name="cmd" value="_s-xclick" />
+							<input type="hidden" name="hosted_button_id" value="QCZP6B3QNVD8L" />
+							<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG_global.gif" border="0" name="submit" alt="PayPal – The safer, easier way to pay online." />
+							<img alt="" border="0" src="https://www.paypalobjects.com/de_DE/i/scr/pixel.gif" width="1" height="1" />
+						</form>
+					</div>
+					<br/>
+					<p><small><a id="hidesupportbox" href="#" class="dismiss">Dismiss this message for today.</a></small></p>
+				</div>
+				<?php endif; ?>
+				<div style="width:95%; border: 1px solid #ddd; background: #fff; padding: 5px; text-align:center">
+					<h3>Need help?</h3>
+					<p>Got any questions? Found a bug? Have any Suggestions?</p>
+					<p><a class="button" href="http://wordpress.org/support/plugin/wp-performance-pack" target="_blank">Visit the support forums</a></p>
+					<!--<p><a class="thickbox button" href="admin-ajax.php?action=wpppsupport&width=600&height=550" title="System report">Generate system report</a></p>-->
+				</div>
+			</div>
+			
+			<div style="margin-right: 200px;">
+				<form id="wppp-settings" action="<?php echo $formaction; ?>" method="post">
+					<?php 
+						if ( $this->wppp->is_network ) {
+							wp_nonce_field( 'update_wppp', 'wppp_nonce' );
+						}
+						settings_fields( 'wppp_options' );
+						$this->render_options();
+						submit_button(); 
+					?>
+				</form>
+				<?php $this->do_switch_view_button( $formaction, $this->wppp->options['advanced_admin_view'] ? 'false' : 'true' ); ?>
+			</div>
 		</div>
 		<?php
 	}

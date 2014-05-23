@@ -11,7 +11,7 @@ class WP_Performance_Pack_Commons {
 	const cache_group = 'wppp1.0'; 	// WPPP cache group name = wppp + version of last change to cache. 
 									// This way no cache conflicts occur while old cache entries just expire.
 
-	const wppp_version = '1.6.3';
+	const wppp_version = '1.7';
 
 	public static $options_name = 'wppp_option';
 	public static $options_default = array(
@@ -31,6 +31,10 @@ class WP_Performance_Pack_Commons {
 			'dynamic_images_rthook_force' => false,
 			'dynamic_images_exif_thumbs' => false,
 			'dynimg_quality' => 80,
+			'dyn_links' => false,
+			'cdn' => false,
+			'cdnurl' => '',
+			'cdn_images' => 'both',
 		);
 
 	public $options = NULL;

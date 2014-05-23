@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
 	Description: A collection of performance optimizations for WordPress. As of now it features options to improve performance of translated WordPress installations. 
-	Version: 1.6.6
+	Version: 1.7
 	Text Domain: wppp
 	Domain Path: /languages/
 	Author: Bj&ouml;rn Ahrens
@@ -29,11 +29,6 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 	include ( sprintf( "%s/common.php", dirname( __FILE__ ) ) );
 
 	class WP_Performance_Pack extends WP_Performance_Pack_Commons {
-		const cache_group = 'wppp1.0'; 	// WPPP cache group name = wppp + version of last change to cache. 
-										// This way no cache conflicts occur while old cache entries just expire.
-
-		public static $options_name = 'wppp_option';
-		public static $options_default = NULL;
 		public static $jit_versions = array(
 			'3.8.1',
 			'3.8.2',
@@ -117,8 +112,11 @@ if( !class_exists( 'WP_Performance_Pack' ) ) {
 			}
 
 			if ( $this->options['dynamic_images'] && !is_multisite() ) {
-				$this->modules[] = new WPPP_Dynamic_Images ();
+				$this->modules[] = new WPPP_Dynamic_Images ( $this );
 			}
+
+			// always load cdn support for dynamic links - to keep once substituted urls working even if dyn_links is disabled
+			$this->modules[] = new WPPP_CDN_Support ( $this );
 
 			// admin pages
 			if ( is_admin() ) {

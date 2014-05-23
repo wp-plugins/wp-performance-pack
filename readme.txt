@@ -93,7 +93,7 @@ When a none existend image is requested WPPP first checks if the full size versi
 
 == Changelog ==
 
-* 1.7 =
+= 1.7 =
 
 * [dynimg] **NEW** CDN support
 * [dynlink] **NEW** Dynamic image linking

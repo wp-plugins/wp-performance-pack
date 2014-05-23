@@ -28,10 +28,6 @@ class WPPP_Dynamic_Images {
 			}
 			add_action( 'admin_notices', array( $this, 'rthook_notice') );
 		}
-
-		if ( $this->wppp->options['cdn'] !== false ) {
-			add_filter( 'wp_get_attachment_url', array ( $this, 'cdn_get_attachment_url' ), 10, 2 );
-		}
 	}
 
 	public static function set_rewrite_rules () {

@@ -3,7 +3,7 @@ Contributors: greencp, linushoppe
 Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext, thumbnails, images, intermediate, resize, quality, regenerate, exif, fast, upload, cdn, maxcdn, coralcdn, photon, dynamic links
 Requires at least: 3.6
 Tested up to: 3.9.1
-Stable tag: 1.7
+Stable tag: 1.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,10 +93,14 @@ When a none existend image is requested WPPP first checks if the full size versi
 
 == Changelog ==
 
+= 1.7.1 = 
+
+* [cdn] bugfix caused by duplicate in wp_get_attachment_url filter
+
 = 1.7 =
 
-* [dynimg] **NEW** CDN support
-* [dynlink] **NEW** Dynamic image linking
+* [cdn] **NEW** CDN support
+* [cdn] **NEW** Dynamic image linking
 
 = 1.6.6 =
 

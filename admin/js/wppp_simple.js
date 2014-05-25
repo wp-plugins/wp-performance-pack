@@ -112,14 +112,19 @@ jQuery(document).ready(function($){
 		var value = $( "#wppp-cdn-select option:selected" ).val();
 
 		// show cdn info
-		if ( value == "coralcdn" )
+		if ( value == "coralcdn" ) {
 			$( "#wppp-coralcdn" ).show();
-		else if ( value == "maxcdn" ) {
+			$( "#wppp-maxcdn-signup" ).hide();
+		} else if ( value == "maxcdn" ) {
 			$( "#wppp-maxcdn" ).show();
-		} else if ( value == "customcdn" )
+			$( "#wppp-maxcdn-signup" ).show();
+		} else if ( value == "customcdn" ) {
 			$( "#wppp-customcdn" ).show();
-		else 
+			$( "#wppp-maxcdn-signup" ).hide();
+		} else {
 			$( "#wppp-nocdn" ).show();
+			$( "#wppp-maxcdn-signup" ).hide();
+		}
 
 		// set dynamic links
 		if ( value == "coralcdn" || value == "maxcdn" || value == "customcdn" ) {

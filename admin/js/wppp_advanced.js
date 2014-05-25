@@ -52,14 +52,20 @@ jQuery(document).ready(function($){
 		
 		var value = $( "#wppp-cdn-select option:selected" ).val();
 
-		if ( value == "coralcdn" )
+		// show cdn info
+		if ( value == "coralcdn" ) {
 			$( "#wppp-coralcdn" ).show();
-		else if ( value == "maxcdn" )
+			$( "#wppp-maxcdn-signup" ).hide();
+		} else if ( value == "maxcdn" ) {
 			$( "#wppp-maxcdn" ).show();
-		else if ( value == "customcdn" )
+			$( "#wppp-maxcdn-signup" ).show();
+		} else if ( value == "customcdn" ) {
 			$( "#wppp-customcdn" ).show();
-		else 
+			$( "#wppp-maxcdn-signup" ).hide();
+		} else {
 			$( "#wppp-nocdn" ).show();
+			$( "#wppp-maxcdn-signup" ).hide();
+		}
 	});
 	
 	// Set CDN url on submit

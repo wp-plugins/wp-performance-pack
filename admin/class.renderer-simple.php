@@ -256,17 +256,35 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 		<hr/>
 		
 		<h3 class="title">Use CDN for images</h3>
+		
 		<p class="description">Using a CDN for images improves loading times and eliminates the need to save intermediate images locally (select Webspace). The default settings when activating CDN support are activate dynamic image linking and serving images through CDN on both front and back end. These settings can be adjusted via advanced view.</p>
+
+		<?php
+			$cdn_test = get_transient( 'wppp_cdntest' );
+			if ( false !== $cdn_test ) {
+				if ( 'ok' === $cdn_test ) { ?>
+					<div class="ui-state-highlight ui-corner-all" style="padding:.5em; background: #fff; border: thin solid #7ad03a;"><span class="ui-icon ui-icon-check" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>CDN active and working.</div>
+					<?php
+				} else {
+					?>
+					<div class="ui-state-error ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-alert" style="float:left; margin-right:.3em;"></span><strong>CDN error!</strong> Either the CDN is down or CDN configuration isn't working. CDN will be retested every 15 minutes until the configuration is changed or the CDN is back up. CDN test error message: "<em><?php echo $cdn_test; ?></em>"</div>
+					<?php
+				}
+				?> <br/> <?php
+			}
+		?>
+
 		<table>
 			<tr valign="top">
 				<th scope="row" style="text-align:left"><?php _e( 'Select CDN provider', 'wppp' ); ?></th>
 				<td style="padding-left:2em;">
 					<select id="wppp-cdn-select" <?php $this->e_opt_name( 'cdn' ) ?> >
 						<option value="false" <?php echo $this->wppp->options['cdn'] === false ? 'selected="selected"' : ''; ?>>None</option>
-						<option value="coralcdn" <?php echo $this->wppp->options['cdn'] === 'coralcdn' ? 'selected="selected"' : ''; ?>>CoralCDN (free)</option>
+						<option value="coralcdn" <?php echo $this->wppp->options['cdn'] === 'coralcdn' ? 'selected="selected"' : ''; ?>>CoralCDN</option>
 						<option value="maxcdn" <?php echo $this->wppp->options['cdn'] === 'maxcdn' ? 'selected="selected"' : ''; ?>>MaxCDN</option>
 						<option value="customcdn" <?php echo $this->wppp->options['cdn'] === 'customcdn' ? 'selected="selected"' : ''; ?>>Custom</option>
 					</select>
+					<span id="wppp-maxcdn-signup" <?php echo $this->wppp->options['cdn'] === 'maxcdn' ? '' : 'style="display:none;"'; ?> ><a class="button" href="http://tracking.maxcdn.com/c/92472/3982/378" target="_blank">Sign up with MaxCDN</a> <strong>Use <em>WPPP</em> as coupon code to save 25%!</strong></span>
 					<div id="wppp-nocdn" class="wppp-cdn-div" <?php echo $this->wppp->options['cdn'] !== false ? 'style="display:none"' : ''; ?>>
 						<p class="description">CDN support is disabled. Choose a CDN provider to activate serving images through the selected CDN.</p>
 					</div>
@@ -275,11 +293,7 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 					</div>
 					<div id="wppp-maxcdn"  class="wppp-cdn-div" <?php echo $this->wppp->options['cdn'] !== 'maxcdn' ? 'style="display:none"' : ''; ?>>
 						<p><label for="cdn-url">MaxCDN Pull Zone URL:<br/><input id="maxcdn-url" type="text" value="<?php echo $this->wppp->options['cdnurl']; ?>" style="width:80%"/></label></p>
-						<p class="description">Log in to your MaxCDN account (or sign up for one), create a pull zone for your WordPress site and enter the CDN URL for that zone.</p>
-						<p>
-							<a class="button" href="https://cp.maxcdn.com" target="_blank">MaxCDN Login</a> <a class="button button-primary" href="http://tracking.maxcdn.com/c/92472/3982/378" target="_blank">Sign up with MaxCDN</a><br/>
-							<strong>Use <em>WPPP</em> as coupon code to save 25%!</strong>
-						</p>
+						<p class="description"><a href="https://cp.maxcdn.com" target="_blank">Log in</a> to your <a href="http://www.maxcdn.com" target="_blank">MaxCDN</a> account, create a pull zone for your WordPress site and enter the CDN URL for that zone.</p>
 					</div>
 					<div id="wppp-customcdn" class="wppp-cdn-div" <?php echo $this->wppp->options['cdn'] !== 'customcdn' ? 'style="display:none"' : ''; ?>>
 						<p><label for="cdn-url">CDN URL:<br/><input id="customcdn-url" type="text" value="<?php echo $this->wppp->options['cdnurl']; ?>" style="width:80%"/></label></p>
@@ -289,9 +303,9 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 				</td>
 			</tr>
 		</table>
-		
+
 		<hr/>
-		
+
 		<?php
 	}
 

@@ -93,13 +93,15 @@ class WPPP_CDN_Support {
 			if ( !is_wp_error( $response ) ) {
 				$body = wp_remote_retrieve_body( $response );
 				if ( $body !== 'WPPP CDN TEST ' . site_url() ) {
-					return new WP_Error( 'wrongresult', 'Test data mismatch. Expected: "WPPP CDN TEST ' . site_url() . '" / Received: "' . $body .'"' );
+					return new WP_Error( 'wrongresult', 'Test data mismatch. Expected: "WPPP CDN TEST ' . site_url() . '" / Received: "' . wp_strip_all_tags( $body ) .'"' );
 				} else {
 					return true;
 				}
 			} else {
 				return $response;
 			}
+		} else {
+			return new WP_Error( 'cdnconfigerror', 'CDN configuration error. Probably missing CDN URL.' );
 		}
 		return false;
 	}
@@ -121,6 +123,9 @@ class WPPP_CDN_Support {
 		switch ( $this->wppp->options['cdn'] ) {
 			case 'maxcdn'		:
 			case 'customcdn'	: $cdn_parsed = parse_url( $this->wppp->options['cdnurl'] );
+								if ( !isset( $cdn_parsed['host'] ) || empty( $cdn_parsed['host'] ) ) {
+									return NULL;
+								}
 								break;
 			case 'coralcdn'		: $cdn_parsed = parse_url( site_url() );
 								$cdn_parsed['host'] .= '.nyud.net';

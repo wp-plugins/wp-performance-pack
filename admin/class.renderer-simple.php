@@ -260,17 +260,19 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 		<p class="description">Using a CDN for images improves loading times and eliminates the need to save intermediate images locally (select Webspace). The default settings when activating CDN support are activate dynamic image linking and serving images through CDN on both front and back end. These settings can be adjusted via advanced view.</p>
 
 		<?php
-			$cdn_test = get_transient( 'wppp_cdntest' );
-			if ( false !== $cdn_test ) {
-				if ( 'ok' === $cdn_test ) { ?>
-					<div class="ui-state-highlight ui-corner-all" style="padding:.5em; background: #fff; border: thin solid #7ad03a;"><span class="ui-icon ui-icon-check" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>CDN active and working.</div>
-					<?php
-				} else {
-					?>
-					<div class="ui-state-error ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-alert" style="float:left; margin-right:.3em;"></span><strong>CDN error!</strong> Either the CDN is down or CDN configuration isn't working. CDN will be retested every 15 minutes until the configuration is changed or the CDN is back up. CDN test error message: "<em><?php echo $cdn_test; ?></em>"</div>
-					<?php
+			if ( $this->wppp->options['cdn'] ) {
+				$cdn_test = get_transient( 'wppp_cdntest' );
+				if ( false !== $cdn_test ) {
+					if ( 'ok' === $cdn_test ) { ?>
+						<div class="ui-state-highlight ui-corner-all" style="padding:.5em; background: #fff; border: thin solid #7ad03a;"><span class="ui-icon ui-icon-check" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>CDN active and working.</div>
+						<?php
+					} else {
+						?>
+						<div class="ui-state-error ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-alert" style="float:left; margin-right:.3em;"></span><strong>CDN error!</strong> Either the CDN is down or CDN configuration isn't working. CDN will be retested every 15 minutes until the configuration is changed or the CDN is back up. CDN test error message: "<em><?php echo $cdn_test; ?></em>"</div>
+						<?php
+					}
+					?> <br/> <?php
 				}
-				?> <br/> <?php
 			}
 		?>
 

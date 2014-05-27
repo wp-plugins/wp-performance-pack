@@ -83,6 +83,7 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 	function render_options () {
 		?>
 		<input type="hidden" <?php $this->e_opt_name('dynimg_quality'); ?> value="<?php echo $this->wppp->options['dynimg_quality']; ?>" />
+		<input id="cdn-url" type="hidden" <?php $this->e_opt_name( 'cdnurl' ); ?> value="<?php echo $this->wppp->options['cdnurl']; ?>"/>
 
 		<hr/>
 
@@ -185,15 +186,17 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 		<h3 class="title">CDN Support</h3>
 
 		<?php
-			$cdn_test = get_transient( 'wppp_cdntest' );
-			if ( false !== $cdn_test ) {
-				if ( 'ok' === $cdn_test ) { ?>
-					<div class="ui-state-highlight ui-corner-all" style="padding:.5em; background: #fff; border: thin solid #7ad03a;"><span class="ui-icon ui-icon-check" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>CDN active and working.</div>
-					<?php
-				} else {
-					?>
-					<div class="ui-state-error ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-alert" style="float:left; margin-right:.3em;"></span><strong>CDN error!</strong> Either the CDN is down or CDN configuration isn't working. CDN will be retested every 15 minutes until the configuration is changed or the CDN is back up. CDN test error message: "<em><?php echo $cdn_test; ?></em>"</div>
-					<?php
+			if ( $this->wppp->options['cdn'] ) {
+				$cdn_test = get_transient( 'wppp_cdntest' );
+				if ( false !== $cdn_test ) {
+					if ( 'ok' === $cdn_test ) { ?>
+						<div class="ui-state-highlight ui-corner-all" style="padding:.5em; background: #fff; border: thin solid #7ad03a;"><span class="ui-icon ui-icon-check" style="float:left; margin-top:.2ex; margin-right:.5ex;"></span>CDN active and working.</div>
+						<?php
+					} else {
+						?>
+						<div class="ui-state-error ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-alert" style="float:left; margin-right:.3em;"></span><strong>CDN error!</strong> Either the CDN is down or CDN configuration isn't working. CDN will be retested every 15 minutes until the configuration is changed or the CDN is back up. CDN test error message: "<em><?php echo $cdn_test; ?></em>"</div>
+						<?php
+					}
 				}
 			}
 		?>

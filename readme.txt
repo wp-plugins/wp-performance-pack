@@ -94,6 +94,11 @@ When a none existend image is requested WPPP first checks if the full size versi
 
 == Changelog ==
 
+= 1.7.3 =
+
+* [cdn] bugfix in advanced view: CDN URL didn't get saved
+* [cdn] improved CDN test: warn about missing CDN URL, only display CDN test result if cdn is activated
+
 = 1.7.2 =
 
 * [cdn] better feedback on active cdn settings

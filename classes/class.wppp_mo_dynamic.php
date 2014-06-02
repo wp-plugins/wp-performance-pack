@@ -153,40 +153,47 @@ class WPPP_MO_dynamic extends Gettext_Translations {
 		}
 	}
 
+	private function import_fail ( &$moitem ) {
+		$moitem->reader->close();
+		$moitem->reader = false;
+		unset( $moitem->originals );
+		unset( $moitem->originals_table );
+		unset( $moitem->translations_table );
+		unset( $moitem->hash_table );
+		
+		return false;
+	}
+
 	function import_from_reader( &$moitem ) {
 		if ( $moitem->reader !== NULL) {
-			return true;
+			return ( $moitem->reader !== false );
 		}
-		
+
+		$file_size = filesize( $moitem->mofile );
 		$moitem->reader=new POMO_FileReader( $moitem->mofile );
 
 		$endian_string = MO::get_byteorder( $moitem->reader->readint32() );
 		if ( false === $endian_string ) {
-			$moitem->reader->close();
-			$moitem->reader = NULL;
-			return false;
+			return $this->import_fail( $moitem );
 		}
 		$moitem->reader->setEndian( $endian_string );
 		$endian = ( 'big' == $endian_string ) ? 'N' : 'V';
 
 		$header = $moitem->reader->read( 24 );
 		if ( $moitem->reader->strlen( $header ) != 24 ) {
-			$moitem->clear_reader();
-			return false;
+			return $this->import_fail( $moitem );
 		}
 
 		// parse header
 		$header = unpack( "{$endian}revision/{$endian}total/{$endian}originals_lenghts_addr/{$endian}translations_lenghts_addr/{$endian}hash_length/{$endian}hash_addr", $header );
 		if ( !is_array( $header ) ) {
-			$moitem->clear_reader();
-			return false;
+			return $this->import_fail( $moitem );
 		}
 		extract( $header );
 
 		// support revision 0 of MO format specs, only
 		if ( $revision != 0 ) {
-			$moitem->clear_reader();
-			return false;
+			return $this->import_fail( $moitem );
 		}
 
 		$moitem->total = $total;
@@ -197,8 +204,7 @@ class WPPP_MO_dynamic extends Gettext_Translations {
 			$moitem->reader->seekto ( $hash_addr );
 			$str = $moitem->reader->read( $hash_length * 4 );
 			if ( $moitem->reader->strlen( $str ) != $hash_length * 4 ) {
-				$moitem->clear_reader();
-				return false;
+				return $this->import_fail( $moitem );
 			} 
 			if ( class_exists ( 'SplFixedArray' ) )
 				$moitem->hash_table = SplFixedArray::fromArray( unpack ( $endian.$hash_length, $str ), false );
@@ -210,41 +216,53 @@ class WPPP_MO_dynamic extends Gettext_Translations {
 		$moitem->reader->seekto( $originals_lenghts_addr );
 		$originals_lengths_length = $translations_lenghts_addr - $originals_lenghts_addr;
 		if ( $originals_lengths_length != $total * 8 ) {
-			$moitem->clear_reader();
-			return false;
+			return $this->import_fail( $moitem );
 		}
 		$str = $moitem->reader->read( $originals_lengths_length );
 		if ( $moitem->reader->strlen( $str ) != $originals_lengths_length ) {
-			$moitem->clear_reader();
-			return false;
+			return $this->import_fail( $moitem );
 		}
 		if ( class_exists ( 'SplFixedArray' ) )
 			$moitem->originals_table = SplFixedArray::fromArray( unpack ( $endian.($total * 2), $str ), false );
 		else
 			$moitem->originals_table = array_slice( unpack ( $endian.($total * 2), $str ), 0 ); // force zero based index
 
+		// "sanity check" ( i.e. test for corrupted mo file )
+		for ( $i = 0, $max = $total * 2; $i < $max; $i+=2 ) {
+			if ( $moitem->originals_table[ $i + 1 ] > $file_size
+				|| $moitem->originals_table[ $i + 1 ] + $moitem->originals_table[ $i ] > $file_size ) {
+				return $this->import_fail( $moitem );
+			}
+		}
+
 		// read translations' indices
 		$translations_lenghts_length = $hash_addr - $translations_lenghts_addr;
 		if ( $translations_lenghts_length != $total * 8 ) {
-			$moitem->clear_reader();
-			return false;
+			return $this->import_fail( $moitem );
 		}
 		$str = $moitem->reader->read( $translations_lenghts_length );
 		if ( $moitem->reader->strlen( $str ) != $translations_lenghts_length ) {
-			$moitem->clear_reader();
-			return false;
+			return $this->import_fail( $moitem );
 		}
 		if ( class_exists ( 'SplFixedArray' ) )
 			$moitem->translations_table = SplFixedArray::fromArray( unpack ( $endian.($total * 2), $str ), false );
 		else
 			$moitem->translations_table = array_slice( unpack ( $endian.($total * 2), $str ), 0 ); // force zero based index
 
+		// "sanity check" ( i.e. test for corrupted mo file )
+		for ( $i = 0, $max = $total * 2; $i < $max; $i+=2 ) {
+			if ( $moitem->translations_table[ $i + 1 ] > $file_size
+				|| $moitem->translations_table[ $i + 1 ] + $moitem->translations_table[ $i ] > $file_size ) {
+				return $this->import_fail( $moitem );
+			}
+		}
+
 		// read headers
 		for ( $i = 0, $max = $total * 2; $i < $max; $i+=2 ) {
 			if ( $moitem->originals_table[$i] > 0 ) {
 				$moitem->reader->seekto( $moitem->originals_table[$i+1] );
 				$original = $moitem->reader->read( $moitem->originals_table[$i] );
-						
+
 				$j = strpos( $original, 0 );
 				if ( $j !== false )
 					$original = substr( $original, 0, $i );
@@ -257,7 +275,7 @@ class WPPP_MO_dynamic extends Gettext_Translations {
 					$translation = $moitem->reader->read( $moitem->translations_table[$i] );
 				} else
 					$translation = '';
-				
+
 				$this->set_headers( $this->make_headers( $translation ) );
 			} else
 				return true;

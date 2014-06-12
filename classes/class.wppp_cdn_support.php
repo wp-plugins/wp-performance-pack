@@ -11,15 +11,64 @@
  * @since 1.7
  */
 
-class WPPP_CDN_Support {
-	private	$wppp = NULL;
+class WPPP_CDN_Support extends WPPP_CDN_Support_Skeleton {
 	private $cdn_fallback = false;
 
-	function __construct ( $wppp_parent ) {
-		// this gets called at init
+	function validate_options ( $input, $output ) {
+		if ( isset( $input['cdn'] ) ) {
+			$value = trim( sanitize_text_field( $input['cdn'] ) );
+			unset( $input['cdn'] );
+		} else {
+			$value = '';
+		}
+		switch ( $value ) {
+			case 'coralcdn'		:
+			case 'maxcdn' 		:
+			case 'customcdn'	: $output['cdn'] = $value;
+								break;
+			default				: $output['cdn'] = false;
+								break;
+		}
 
-		$this->wppp = $wppp_parent;
+		if ( isset( $input['cdnurl'] ) ) {
+			$value = trim( sanitize_text_field( $input['cdnurl'] ) );
+			unset( $input['cdnurl'] );
+		} else {
+			$value = '';
+		}
+		if ( !empty( $value ) ) {
+			$scheme = parse_url( $value, PHP_URL_SCHEME );
+			if ( empty( $scheme ) ) {
+				$value = 'http://' . $value;
+			}
+		}
+		$output['cdnurl'] = $value;
 
+		if ( isset ( $input['cdn_images'] ) ) {
+			$value = trim( sanitize_text_field( $input['cdn_images'] ) );
+			unset( $input['cdn_images'] );
+		} else {
+			$value = '';
+		}
+		switch ( $value ) {
+			case 'front'	:
+			case 'back'		: $output['cdn_images'] = $value;
+							break;
+			default			: $output['cdn_images'] = 'both';
+							break;
+		}
+
+		// postprocessing of values
+		if ( $output['cdn'] !== 'customcdn' 
+			&& $output['cdn'] !== 'maxcdn' )  {
+			$output['cdnurl'] = '';
+		}
+
+		delete_transient( 'wppp_cdntest' ); // cdn settings might have changed, so delete last test result
+		return $output;
+	}
+
+	function init () {
 		if ( $this->wppp->options['dyn_links'] ) {
 			// url substitution only if dynamic image links are activated
 			add_filter( 'content_save_pre', array( $this, 'content_substitute_uploadbase' ), 99 );
@@ -204,7 +253,9 @@ class WPPP_CDN_Support {
 
 		// mark post content as substituted
 		global $post;
-		update_post_meta( $post->ID, 'wpppdynamic', '1' );
+		if ( $post ) {
+			update_post_meta( $post->ID, 'wpppdynamic', '1' );
+		}
 		return $content;
 	}
 
@@ -247,7 +298,7 @@ class WPPP_CDN_Support {
 
 	function back_end_rewrite_url ( $content ) {
 		// force uploadbase if cdn is only enabled for front end
-		return $this->content_set_uploadbase( $content, $this->wppp->options['cdn_backend'] === 'front' );
+		return $this->content_set_uploadbase( $content, $this->wppp->options['cdn_images'] === 'front' );
 	}
 
 	function cdn_get_attachment_url( $url, $post_id ) {

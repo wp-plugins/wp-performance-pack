@@ -111,8 +111,8 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 		$height 		= $matches[3];
 		$crop 			= false;
 		$suffix 		= $width . 'x' . $height;
-		include( sprintf( "%s/common.php", dirname( __FILE__ ) ) );
-		$wppp = new WP_Performance_Pack_Commons();
+		include( sprintf( "%s/class.wp_performance_pack.php", dirname( __FILE__ ) ) );
+		$wppp = new WP_Performance_Pack( false );
 		$wppp->load_options();
 
 		if ( $wppp->options['dynamic_images_cache'] && ( false !== ( $data = wp_cache_get ( $basefile . $suffix, 'wppp' ) ) ) ) {
@@ -191,7 +191,7 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 
 		if ( !$wppp->options['dynamic_images_nosave'] && $ewww !== false ) {
 			// load EWWW IO 
-			require( ABSPATH . 'wp-includes/default-constants.php' );
+			require_once( ABSPATH . 'wp-includes/default-constants.php' ); // it seems that sometimes something else already includes this, so do require_once to not get redeclaration errors
 			wp_plugin_directory_constants();
 			wp_load_translations_early();
 			$GLOBALS['wp_plugin_paths'] = array();

@@ -17,7 +17,7 @@ class WPPP_Admin_Admin extends WPPP_Admin_User {
 
 	public function __construct($wppp_parent) {
 		parent::__construct($wppp_parent);
-		register_setting( 'wppp_options', WP_Performance_Pack_Commons::$options_name, array( $this, 'validate' ) );
+		register_setting( 'wppp_options', WP_Performance_Pack::wppp_options_name, array( $this, 'validate' ) );
 		if ( $this->wppp->is_network ) {
 			add_action( 'network_admin_menu', array( $this, 'add_menu_page' ) );
 		} else {
@@ -36,7 +36,7 @@ class WPPP_Admin_Admin extends WPPP_Admin_User {
 		?>
 		<p>You can include the following information along with your bug / issue / question when posting in the support forums:</p>
 		<textarea rows="25" style="width:100%">
-WPPP version: <?php echo WP_Performance_Pack_Commons::wppp_version; ?>
+WPPP version: <?php echo WP_Performance_Pack::wppp_version; ?>
 
 WPPP settings: <?php
 	foreach ( $this->wppp->options as $opt => $val ) {
@@ -107,7 +107,8 @@ Loaded extensions: <?php
 				}
 			}
 
-			foreach ( WP_Performance_Pack_Commons::$options_default as $key => $val ) {
+			// process direct WPPP default options (module options get processed later)
+			foreach ( WP_Performance_Pack::$options_default as $key => $val ) {
 				if ( isset( $input[$key] ) ) {
 					// validate set input values
 					switch ( $key ) {
@@ -115,61 +116,30 @@ Loaded extensions: <?php
 													  break;
 						case 'dynimg_quality'		: $output[$key] = ( is_numeric( $input[$key] ) && $input[$key] >= 10 && $input[$key] <= 100 ) ? $input[ $key] : $val;
 													  break;
-						case 'cdn'					: $value = trim( sanitize_text_field( $input[$key] ) );
-													  switch ( $value ) {
-														case 'coralcdn'  :
-														case 'maxcdn' 	 :
-														case 'customcdn' : $output[$key] = $value;
-																		   break;
-														default			 : $output[$key] = false;
-																		   break;
-													  }
-													  break;
-						case 'cdnurl'				: $value = trim( sanitize_text_field( $input[$key] ) );
-													  if ( !empty( $value ) ) {
-														$scheme = parse_url( $value, PHP_URL_SCHEME );
-														if ( empty( $scheme ) ) {
-															$value = 'http://' . $value;
-														}
-													  }
-													  $output[$key] = $value;
-													  break;
-						case 'cdn_images'			: $value = trim( sanitize_text_field( $input[$key] ) );
-													  switch ( $value ) {
-														case 'front'	:
-														case 'back'		: $output[$key] = $value;
-																		  break;
-														default			: $output[$key] = 'both';
-																		  break;
-													  }
-													  break;
 						default						: $output[$key] = ( $input[$key] == 'true' ? true : false );
 													  break;
 					}
+					unset( $input[$key] );
 				} else {
-					// not set values are assumed as false or the respective value (not necessary the default value)
+					// not set values are assumed as false or the respective value (not necessarily the default value)
 					switch ( $key ) {
 						case 'advanced_admin_view' 	: $output[$key] = $this->wppp->options['advanced_admin_view'];
 													  break;
 						case 'dynimg_quality'		: $output[$key] = $val;
-													  break;
-						case 'dynimg_cdnurl'		: $output[$key] = '';
-													  break;
-						case 'cdn_images'			: $output[$key] = $val;
 													  break;
 						default						: $output[$key] = false;
 													  break;
 					}
 				} // if isset...
 			} // foreach
-			
-			// postprocessing of values
-			if ( $output['cdn'] !== 'customcdn' 
-				&& $output['cdn'] !== 'maxcdn' )  {
-				$output['cdnurl'] = '';
+
+			// process module options
+			foreach ( $this->wppp->modules as $module ) {
+				if ( is_a( $module, 'WPPP_Module_Skeleton' ) ) {
+					$output = $module->validate_options( $input, $output );
+				}
 			}
 		}
-		delete_transient( 'wppp_cdntest' ); // cdn settings might have changed, so delete last test result
 		return $output;
 	}
 
@@ -177,13 +147,14 @@ Loaded extensions: <?php
 		if ( current_user_can( 'manage_network_options' ) ) {
 			check_admin_referer( 'update_wppp', 'wppp_nonce' );
 			$input = array();
-			foreach ( WP_Performance_Pack_Commons::$options_default as $key => $value ) {
+			$def_opts = $this->wppp->get_options_default();
+			foreach ( $def_opts as $key => $value ) {
 				if ( isset( $_POST['wppp_option'][$key] ) ) {
 					$input[$key] = sanitize_text_field( $_POST['wppp_option'][$key] );
 				}
 			}
 			$this->wppp->options = $this->validate( $input );
-			update_site_option( WP_Performance_Pack_Commons::$options_name, $this->wppp->options );
+			update_site_option( WP_Performance_Pack::wppp_options_name, $this->wppp->options );
 		}
 	}
 

@@ -20,12 +20,12 @@ class WPPP_Native_Gettext extends Gettext_Translations {
 	private $sOthers = array ();
     
 	// Some Dummy-Function just to be API-compatible
-	function add_entry ($entry) { return false; }
-	function add_entry_or_merge ($entry) { return false; }
-	function set_header ($header, $value) { return false; }
-	function set_headers (&$headers) { return false; }
-	function get_header ($header) { return false; }
-	function translate_entry (&$entry) { return false; }
+	function add_entry ( $entry ) { return false; }
+	function add_entry_or_merge ( $entry ) { return false; }
+	function set_header ( $header, $value ) { return false; }
+	function set_headers ( $headers ) { return false; }
+	function get_header ( $header ) { return false; }
+	function translate_entry ( &$entry ) { return false; }
     
 	/**
 	 * Given the number of items, returns the 0-based index of the plural form to use

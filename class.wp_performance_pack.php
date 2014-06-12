@@ -41,7 +41,7 @@ class WPPP_CDN_Support_Skeleton extends WPPP_Module_Skeleton {
 class WP_Performance_Pack {
 	const cache_group = 'wppp1.0'; 	// WPPP cache group name = wppp + version of last change to cache. 
 									// This way no cache conflicts occur while old cache entries just expire.
-	const wppp_version = '1.7.5';
+	const wppp_version = '1.7.6';
 	const wppp_options_name = 'wppp_option';
 
 	public static $options_default = array(
@@ -311,7 +311,7 @@ class WP_Performance_Pack {
 				// pre 1.6.3 version didn't have the wppp_version option
 
 				// server-dynamic-images.php location has changed, so update rewrite-rules
-				$opts = $this->get_option( self::_options_name );
+				$opts = $this->get_option( self::wppp_options_name );
 				if ( isset( $opts['dynamic_images'] ) && $opts['dynamic_images'] ) {
 					$this->late_updates[] = array( $this, 'update_163' );
 				}

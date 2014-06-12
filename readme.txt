@@ -94,6 +94,10 @@ When a none existend image is requested WPPP first checks if the full size versi
 
 == Changelog ==
 
+= 1.7.6 =
+
+* [general] (stupid) bug fixed ( "Undefined class constant '_options_name'...")
+
 = 1.7.5 =
 
 * [dynimg] bugfix in EWWW Image Optimizer integration

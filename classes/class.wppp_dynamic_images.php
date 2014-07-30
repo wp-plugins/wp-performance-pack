@@ -9,19 +9,14 @@
  * @since 1.1
  */
 
-class WPPP_Dynamic_Images {
-
+class WPPP_Dynamic_Images extends WPPP_Dynamic_Images_Skeleton {
 	private $dynimg_image_sizes = NULL;
-	private	$wppp = NULL;
 
-	function __construct ( $wppp_parent ) {
-		// this gets called at init
+	function init () {
 		self::set_rewrite_rules();
-		add_filter( 'intermediate_image_sizes_advanced', array ( $this, 'dynimg_image_sizes_advanced' ) );
-		add_filter( 'wp_generate_attachment_metadata', array ( $this, 'dynimg_generate_metadata' ) );
+		add_filter( 'wp_image_editors', array ( $this, 'filter_wp_image_editor' ), 1000, 1 ); // set to very low priority, so it is hopefully called last
 		add_action( 'shutdown', array( $this, 'save_preset_image_sizes' ) );
 
-		$this->wppp = $wppp_parent;
 		if ( $this->wppp->options['dynamic_images_rthook'] ) {
 			if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 				add_filter( 'wp_update_attachment_metadata', array ( $this, 'rebuild_thumbnails_delete_hook' ), 100, 2 );
@@ -56,44 +51,61 @@ class WPPP_Dynamic_Images {
 		return $rules;
 	}
 
-	// prevent WP from generating resized images on upload
-	function dynimg_image_sizes_advanced( $sizes ) {
-		// save the sizes to a global, because the next function needs them to lie to WP about what sizes were generated
-		$this->dynimg_image_sizes = $sizes;
+	function filter_wp_image_editor ( $editors ) {
+		$new_editors = array();
+		// extend each registered editor and override its multi_resize function - found no better (i.e. flexible) way than to use eval
+		foreach ( $editors as $editor ) {
+			eval (" 
+			class WPPP_$editor extends $editor {
 
-		// force WP to not create intermediate images by telling it there are no sizes
-		return array();
-	}
+				public function multi_resize( \$sizes ) {
+					\$metadata = array();
+					\$orig_size = \$this->size;
 
-	// trick WP into thinking images were generated anyway
-	function dynimg_generate_metadata( $meta ) {
-		if ( $this->dynimg_image_sizes != NULL ) {
-			foreach ( $this->dynimg_image_sizes as $sizename => $size ) {
-				// figure out what size WP would make this:
-				$newsize = image_resize_dimensions( $meta['width'], $meta['height'], $size['width'], $size['height'], $size['crop'] );
+					foreach ( \$sizes as \$size => \$size_data ) {
+						if ( ! isset( \$size_data['width'] ) && ! isset( \$size_data['height'] ) ) {
+							continue;
+						}
 
-				if ($newsize) {
-					$info = pathinfo( $meta['file'] );
-					$ext = $info['extension'];
-					$name = wp_basename($meta['file'], ".$ext");
+						if ( ! isset( \$size_data['width'] ) ) {
+							\$size_data['width'] = null;
+						}
+						if ( ! isset( \$size_data['height'] ) ) {
+							\$size_data['height'] = null;
+						}
 
-					$suffix = "{$newsize[4]}x{$newsize[5]}";
+						if ( ! isset( \$size_data['crop'] ) ) {
+							\$size_data['crop'] = false;
+						}
 
-					// build the fake meta entry for the size in question
-					$resized = array(
-						'file' => "{$name}-{$suffix}.{$ext}",
-						'width' => $newsize[4],
-						'height' => $newsize[5],
-					);
+						\$dims = image_resize_dimensions( \$this->size['width'], \$this->size['height'], \$size_data['width'], \$size_data['height'], \$size_data['crop'] );
+						if ( \$dims ) {
+							list( \$dst_x, \$dst_y, \$src_x, \$src_y, \$dst_w, \$dst_h, \$src_w, \$src_h ) = \$dims;
+							\$this->update_size( \$dst_w, \$dst_h );
 
-					$meta['sizes'][$sizename] = $resized;
+							list( \$filename, \$extension, \$mime_type ) = \$this->get_output_format( null, null );
+
+							if ( ! \$filename )
+								\$filename = \$this->generate_filename( null, null, \$extension );
+
+							\$metadata[\$size] = array(
+								'file'      => wp_basename( apply_filters( 'image_make_intermediate_size', \$filename ) ),
+								'width'     => \$this->size['width'],
+								'height'    => \$this->size['height'],
+								'mime-type' => \$mime_type,
+							);
+							\$this->size = \$orig_size;
+						}
+					}
+					return \$metadata;
 				}
-			}
-			$this->dynimg_image_sizes = NULL;
+			} 
+			");
+			$new_editors[] = 'WPPP_' . $editor;
 		}
-		return $meta;
+		return $new_editors;
 	}
-	
+
 	function save_preset_image_sizes() {
 		global $_wp_additional_image_sizes;
  

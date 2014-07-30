@@ -1,21 +1,22 @@
 <?php
 
-class WPPP_Module_Skeleton {
+abstract class WPPP_Module_Skeleton {
 	protected $wppp = NULL;
-	public function get_default_options () { return array(); }
-	public function __construct ( $parent ) { $this->wppp = $parent; }
-	public function is_active () { return false; }
-	public function spawn_body () { return $this; }
-	// initializations done at WPPP construction
-	public function early_init () {}
-	// initializations done at init action
-	public function init () {}
+	public abstract function get_default_options ();
+	public abstract function is_active ();
+	public abstract function spawn_body ();
 	// validate options
 	// input contains actual input
 	// output contains the output so far
 	// unset processed options in input
-	public function validate_options( $input, $output ) { return $output; }
-	// initializations done at admin_init
+	public abstract function validate_options( &$input, $output );
+
+	public function __construct ( $parent ) { $this->wppp = $parent; }
+	// initializations done at WPPP construction
+	public function early_init () {}
+	// initializations done at init action
+	public function init () {}
+	// initializations done at admin_init action
 	public function admin_init () {}
 }
 
@@ -24,24 +25,123 @@ class WPPP_CDN_Support_Skeleton extends WPPP_Module_Skeleton {
 		'cdn' => false,
 		'cdnurl' => '',
 		'cdn_images' => 'both',
+		'dyn_links' => false,
 	);
 
 	public function get_default_options () { return static::$options_default; }
 
 	function is_active () { 
 		// always load cdn support for dynamic links - to keep once substituted urls working even if dyn_links is disabled
-		return true; 
+		return $this->wppp->options['cdn'] || $this->wppp->options['dyn_links'];
 	}
 
 	function spawn_body () {
 		return new WPPP_CDN_Support ( $this->wppp );
+	}
+
+	function validate_options ( &$input, $output ) {
+		// option: cdn
+		if ( isset( $input['cdn'] ) ) {
+			$value = trim( sanitize_text_field( $input['cdn'] ) );
+			unset( $input['cdn'] );
+		} else {
+			$value = '';
+		}
+		switch ( $value ) {
+			case 'coralcdn'		:
+			case 'maxcdn' 		:
+			case 'customcdn'	: $output['cdn'] = $value;
+								break;
+			default				: $output['cdn'] = false;
+								break;
+		}
+
+		// option: cdnurl
+		if ( isset( $input['cdnurl'] ) ) {
+			$value = trim( sanitize_text_field( $input['cdnurl'] ) );
+			unset( $input['cdnurl'] );
+		} else {
+			$value = '';
+		}
+		if ( !empty( $value ) ) {
+			$scheme = parse_url( $value, PHP_URL_SCHEME );
+			if ( empty( $scheme ) ) {
+				$value = 'http://' . $value;
+			}
+		}
+		$output['cdnurl'] = $value;
+
+		// option: cdn_images
+		if ( isset ( $input['cdn_images'] ) ) {
+			$value = trim( sanitize_text_field( $input['cdn_images'] ) );
+			unset( $input['cdn_images'] );
+		} else {
+			$value = '';
+		}
+		switch ( $value ) {
+			case 'front'	:
+			case 'back'		: $output['cdn_images'] = $value;
+							break;
+			default			: $output['cdn_images'] = 'both';
+							break;
+		}
+
+		if ( isset( $input['dyn_links'] ) ) {
+			$output['dyn_links'] = ( $input['dyn_links'] == 'true' ? true : false );
+			unset( $input['dyn_links'] );
+		} else {
+			$output['dyn_links'] = static::$options_default['dyn_links'];
+		}
+
+		// postprocessing of values
+		if ( $output['cdn'] !== 'customcdn' 
+			&& $output['cdn'] !== 'maxcdn' )  {
+			$output['cdnurl'] = '';
+		}
+
+		delete_transient( 'wppp_cdntest' ); // cdn settings might have changed, so delete last test result
+		return $output;
+	}
+}
+
+class WPPP_Dynamic_Images_Skeleton extends WPPP_Module_Skeleton {
+	public static $options_default = array(
+		'dynamic_images' => false,
+		'dynamic_images_nosave' => false,
+		'dynamic_images_cache' => false,
+		'dynamic_images_rthook' => false,
+		'dynamic_images_rthook_force' => false,
+		'dynamic_images_exif_thumbs' => false,
+	);
+
+	public function get_default_options () { return static::$options_default; }
+
+	public function is_active () { 
+		return $this->wppp->options['dynamic_images'] === true;
+	}
+
+	public function spawn_body () {
+		return new WPPP_Dynamic_Images ( $this->wppp );
+	}
+
+	public function validate_options ( &$input, $output ) {
+		$defopts = $this->get_default_options();
+		foreach ( $defopts as $key => $value ) {
+			if ( isset( $input[$key] ) ) {
+				$output[$key] = ( $input[$key] == 'true' ? true : false );
+				unset( $input[$key] );
+			} else {
+				$output[$key] = $value;
+			}
+		}
+		return $output;
 	}
 }
 
 class WP_Performance_Pack {
 	const cache_group = 'wppp1.0'; 	// WPPP cache group name = wppp + version of last change to cache. 
 									// This way no cache conflicts occur while old cache entries just expire.
-	const wppp_version = '1.7.6';
+	const wppp_version = '1.8';
 	const wppp_options_name = 'wppp_option';
 
 	public static $options_default = array(
@@ -54,18 +154,11 @@ class WP_Performance_Pack {
 		'mo_caching' => false,
 		'debug' => false,
 		'advanced_admin_view' => false,
-		'dynamic_images' => false,
-		'dynamic_images_nosave' => false,
-		'dynamic_images_cache' => false,
-		'dynamic_images_rthook' => false,
-		'dynamic_images_rthook_force' => false,
-		'dynamic_images_exif_thumbs' => false,
 		'dynimg_quality' => 80,
-		'dyn_links' => false,
 	);
 	private $available_modules = array(
 		'WPPP_CDN_Support_Skeleton',
-		//'WPPP_'
+		'WPPP_Dynamic_Images_Skeleton',
 	);
 	private $admin_opts = NULL;
 	private $late_updates = array();
@@ -87,16 +180,14 @@ class WP_Performance_Pack {
 	function get_options_default () {
 		$def_opts = static::$options_default;
 		foreach ( $this->modules as $module ) {
-			if ( is_a( $module, 'WPPP_Module_Skeleton' ) ) {
-				$def_opts = array_merge( $def_opts, $module->get_default_options() );
-			}
+			$def_opts = array_merge( $def_opts, $module->get_default_options() );
 		}
 		return $def_opts;
 	}
 
 	function load_options () {
 		if ( $this->options == NULL ) {
-			$this->options = $this->get_option( 'wppp_option' );
+			$this->options = $this->get_option( self::wppp_options_name );
 			$def_opts = $this->get_options_default();
 			foreach ( $def_opts as $key => $value ) {
 				if ( !isset( $this->options[$key] ) ) {
@@ -181,12 +272,10 @@ class WP_Performance_Pack {
 
 		// activate and initialize modules
 		foreach ( $this->modules as &$module ) {
-			if ( is_a ( $module, 'WPPP_Module_Skeleton' ) ) { // needed until all modules are WPPP_Module
-				if ( $module->is_active() ) {
-					$module = $module->spawn_body();
-				}
-				$module->early_init();
+			if ( $module->is_active() ) {
+				$module = $module->spawn_body();
 			}
+			$module->early_init();
 		}
 	}
 
@@ -211,10 +300,6 @@ class WP_Performance_Pack {
 			add_filter( 'debug_bar_panels', array ( $this, 'add_debug_bar_wppp' ), 10 );
 		}
 
-		if ( $this->options['dynamic_images'] && !is_multisite() ) {
-			$this->modules[] = new WPPP_Dynamic_Images ( $this );
-		}
-
 		// admin pages
 		if ( is_admin() ) {
 			if ( current_user_can ( 'manage_options' ) ) {
@@ -227,9 +312,7 @@ class WP_Performance_Pack {
 		}
 
 		foreach ( $this->modules as $module ) {
-			if ( is_a ( $module, 'WPPP_Module_Skeleton' ) ) { // needed until all modules are WPPP_Module
-				$module->init();
-			}
+			$module->init();
 		}
 	}
 
@@ -261,8 +344,7 @@ class WP_Performance_Pack {
 
 	public function activate() { 
 		// doesn't fire on update, only on manual activation through admin
-		// so here version can be set to current version, which prevents updates (see check_update)
-		// on activation
+		// is called after check_update (which is called at construction)
 
 		if ( version_compare( PHP_VERSION, '5.3.0', '<' ) ) { 
 			deactivate_plugins( basename(__FILE__) ); // Deactivate self - does that really work at this stage?
@@ -293,6 +375,9 @@ class WP_Performance_Pack {
 		}
 		delete_option( 'wppp_dynimg_sizes' );
 		delete_option( 'wppp_version' );
+		
+		// restore static links
+		WPPP_CDN_Support::restore_static_links();
 	}
 
 	function wppp_autoloader ( $class ) {
@@ -303,15 +388,19 @@ class WP_Performance_Pack {
 	}
 
 	function check_update () {
+		if ( ! $opts = $this->get_option( self::wppp_options_name ) ) {
+			// if get_option fails, this is the activation, so no update necessary
+			return;
+		}
+	
 		$installed = $this->get_option( 'wppp_version' );
 		if ( version_compare( $installed, self::wppp_version, '!=' ) ) {
-			// if installed version differs from version saved in options update
+			// if installed version differs from version saved in options then do update
 			// it is assumed that the options-version is always less or equal to the installed version
 			if ( $installed === false || empty( $installed ) ) {
 				// pre 1.6.3 version didn't have the wppp_version option
 
-				// server-dynamic-images.php location has changed, so update rewrite-rules
-				$opts = $this->get_option( self::wppp_options_name );
+				// serve-dynamic-images.php location has changed, so update rewrite-rules
 				if ( isset( $opts['dynamic_images'] ) && $opts['dynamic_images'] ) {
 					$this->late_updates[] = array( $this, 'update_163' );
 				}

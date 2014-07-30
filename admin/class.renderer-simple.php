@@ -257,7 +257,7 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 		
 		<h3 class="title">Use CDN for images</h3>
 		
-		<p class="description">Using a CDN for images improves loading times and eliminates the need to save intermediate images locally (select Webspace). The default settings when activating CDN support are activate dynamic image linking and serving images through CDN on both front and back end. These settings can be adjusted via advanced view.</p>
+		<p class="description">Using a CDN for images improves loading times and eliminates the need to save intermediate images locally (select Webspace). The default settings when activating CDN support are activate dynamic image linking and serving images through CDN on both front and back end. These settings can be adjusted via advanced view. Dynamic links will be restored to static links when deactivating WPPP. If CDN support gets deactivated, links can be restored manually via advanced view.</p>
 
 		<?php
 			if ( $this->wppp->options['cdn'] ) {

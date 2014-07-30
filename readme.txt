@@ -3,7 +3,7 @@ Contributors: greencp, linushoppe
 Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext, thumbnails, images, intermediate, resize, quality, regenerate, exif, fast, upload, cdn, maxcdn, coralcdn, photon, dynamic links
 Requires at least: 3.6
 Tested up to: 3.9.1
-Stable tag: 1.7.6
+Stable tag: 1.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -76,6 +76,12 @@ Any persisten object cache will do, but it has to be supported in your hosting e
 Localization improvements are supported on multisite installations. When installed network wide only the network admin can see and edit WPPP options.
 **Image handling improvements are not available for multisite.**
 
+= What's the difference between Dynamic Image Resizer and WPPPs dynamic images? =
+
+In previous versions, WPPPs dynamic image resizing feature was based on [Dynamic Image Resizer](http://wordpress.org/plugins/dynamic-image-resizer/), at first with only some improvements. The first big change was a completely different way to serve the dynamically created images (using rewrite rules instead of the 404 handler), including support for the latest WordPress features. Since WPPP version 1.8 the way how creation of intermediate images at upload works also changed completely. Dynamic Image Resizer did prevent this by using different hooks called at upload. WPPP now overrides the registered image editors (those didn't exist when Dynamic Image Resizer was written) to only create the necessary metadata. This is way more robust and also works when editing images with WordPress.
+
+According to its author, Dynamic Image Resizer is intended only as a proof of concept. You might say, WPPPs dynamic image feature is the working implementation of that proof of concept.
+
 == Other Notes == 
 
 = How localization improvements work =
@@ -88,11 +94,19 @@ Caching can further improve performance. When using MO_dynamic with activated ca
 
 = How dynamic image resizing works =
 
-Dynamic image resizing is based on [Dynamic Image Resizer](http://wordpress.org/plugins/dynamic-image-resizer/): Images don't get resized on upload, instead only the meta data for the resized images is created and the actual images are created on demand. This is done using rewrite rules. Requests to none existent intermediate images are redirected to a special PHP file which uses SHORTINIT to only load a minimum of necessary PHP code to improve performance. Redirection is done via htaccess. If the requested file does exists it is served directly.
+Images don't get resized on upload, instead only the meta data for the resized images is created and the actual images are created on demand. WPPP extends all registered image editors to prevent creation of intermediate image sizes by overriding the *multi_resize* function. As the classes get extended dynamically this should work with an image editor implementation. Serving the intermediate sizes is done using rewrite rules. Requests to none existent intermediate images are redirected to a special PHP file which uses SHORTINIT to only load a minimum of necessary PHP code to improve performance. Redirection is done via htaccess. If the requested file does exists it is served directly.
 
-When a none existend image is requested WPPP first checks if the full size version of the requested image exists in the database. If it does, next is checked if the requested image size corresponds to a registered image size (either one of the default sizes "thumbnail", "medium" or "large" or any by themes or plugins registered sizes). This check also tells WPPP if to crop the image while resizing (even using the new 3.9 crop settings). Only if this check passes the intermediate image is created. This prevents unwanted creation of thumbnails.
+When a none existend image is requested WPPP first checks if the full size version of the requested image exists in the database. If it does, next is checked if the requested image size corresponds to a registered image size (either one of the default sizes "thumbnail", "medium" or "large" or any by themes or plugins registered sizes). This check also tells WPPP if to crop the image while resizing. Only if this check passes the intermediate image is created. This prevents unwanted creation of thumbnails.
 
 == Changelog ==
+
+= 1.8 =
+
+* [dynimg] reworked internals, now also works when editing images in WordPress
+* [mo-dynamic] scope issue resolved (get_byteorder copied from class MO into MO_dynamic)
+* [general] more internal code changes (still work in progress)
+* [cdn] dynamic image linking doesn't alter post contents by default
+* [cdn] added tool to restore substituted image links in posts
 
 = 1.7.6 =
 

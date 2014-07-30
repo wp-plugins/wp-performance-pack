@@ -23,8 +23,14 @@ class WPPP_Admin_Admin extends WPPP_Admin_User {
 		} else {
 			add_action( 'admin_menu', array( $this, 'add_menu_page' ) );
 		}
-		add_action('wp_ajax_wpppsupport', array($this, 'support_dialog'));
-		add_action('wp_ajax_hidewpppsupportbox', array($this, 'hide_support_box'));
+		add_action('wp_ajax_wpppsupport', array( $this, 'support_dialog' ) );
+		add_action('wp_ajax_hidewpppsupportbox', array( $this, 'hide_support_box' ) );
+		add_action('wp_ajax_wppp_restore_all_links', array( $this, 'restore_all_links' ) );
+	}
+
+	function restore_all_links () {
+		WPPP_CDN_Support::restore_static_links( true );
+		exit();
 	}
 
 	function hide_support_box () {
@@ -34,7 +40,7 @@ class WPPP_Admin_Admin extends WPPP_Admin_User {
 
 	function support_dialog () {
 		?>
-		<p>You can include the following information along with your bug / issue / question when posting in the support forums:</p>
+		<p>Include the following information along with your bug / issue / question when posting in the support forums:</p>
 		<textarea rows="25" style="width:100%">
 WPPP version: <?php echo WP_Performance_Pack::wppp_version; ?>
 

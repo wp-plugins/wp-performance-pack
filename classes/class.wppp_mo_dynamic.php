@@ -57,6 +57,23 @@ class WPPP_MO_dynamic extends Gettext_Translations {
 		}
 	}
 
+	static function get_byteorder($magic) {
+		// The magic is 0x950412de
+
+		// bug in PHP 5.0.2, see https://savannah.nongnu.org/bugs/?func=detailitem&item_id=10565
+		$magic_little = (int) - 1794895138;
+		$magic_little_64 = (int) 2500072158;
+		// 0xde120495
+		$magic_big = ((int) - 569244523) & 0xFFFFFFFF;
+		if ($magic_little == $magic || $magic_little_64 == $magic) {
+			return 'little';
+		} else if ($magic_big == $magic) {
+			return 'big';
+		} else {
+			return false;
+		}
+	}
+
 	function unhook_and_close () {
 		remove_action ( 'shutdown', array( $this, 'save_to_cache' ) );
 		remove_action ( 'admin_init', array( $this, 'save_base_translations' ), 100 );
@@ -172,7 +189,7 @@ class WPPP_MO_dynamic extends Gettext_Translations {
 		$file_size = filesize( $moitem->mofile );
 		$moitem->reader=new POMO_FileReader( $moitem->mofile );
 
-		$endian_string = MO::get_byteorder( $moitem->reader->readint32() );
+		$endian_string = static::get_byteorder( $moitem->reader->readint32() );
 		if ( false === $endian_string ) {
 			return $this->import_fail( $moitem );
 		}

@@ -24,12 +24,8 @@ abstract class WPPP_Admin_Renderer {
 	public function on_do_options_page() {}
 
 	public function render_page ( $formaction ) {
-		//add_thickbox();
+		add_thickbox();
 		?>
-		<div id="wppp-support-dialog" style="display:none">
-			<h3>Support!</h3>
-		</div>
-		
 		<div class="wrap">
 			<img src="<?php echo plugins_url( 'img/wppp_logo_150.png' , __FILE__ ); ?>" style="float:left; margin-right:10px;" />
 			<h2 style="height:80px"><?php _e( 'WP Performance Pack - Settings', 'wppp' ); ?></h2>

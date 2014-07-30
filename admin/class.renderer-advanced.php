@@ -241,6 +241,9 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 				<td>
 					<?php $this->e_radio_enable( 'dynlinks', 'dyn_links' ); ?>
 					<p class="description">Instead of inserting fixed image urls into posts, urls get build dynamically when displaying the content. <strong>Highly recommended when using a CDN for front end images.</strong></p>
+					<br>
+					<p><a class="thickbox button" href="admin-ajax.php?action=wppp_restore_all_links&width=600&height=550" title="Restore static links">Restore static links</a></p>
+					<p class="description">Use this to restore all dynamic links to static links if you deactivate dynamic linking. Links will be automatically restored when WPPP gets deactivated.</p>
 				</td>
 			</tr>
 		</table>

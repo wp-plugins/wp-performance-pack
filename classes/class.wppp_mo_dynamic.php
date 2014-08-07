@@ -14,7 +14,8 @@
 class MO_item {
 	var $reader = NULL;
 	var $mofile = '';
-	
+
+	var $loaded = false;
 	var $total = 0;
 	var $originals = array();
 	var $originals_table;
@@ -55,6 +56,10 @@ class WPPP_MO_dynamic extends Gettext_Translations {
 			add_action ( 'shutdown', array( $this, 'save_to_cache' ) );
 			add_action ( 'admin_init', array( $this, 'save_base_translations' ), 100 );
 		}
+		// Reader has to be destroyed befor any upgrades or else upgrade might fail, if a
+		// reader is loaded (cannot delete old plugin/theme/etc. because a language file
+		// is still opened).
+		add_filter('upgrader_pre_install', array($this, 'clear_reader_before_upgrade'), 10, 2);
 	}
 
 	static function get_byteorder($magic) {
@@ -84,6 +89,16 @@ class WPPP_MO_dynamic extends Gettext_Translations {
 	}
 
 	function __destruct() {
+		foreach ( $this->MOs as $moitem ) {
+			$moitem->clear_reader();
+		}
+	}
+
+	function clear_reader_before_upgrade($return, $plugin) {
+		// stripped down copy of class-wp-upgrader.php Plugin_Upgrader::deactivate_plugin_before_upgrade
+		if ( is_wp_error($return) ) //Bypass.
+			return $return;
+
 		foreach ( $this->MOs as $moitem ) {
 			$moitem->clear_reader();
 		}
@@ -189,6 +204,10 @@ class WPPP_MO_dynamic extends Gettext_Translations {
 		$file_size = filesize( $moitem->mofile );
 		$moitem->reader=new POMO_FileReader( $moitem->mofile );
 
+		if ( $moitem->loaded === true ) {
+			return true;
+		}
+
 		$endian_string = static::get_byteorder( $moitem->reader->readint32() );
 		if ( false === $endian_string ) {
 			return $this->import_fail( $moitem );
@@ -273,6 +292,8 @@ class WPPP_MO_dynamic extends Gettext_Translations {
 				return $this->import_fail( $moitem );
 			}
 		}
+
+		$moitem->loaded = true; // read headers can fail, so set loaded to true
 
 		// read headers
 		for ( $i = 0, $max = $total * 2; $i < $max; $i+=2 ) {

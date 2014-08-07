@@ -141,7 +141,7 @@ class WPPP_Dynamic_Images_Skeleton extends WPPP_Module_Skeleton {
 class WP_Performance_Pack {
 	const cache_group = 'wppp1.0'; 	// WPPP cache group name = wppp + version of last change to cache. 
 									// This way no cache conflicts occur while old cache entries just expire.
-	const wppp_version = '1.8';
+	const wppp_version = '1.8.1';
 	const wppp_options_name = 'wppp_option';
 
 	public static $options_default = array(
@@ -169,6 +169,7 @@ class WP_Performance_Pack {
 		'3.8.3',
 		'3.9',
 		'3.9.1',
+		'3.9.2',
 	);
 
 	public $dbg_textdomains = array ();

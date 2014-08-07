@@ -1,9 +1,9 @@
 === WP Performance Pack ===
 Contributors: greencp, linushoppe
 Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext, thumbnails, images, intermediate, resize, quality, regenerate, exif, fast, upload, cdn, maxcdn, coralcdn, photon, dynamic links
-Requires at least: 3.6
-Tested up to: 3.9.1
-Stable tag: 1.8
+Requires at least: 3.8.1
+Tested up to: 3.9.2
+Stable tag: 1.8.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,7 +16,7 @@ WP Performance Pack is your first choice for speeding up WordPress core the easy
 = Features =
 
 
-**NEW: CDN support**
+**CDN support**
 
 * Serve (dynamically generated) images through CDN. Applies to all images uploaded via media library both in posts and backend. No need to save thumbnails locally.
 * Fallback to local serving if CDN fails to return a valid response.
@@ -100,13 +100,17 @@ When a none existend image is requested WPPP first checks if the full size versi
 
 == Changelog ==
 
+= 1.8.1 =
+
+* [jit] WordPress 3.9.2 support
+* [mo-dynamic] Using MO dynamic no longer breaks plugin/theme updates. WP failed to delete plugin/theme folder because some language files were still opened. WPPP now unloads all language files prior to any upgrade.
+
 = 1.8 =
 
 * [dynimg] reworked internals, now also works when editing images in WordPress
 * [mo-dynamic] scope issue resolved (get_byteorder copied from class MO into MO_dynamic)
 * [general] more internal code changes (still work in progress)
-* [cdn] dynamic image linking doesn't alter post contents by default
-* [cdn] added tool to restore substituted image links in posts
+* [cdn] option to restore static links (links will be restored automatically on deactivation)
 
 = 1.7.6 =
 

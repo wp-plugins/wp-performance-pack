@@ -38,9 +38,9 @@ abstract class WPPP_Admin_Renderer {
 				if ( $show_support !== $today->format('Y-m-d') ) :
 				?>
 				<div id="wppp-support-box" class="wppp-support" style="width:95%; border: 1px solid #ddd; background: #fff; padding: 5px; text-align:center; margin-bottom:2em;">
-					<h3>Support WPPP</h3>
-					<p>Do you like this Plugin? If so, please support its development.</p>
-					<p><a href="http://wordpress.org/support/view/plugin-reviews/wp-performance-pack">Rate WPPP</a></p>
+					<h3><?php _e( 'Support WPPP', 'wppp' ); ?></h3>
+					<p><?php _e( 'Do you like this Plugin? If so, please support its development.', 'wppp' ); ?></p>
+					<p><a href="http://wordpress.org/support/view/plugin-reviews/wp-performance-pack"><?php _e( 'Rate WPPP', 'wppp' );?></a></p>
 
 					<div>
 						<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
@@ -51,13 +51,13 @@ abstract class WPPP_Admin_Renderer {
 						</form>
 					</div>
 					<br/>
-					<p><small><a id="hidesupportbox" href="#" class="dismiss">Dismiss this message for today.</a></small></p>
+					<p><small><a id="hidesupportbox" href="#" class="dismiss"><?php _e( 'Dismiss this message for today.', 'wppp' );?></a></small></p>
 				</div>
 				<?php endif; ?>
 				<div style="width:95%; border: 1px solid #ddd; background: #fff; padding: 5px; text-align:center">
-					<h3>Need help?</h3>
-					<p>Got any questions? Found a bug? Have any Suggestions?</p>
-					<p><a class="button" href="http://wordpress.org/support/plugin/wp-performance-pack" target="_blank">Visit the support forums</a></p>
+					<h3><?php _e( 'Need help?', 'wppp' );?></h3>
+					<p><?php _e( 'Got any questions? Found a bug? Have any Suggestions?', 'wppp' );?></p>
+					<p><a class="button" href="http://wordpress.org/support/plugin/wp-performance-pack" target="_blank"><?php _e( 'Visit the support forums', 'wppp' ); ?></a></p>
 					<!--<p><a class="thickbox button" href="admin-ajax.php?action=wpppsupport&width=600&height=550" title="System report">Generate system report</a></p>-->
 				</div>
 			</div>

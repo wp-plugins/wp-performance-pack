@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
 	Description: Performance optimizations for WordPress. Improve localization performance and image handling, serve images through CDN.  
-	Version: 1.8.1
+	Version: 1.8.2
 	Text Domain: wppp
 	Domain Path: /languages/
 	Author: Bj&ouml;rn Ahrens
@@ -24,7 +24,6 @@
 	Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, 
 	MA 02110-1301 USA 
 */
-
 require ( sprintf( "%s/class.wp_performance_pack.php", dirname( __FILE__ ) ) );
 
 if ( class_exists( 'WP_Performance_Pack' ) ) { 

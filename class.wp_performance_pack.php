@@ -141,7 +141,7 @@ class WPPP_Dynamic_Images_Skeleton extends WPPP_Module_Skeleton {
 class WP_Performance_Pack {
 	const cache_group = 'wppp1.0'; 	// WPPP cache group name = wppp + version of last change to cache. 
 									// This way no cache conflicts occur while old cache entries just expire.
-	const wppp_version = '1.8.1';
+	const wppp_version = '1.8.2';
 	const wppp_options_name = 'wppp_option';
 
 	public static $options_default = array(
@@ -384,7 +384,9 @@ class WP_Performance_Pack {
 	function wppp_autoloader ( $class ) {
 		$class = strtolower( $class );
 		if ( strncmp( $class, 'wppp_', 5 ) === 0 || $class == 'labelsobject' ) {
-			include( sprintf( "%s/classes/class.$class.php", dirname( __FILE__ ) ) );
+			if ( file_exists( sprintf( "%s/classes/class.$class.php", dirname( __FILE__ ) ) ) ) {
+				include( sprintf( "%s/classes/class.$class.php", dirname( __FILE__ ) ) );
+			}
 		}
 	}
 

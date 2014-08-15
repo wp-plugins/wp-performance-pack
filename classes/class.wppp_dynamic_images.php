@@ -55,6 +55,7 @@ class WPPP_Dynamic_Images extends WPPP_Dynamic_Images_Skeleton {
 		$new_editors = array();
 		// extend each registered editor and override its multi_resize function - found no better (i.e. flexible) way than to use eval
 		foreach ( $editors as $editor ) {
+			if ( ! class_exists( "WPPP_$editor" ) ) {
 			eval (" 
 			class WPPP_$editor extends $editor {
 
@@ -101,6 +102,7 @@ class WPPP_Dynamic_Images extends WPPP_Dynamic_Images_Skeleton {
 				}
 			} 
 			");
+			}
 			$new_editors[] = 'WPPP_' . $editor;
 		}
 		return $new_editors;

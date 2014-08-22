@@ -50,7 +50,6 @@ class WPPP_Dynamic_Images extends WPPP_Dynamic_Images_Skeleton {
 	}
 
 	public static function mod_rewrite_rules ( $rules ) {
-		var_dump( $rules ); die();
 		$lines = explode( "\n", $rules );
 		$rules = '';
 		for ($i = 0, $max = count($lines); $i<$max; $i++ ) {

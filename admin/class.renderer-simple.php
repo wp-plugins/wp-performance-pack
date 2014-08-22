@@ -401,51 +401,51 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 			$this->e_li_error( __( 'All improved image handling settings disabled.', 'wppp' ) );
 		} else {
 			if ( !$this->is_dynamic_images_available() ) {
-				$this->e_li_error( 'Pretty Permalinks must be enabled for improved image handling' );
+				$this->e_li_error( __( 'Pretty Permalinks must be enabled for improved image handling', 'wppp' ) );
 			} else {
-				$this->e_li_check( 'Dynamic image resizing enabled' );
+				$this->e_li_check( __( 'Dynamic image resizing enabled', 'wppp' ) );
 				if ( $level < 4 ) {
-					$this->e_li_check( 'Intermediate image quality set to 80%' );
+					$this->e_li_check( __( 'Intermediate image quality set to 80%', 'wppp' ) );
 					if ( $level > 1 ) {
 						if ( $this->is_exif_available() ) {
-							$this->e_li_check( 'Use EXIF thumbnails if available.' );
+							$this->e_li_check( __( 'Use EXIF thumbnails if available.', 'wppp' ) );
 						} else {
-							$this->e_li_error( 'EXIF extension not installed' );
+							$this->e_li_error( __( 'EXIF extension not installed', 'wppp' ) );
 						}
 						if ( $level > 2 ) {
-							$this->e_li_check( "Don't save intermediate images" );
+							$this->e_li_check( __( "Don't save intermediate images", 'wppp' ) );
 							if ( $this->is_object_cache_installed() ) {
 								$this->e_li_check( __( 'Use caching', 'wppp' ) );
 							} else {
 								$this->e_li_error( __( 'No persistent object cache installed.', 'wppp' ) );
 							}
 							if ( $this->is_regen_thumbs_available() ) {
-								$this->e_li_check( 'Regenerate thumbnails integration' );
+								$this->e_li_check( __( 'Regenerate Thumbnails integration', 'wppp' ) );
 							} else {
-								$this->e_li_error( 'No regenerate thumbnails plugin installed' );
+								$this->e_li_error( __( 'No Regenerate Thumbnails plugin installed', 'wppp' ) );
 							}
 						}
 					}
 				} else {
 					// custom
 					if ( $this->wppp->options['dynamic_images_nosave'] ) {
-						$this->e_li_check( "Don't save intermediate images" );
+						$this->e_li_check( __( "Don't save intermediate images", 'wppp' ) );
 					}
 					if ( $this->wppp->options['dynamic_images_cache'] ) {
 						$this->e_li_check( __( 'Use caching', 'wppp' ) );
 					}
 					if ( $this->wppp->options['dynamic_images_rthook'] ) {
-						$this->e_li_check( 'Regenerate thumbnail integration' );
+						$this->e_li_check( __( 'Regenerate Thumbnails integration', 'wppp' ) );
 						if ( $this->wppp->options['dynamic_images_rthook_force'] ) {
-							$this->e_li_check( 'Force delte all on regenerate thumbnails' );
+							$this->e_li_check( __( 'Force delte all on Regenerate Thumbnails', 'wppp' ) );
 						}
 					}
 					if ( $this->wppp->options['dynamic_images_exif_thumbs'] ) {
-						$this->e_li_check( 'Use EXIF thumbnails if available.' );
+						$this->e_li_check( __( 'Use EXIF thumbnails if available.', 'wppp' ) );
 					}
-					$this->e_li_check( 'Intermediate image quality set to '.$this->wppp->options['dynimg_quality'].'%' );
+					$this->e_li_check( sprintf( __( 'Intermediate image quality set to %s%%', 'wppp' ), $this->wppp->options['dynimg_quality'] ) );
 					if ( $this->wppp->options['dyn_links'] ) {
-						$this->e_li_check( 'Dynamic image links' );
+						$this->e_li_check( __( 'Dynamic image links', 'wppp' ) );
 					}
 				}
 			}

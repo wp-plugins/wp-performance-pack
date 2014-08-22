@@ -24,6 +24,16 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 	}
 	require( $folder . '/wp-load.php' ); // will fail if while loop didn't find wp-load.php
 
+	include( sprintf( "%s/wp-performance-pack.php", dirname( __FILE__ ) ) );
+	$wppp = new WP_Performance_Pack( false );
+	$wppp->load_options();
+	if ( $wppp->options['dynamic_images'] !== true ) {
+		header('HTTP/1.0 404 Not Found');
+		echo 'WPPP dynamic images deactivated for this site';
+		exit;
+	}
+
+
 	// dummy add_shortcode required for media.php - we don't need any shortcodes so don't load that file and use a dummy instead
 	function add_shortcode() {}
 	require( ABSPATH . 'wp-includes/media.php' );
@@ -55,6 +65,10 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 	// required for wp_get_attachment_metadata
 	require( ABSPATH . 'wp-includes/post.php' );
 	require( ABSPATH . 'wp-includes/meta.php' );
+
+	if ( is_multisite() ) {
+		require ( ABSPATH . 'wp-includes/ms-functions.php' );
+	}
 
 	/*
 	 * "Normalize" URLs to make them comparable. Partial copy from url_to_postid in rewrite.php
@@ -111,9 +125,6 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 		$height 		= $matches[3];
 		$crop 			= false;
 		$suffix 		= $width . 'x' . $height;
-		include( sprintf( "%s/class.wp_performance_pack.php", dirname( __FILE__ ) ) );
-		$wppp = new WP_Performance_Pack( false );
-		$wppp->load_options();
 
 		if ( $wppp->options['dynamic_images_cache'] && ( false !== ( $data = wp_cache_get ( $basefile . $suffix, 'wppp' ) ) ) ) {
 			header( 'Content-Type: ' . $data['mimetype'] );
@@ -121,9 +132,10 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 			exit;
 		}
 
-		$sizes = get_option( 'wppp_dynimg_sizes' );	// defined image sizes - no way to get them all here, because
-													// this would require to initialize the template and all plugins
-													// that's why they are stored as an option
+		// get defined image sizes - no way to get them all here, because
+		// this would require to initialize the template and all plugins
+		// that's why they are stored as an option
+		$sizes = get_option( 'wppp_dynimg_sizes' );	
 
 		// test if image is an attachment and get its meta data
 		$attachment_id = pn_get_attachment_id_from_url( $filename );
@@ -256,7 +268,13 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 			}
 			$image->stream();
 			exit;
+		} else {
+			header('HTTP/1.0 500 Internal Server Error');
+			echo 'Could not load image';
 		}
+	} else {
+		header('HTTP/1.0 404 Not Found');
+		echo 'Base file not found';
 	}
 }
 

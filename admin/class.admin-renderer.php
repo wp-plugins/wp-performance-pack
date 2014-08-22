@@ -130,12 +130,11 @@ abstract class WPPP_Admin_Renderer {
 
 	function is_jit_available () {
 		global $wp_version;
-		return in_array( $wp_version, WP_Performance_Pack::$jit_versions );
+		return isset( WPPP_L10n_Improvements::$jit_versions[ $wp_version ] );
 	}
 
 	function is_dynamic_images_available () {
-		global $wp_rewrite;
-		return ( !is_multisite() ) && ($wp_rewrite->permalink_structure != '');
+		return $this->wppp->modules['WPPP_Dynamic_Images']->is_available();
 	}
 
 	function is_regen_thumbs_available () {
@@ -193,7 +192,7 @@ abstract class WPPP_Admin_Renderer {
 			} else {
 				echo '<div class="ui-state-highlight ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-info" style="float:left; margin-right:.3em;"></span>';
 			}
-			printf( __( 'JIT localization of scripts is only available for WordPress versions %s .', 'wppp' ), implode( ', ', WP_Performance_Pack::$jit_versions ) );
+			printf( __( 'JIT localization of scripts is only available for WordPress versions %s .', 'wppp' ), implode( ', ', WPPP_L10n_Improvements::$jit_versions ) );
 			echo '</div>';
 		}
 	}

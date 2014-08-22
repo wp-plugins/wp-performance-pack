@@ -3,7 +3,7 @@ Contributors: greencp, linushoppe
 Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext, thumbnails, images, intermediate, resize, quality, regenerate, exif, fast, upload, cdn, maxcdn, coralcdn, photon, dynamic links
 Requires at least: 3.8.1
 Tested up to: 3.9.2
-Stable tag: 1.8.2
+Stable tag: 1.8.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -14,7 +14,6 @@ Performance optimizations for WordPress. Improve localization performance and im
 WP Performance Pack is your first choice for speeding up WordPress core the easy way, no core patching required. It features options to improve localization performance and image handling (faster upload, reduced webspace usage). Combined with CDN support for images, both on the site and in the admin area, this offers similar image acceleration as [Jetpack's Photon](http://jetpack.me/support/photon/).
 
 = Features =
-
 
 **CDN support**
 
@@ -74,7 +73,7 @@ Any persisten object cache will do, but it has to be supported in your hosting e
 = Does WPPP support multisite? =
 
 Localization improvements are supported on multisite installations. When installed network wide only the network admin can see and edit WPPP options.
-**Image handling improvements are not available for multisite.**
+**Image handling improvements are only available if WPPP is network activated**
 
 = What's the difference between Dynamic Image Resizer and WPPPs dynamic images? =
 
@@ -100,10 +99,17 @@ When a none existend image is requested WPPP first checks if the full size versi
 
 == Changelog ==
 
+= 1.8.3 =
+
+* [dynimg] multisite support added - only available when network activated
+* [general] further internal refactoring
+* [general] updated jQuery UI Slider Pips to v1.6.1
+* [l10n] translations updated (added missing texts, fixed some german translations)
+
 = 1.8.2 =
 
 * [dynimg] bugfix: prevent duplicate declaration of WPPP image editor classes (could cause problems with media manager)
-* [general] translations updated, german translation included
+* [l10n] translations updated, german translation included
 
 = 1.8.1 =
 

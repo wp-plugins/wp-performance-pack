@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WP Performance Pack\n"
-"POT-Creation-Date: 2014-08-15 10:58+0100\n"
-"PO-Revision-Date: 2014-08-15 10:59+0100\n"
+"POT-Creation-Date: 2014-08-22 09:01+0100\n"
+"PO-Revision-Date: 2014-08-22 09:02+0100\n"
 "Last-Translator: Bjoern Ahrens <bjoern@ahrens.net>\n"
 "Language-Team:  <bjoern@ahrens.net>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.7\n"
+"X-Generator: Poedit 1.6.8\n"
 "X-Poedit-KeywordsList: __:1,2t;_e:1,2t\n"
 "X-Poedit-Basepath: .\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -47,25 +47,25 @@ msgstr "Hast Du irgendwelche Fragen, einen Fehler gefunden oder Vorschläge?"
 msgid "Visit the support forums"
 msgstr "Support-Foren aufrufen"
 
-#: ../admin/class.admin-renderer.php:167
+#: ../admin/class.admin-renderer.php:166
 #, php-format
 msgid "Gettext support requires the %s extension."
 msgstr "Gettext-Unterstützung benötigt die %s Erweiterung."
 
-#: ../admin/class.admin-renderer.php:170
+#: ../admin/class.admin-renderer.php:169
 #, php-format
 msgid ""
 "Gettext support requires the language directory %s to be writeable for php."
 msgstr ""
 "Gettext-Unterstützung benötigt Schreibrechte für das Sprachverzeichnis %s."
 
-#: ../admin/class.admin-renderer.php:172
+#: ../admin/class.admin-renderer.php:171
 msgid "Gettext test failed. Activate WPPP debugging for additional info."
 msgstr ""
 "Gettext-Test ist fehlgeschlagen. Aktivieren Sie das WPPP-Debugging für mehr "
 "Informationen."
 
-#: ../admin/class.admin-renderer.php:184
+#: ../admin/class.admin-renderer.php:183
 #, php-format
 msgid ""
 "Caching requires a persisten object cache to be effective. Different "
@@ -75,7 +75,7 @@ msgstr ""
 "installiert sein. Diverse %sObject-Cache-Plugins%s sind für WordPress "
 "verfügbar."
 
-#: ../admin/class.admin-renderer.php:196
+#: ../admin/class.admin-renderer.php:195
 #, php-format
 msgid ""
 "JIT localization of scripts is only available for WordPress versions %s ."
@@ -83,7 +83,7 @@ msgstr ""
 "JIT-Script-Übersetzung ist nur für WordPress in den Versionen \"%s\" "
 "verfügbar"
 
-#: ../admin/class.admin-renderer.php:208
+#: ../admin/class.admin-renderer.php:207
 msgid ""
 "Improved image handling requires Pretty Permalinks and is not available on "
 "multisite installations."
@@ -91,7 +91,7 @@ msgstr ""
 "Erweiterte Bildverarbeitung benötigt Prette Permalinks und ist nicht für "
 "Multisite-Installationen verfügbar."
 
-#: ../admin/class.admin-renderer.php:220
+#: ../admin/class.admin-renderer.php:219
 msgid ""
 "Use of EXIF thumbnails requires the EXIF extension to be installed and GD "
 "support."
@@ -99,7 +99,7 @@ msgstr ""
 "Für Vorschaubilder aus EXIF-Daten werden die EXIF PHP-Erweiterung sowie GD-"
 "Unterstützung benötigt."
 
-#: ../admin/class.admin-renderer.php:232
+#: ../admin/class.admin-renderer.php:231
 #, php-format
 msgid ""
 "One of the following plugins has to be installed and activated for "
@@ -108,19 +108,19 @@ msgstr ""
 "Eines der folgenden Plugins muss für die Regenerate Thumbnails Integration "
 "installiert und aktiviert sein: %s"
 
-#: ../admin/class.admin-renderer.php:245
+#: ../admin/class.admin-renderer.php:244
 msgid "Switch to advanced view"
 msgstr "Zur erweiterten Ansicht wechseln"
 
-#: ../admin/class.admin-renderer.php:245
+#: ../admin/class.admin-renderer.php:244
 msgid "Switch to simple view"
 msgstr "Zur einfachen Ansicht wechseln"
 
-#: ../admin/class.admin-renderer.php:268
+#: ../admin/class.admin-renderer.php:267
 msgid "Enabled"
 msgstr "Aktiviert"
 
-#: ../admin/class.admin-renderer.php:269
+#: ../admin/class.admin-renderer.php:268
 msgid "Disabled"
 msgstr "Deaktiviert"
 
@@ -384,6 +384,8 @@ msgstr ""
 "verwendet, wenn %s aktiviert ist."
 
 #: ../admin/class.renderer-advanced.php:160
+#: ../admin/class.renderer-simple.php:416
+#: ../admin/class.renderer-simple.php:432
 msgid "Don't save intermediate images"
 msgstr "Zwischengrößen nicht speichern"
 
@@ -396,6 +398,8 @@ msgid "Quality setting for newly created intermediate images."
 msgstr "Qualitäts-Einstellung für neu erzeugte Zwischengrößen"
 
 #: ../admin/class.renderer-advanced.php:172
+#: ../admin/class.renderer-simple.php:423
+#: ../admin/class.renderer-simple.php:438
 msgid "Regenerate Thumbnails integration"
 msgstr "Regenerate Thumbnails Integration"
 
@@ -731,7 +735,8 @@ msgid ""
 "thumbnail.</strong>"
 msgstr ""
 "Bild-Zwischengrößen werden dynamisch erzeugt, wenn vorhanden wird dafür das "
-"EXIF-Vorschaubild verwendet. <strong>"
+"EXIF-Vorschaubild verwendet. <strong>EXIF-Vorschau und eigentliches Bild "
+"können voneinander abweichen.</strong>"
 
 #: ../admin/class.renderer-simple.php:225
 msgid ""
@@ -745,8 +750,9 @@ msgid ""
 "<strong>Without CDN not recommended for production sites!</strong><br/"
 ">Intermediate images are created on demand but are not saved to disc."
 msgstr ""
-"<strong>Ohne CDN-Unterstützung nicht empfohlen Produktiv-Seiten!</strong><br/"
-">Bild-Zwischengrößen werden bei Bedarf erzeugt, aber nicht gespeichert."
+"<strong>Ohne CDN-Unterstützung nicht empfohlen für Produktiv-Seiten!</"
+"strong><br/>Bild-Zwischengrößen werden bei Bedarf erzeugt, aber nicht "
+"gespeichert."
 
 #: ../admin/class.renderer-simple.php:260
 msgid ""
@@ -771,10 +777,49 @@ msgstr ""
 msgid "All improved image handling settings disabled."
 msgstr "Alle Optionen für die verbesserte Bildbehandlung deaktiviert."
 
+#: ../admin/class.renderer-simple.php:404
+msgid "Pretty Permalinks must be enabled for improved image handling"
+msgstr ""
+"Pretty Permalinks müssen für die verbesserte Bildbehandlung aktiviert sein."
+
+#: ../admin/class.renderer-simple.php:406
+msgid "Dynamic image resizing enabled"
+msgstr "Dynamische Bildgrößen aktiviert"
+
+#: ../admin/class.renderer-simple.php:408
+msgid "Intermediate image quality set to 80%"
+msgstr "Bildqualität für Zwischengrößen: 80%"
+
+#: ../admin/class.renderer-simple.php:411
+#: ../admin/class.renderer-simple.php:444
+msgid "Use EXIF thumbnails if available."
+msgstr "EXIF-Vorschaubilder verwenden, wenn verfügbar."
+
+#: ../admin/class.renderer-simple.php:413
+msgid "EXIF extension not installed"
+msgstr "EXIF-Erweiterung nicht installiert"
+
 #: ../admin/class.renderer-simple.php:420
 #: ../admin/class.renderer-simple.php:471
 msgid "No persistent object cache installed."
 msgstr "Kein persistenter Objekt-Cache installiert."
+
+#: ../admin/class.renderer-simple.php:425
+msgid "No Regenerate Thumbnails plugin installed"
+msgstr "Kein Regenerate Thumbnails Plugin installiert"
+
+#: ../admin/class.renderer-simple.php:440
+msgid "Force delte all on Regenerate Thumbnails"
+msgstr "Löschen von Zwischengrößen erzwingen"
+
+#: ../admin/class.renderer-simple.php:446
+#, php-format
+msgid "Intermediate image quality set to %s%%"
+msgstr "Bildqualität für Zwischengrößen: %s%%"
+
+#: ../admin/class.renderer-simple.php:448
+msgid "Dynamic image links"
+msgstr "Dynamische Bild-URLs"
 
 #: ../admin/class.renderer-simple.php:460
 msgid "All translation settings turned off."
@@ -814,6 +859,13 @@ msgstr ""
 "Back-End-Überstzung aktivieren oder deaktivieren. Wenn sie deaktiviert wird, "
 "dann wird das Back-End in Englisch angezeigt, ansonsten wird es in die Blog-"
 "Sprache übersetzt."
+
+#~ msgid "Regenerate thumbnails integration"
+#~ msgstr "Regenerate Thumbnails Integration"
+
+#, fuzzy
+#~ msgid "Regenerate thumbnail integration"
+#~ msgstr "Regenerate Thumbnails Integration"
 
 #~ msgid ""
 #~ "A collection of performance optimizations for WordPress. As of now it "

@@ -12,9 +12,14 @@
 class WPPP_Dynamic_Images extends WPPP_Dynamic_Images_Skeleton {
 	private $dynimg_image_sizes = NULL;
 
+	function early_init () {
+		add_action( 'setup_theme',  array( $this, 'replace_wp_rewrite' ) );
+	}
+
 	function init () {
 		self::set_rewrite_rules();
-		add_filter( 'wp_image_editors', array ( $this, 'filter_wp_image_editor' ), 1000, 1 ); // set to very low priority, so it is hopefully called last
+
+		add_filter( 'wp_image_editors', array ( $this, 'filter_wp_image_editor' ), 1000, 1 ); // set to very low priority, so it is hopefully called last as this overrides previously registered editors
 		add_action( 'shutdown', array( $this, 'save_preset_image_sizes' ) );
 
 		if ( $this->wppp->options['dynamic_images_rthook'] ) {
@@ -22,6 +27,12 @@ class WPPP_Dynamic_Images extends WPPP_Dynamic_Images_Skeleton {
 				add_filter( 'wp_update_attachment_metadata', array ( $this, 'rebuild_thumbnails_delete_hook' ), 100, 2 );
 			}
 			add_action( 'admin_notices', array( $this, 'rthook_notice') );
+		}
+	}
+
+	function replace_wp_rewrite () {
+		if ( $this->wppp->is_network ) {
+			$GLOBALS['wp_rewrite'] = new WPPP_Rewrite();
 		}
 	}
 
@@ -39,6 +50,7 @@ class WPPP_Dynamic_Images extends WPPP_Dynamic_Images_Skeleton {
 	}
 
 	public static function mod_rewrite_rules ( $rules ) {
+		var_dump( $rules ); die();
 		$lines = explode( "\n", $rules );
 		$rules = '';
 		for ($i = 0, $max = count($lines); $i<$max; $i++ ) {
@@ -138,6 +150,7 @@ class WPPP_Dynamic_Images extends WPPP_Dynamic_Images_Skeleton {
 				$sizes[$s]['crop'] = get_option( "{$s}_crop" ) ? true : false; // For default sizes set in options
 			}
 		}
+		
 		add_option ( 'wppp_dynimg_sizes', $sizes );
 	}
 

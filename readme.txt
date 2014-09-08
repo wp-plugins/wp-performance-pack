@@ -3,7 +3,7 @@ Contributors: greencp, linushoppe
 Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext, thumbnails, images, intermediate, resize, quality, regenerate, exif, fast, upload, cdn, maxcdn, coralcdn, photon, dynamic links
 Requires at least: 3.8.1
 Tested up to: 3.9.2
-Stable tag: 1.8.4
+Stable tag: 1.8.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -81,6 +81,14 @@ In previous versions, WPPPs dynamic image resizing feature was based on [Dynamic
 
 According to its author, Dynamic Image Resizer is intended only as a proof of concept. You might say, WPPPs dynamic image feature is the working implementation of that proof of concept.
 
+= Dynamic links broke my site, how do I restore static links? =
+
+Your first try should be the button "Restore static links" in WPPP settigns advanced view. That function will also be executed on deactivation of WPPP. If any errors occur (please post them in the support forums so I can try to improve the restore function), you can execute the following SQL query manually to restore the static links:
+
+*UPDATE wp_posts SET post_content = REPLACE ( post_content, '{{wpppdynamic}}', 'http://your.base-url/wp-content/uploads/' )*
+
+You have to change the base URL (third parameter of REPLACE) to your uploads URL!
+
 == Other Notes == 
 
 = How localization improvements work =
@@ -98,6 +106,12 @@ Images don't get resized on upload, instead only the meta data for the resized i
 When a none existend image is requested WPPP first checks if the full size version of the requested image exists in the database. If it does, next is checked if the requested image size corresponds to a registered image size (either one of the default sizes "thumbnail", "medium" or "large" or any by themes or plugins registered sizes). This check also tells WPPP if to crop the image while resizing. Only if this check passes the intermediate image is created. This prevents unwanted creation of thumbnails.
 
 == Changelog ==
+
+= 1.8.5 =
+
+* [jit] WordPress 4.0 support
+* [general] still refactoring code
+* [cdn] restore static links displays errors if any occur (see FAQ for manual restore)
 
 = 1.8.4 =
 

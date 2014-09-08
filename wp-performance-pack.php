@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
 	Description: Performance optimizations for WordPress. Improve localization performance and image handling, serve images through CDN.  
-	Version: 1.8.4
+	Version: 1.8.5
 	Text Domain: wppp
 	Domain Path: /languages/
 	Author: Bj&ouml;rn Ahrens
@@ -24,14 +24,19 @@
 	Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, 
 	MA 02110-1301 USA 
 */
-abstract class WPPP_Module_Skeleton {
+
+
+abstract class WPPP_Module {
 	protected $wppp = NULL;
 	public abstract function get_default_options ();
 	// return if module is activated
 	public abstract function is_active ();
 	// return if module is available, i.e. can be activated
 	public abstract function is_available ();
-	public abstract function spawn_body ();
+
+	public abstract function spawn_base ();
+	public function spawn_user () { return $this; }
+	public function spawn_admin () { return $this; }
 	// validate options
 	// input contains actual input
 	// output contains the output so far
@@ -50,7 +55,7 @@ abstract class WPPP_Module_Skeleton {
 class WP_Performance_Pack {
 	const cache_group = 'wppp1.0'; 	// WPPP cache group name = wppp + version of last change to cache. 
 									// This way no cache conflicts occur while old cache entries just expire.
-	const wppp_version = '1.8.4';
+	const wppp_version = '1.8.5';
 	const wppp_options_name = 'wppp_option';
 
 	public static $options_default = array(
@@ -118,8 +123,7 @@ return $translations->translate( $text );';
 
 		// initialize module skeletons
 		foreach ( $this->available_modules as $module ) {
-			$skeleton = $module . '_Skeleton';
-			$this->modules[$module] = new $skeleton ( $this );
+			$this->modules[$module] = new $module ( $this );
 		}
 
 		// initialize fields
@@ -141,17 +145,19 @@ return $translations->translate( $text );';
 		$this->plugin_dir = dirname( plugin_basename(__FILE__) );
 
 		// add actions
-		add_action( 'activated_plugin', array ( 'WP_Performance_Pack', 'plugin_load_first' ) );
 		add_action( 'init', array ( $this, 'init' ) );
+		add_action( 'admin_init', array ( $this, 'admin_init' ) );
 		add_filter( 'update_option_' . self::wppp_options_name, array( $this, 'do_options_changed' ), 10, 2 );
 
 		// activate and initialize modules
-		foreach ( $this->modules as &$module ) {
+		foreach ( $this->modules as $modname => $module ) {
 			if ( $module->is_active() ) {
-				$module = $module->spawn_body();
+				$this->modules[$modname] = $module->spawn_base();
 			}
-			$module->early_init();
+			$this->modules[$modname]->early_init();
 		}
+		
+		static::plugin_load_first(); // check WPPP is looaded as first plugin
 	}
 
 	function do_options_changed( $old_value, $new_value )
@@ -159,7 +165,7 @@ return $translations->translate( $text );';
 		// flush rewrite rules if dynamic images setting changed
 		if ( ( isset( $new_value['dynamic_images'] ) && $this->options['dynamic_images'] !== $new_value['dynamic_images'] )
 				|| ( !isset( $new_value['dynamic_images'] ) && $this->options['dynamic_images'] === true ) ) {
-			WPPP_Dynamic_Images::flush_rewrite_rules( $new_value['dynamic_images'] );
+			WPPP_Dynamic_Images_Base::flush_rewrite_rules( $new_value['dynamic_images'] );
 		}
 	}
 
@@ -175,19 +181,31 @@ return $translations->translate( $text );';
 			add_filter( 'debug_bar_panels', array ( $this, 'add_debug_bar_wppp' ), 10 );
 		}
 
-		// admin pages
 		if ( is_admin() ) {
+			// admin pages
+			load_plugin_textdomain( 'wppp', false, $this->plugin_dir . '/lang');
+
 			if ( current_user_can ( 'manage_options' ) ) {
 				include( sprintf( "%s/admin/class.wppp-admin-admin.php", dirname( __FILE__ ) ) );
-				$this->admin_opts = new WPPP_Admin_Admin ($this);
-			} else if ( $this->options['disable_backend_translation'] && $this->options['dbt_allow_user_override']) {
-				include( sprintf( "%s/admin/class.wppp-admin-user.php", dirname( __FILE__ ) ) );
-				$this->admin_opts = new WPPP_Admin_User ($this);
+				$this->admin_opts = new WPPP_Admin ($this);
+				foreach ( $this->modules as $modname => $module ) {
+					$this->modules[$modname] = $module->spawn_user();
+				}
+			} else {
+				foreach ( $this->modules as $modname => $module ) {
+					$this->modules[$modname] = $module->spawn_user();
+				}
 			}
 		}
 
 		foreach ( $this->modules as $module ) {
 			$module->init();
+		}
+	}
+
+	public function admin_init () {
+		foreach ( $this->modules as $module ) {
+			$module->admin_init();
 		}
 	}
 

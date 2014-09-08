@@ -8,15 +8,13 @@
  * @since 0.8
  */
 
-include( sprintf( '%s/class.wppp-admin-user.php', dirname( __FILE__ ) ) );
- 
-class WPPP_Admin_Admin extends WPPP_Admin_User {
-
+class WPPP_Admin {
+	private $wppp = NULL;
 	private $renderer = NULL;
 	private $show_update_info = false;
 
 	public function __construct($wppp_parent) {
-		parent::__construct($wppp_parent);
+		$this->wppp = $wppp_parent;
 		register_setting( 'wppp_options', WP_Performance_Pack::wppp_options_name, array( $this, 'validate' ) );
 		if ( $this->wppp->is_network ) {
 			add_action( 'network_admin_menu', array( $this, 'add_menu_page' ) );
@@ -29,7 +27,7 @@ class WPPP_Admin_Admin extends WPPP_Admin_User {
 	}
 
 	function restore_all_links () {
-		WPPP_CDN_Support::restore_static_links( true );
+		WPPP_CDN_Support_Base::restore_static_links( true );
 		exit();
 	}
 
@@ -141,9 +139,7 @@ Loaded extensions: <?php
 
 			// process module options
 			foreach ( $this->wppp->modules as $module ) {
-				if ( is_a( $module, 'WPPP_Module_Skeleton' ) ) {
-					$output = $module->validate_options( $input, $output );
-				}
+				$output = $module->validate_options( $input, $output );
 			}
 		}
 		return $output;

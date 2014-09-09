@@ -3,7 +3,7 @@ Contributors: greencp, linushoppe
 Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext, thumbnails, images, intermediate, resize, quality, regenerate, exif, fast, upload, cdn, maxcdn, coralcdn, photon, dynamic links
 Requires at least: 3.8.1
 Tested up to: 4.0
-Stable tag: 1.8.5
+Stable tag: 1.8.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -106,6 +106,10 @@ Images don't get resized on upload, instead only the meta data for the resized i
 When a none existend image is requested WPPP first checks if the full size version of the requested image exists in the database. If it does, next is checked if the requested image size corresponds to a registered image size (either one of the default sizes "thumbnail", "medium" or "large" or any by themes or plugins registered sizes). This check also tells WPPP if to crop the image while resizing. Only if this check passes the intermediate image is created. This prevents unwanted creation of thumbnails.
 
 == Changelog ==
+
+= 1.8.6 =
+
+* [general] bugfix in plugin deactivation
 
 = 1.8.5 =
 

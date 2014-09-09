@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
 	Description: Performance optimizations for WordPress. Improve localization performance and image handling, serve images through CDN.  
-	Version: 1.8.5
+	Version: 1.8.6
 	Text Domain: wppp
 	Domain Path: /languages/
 	Author: Bj&ouml;rn Ahrens
@@ -55,7 +55,7 @@ abstract class WPPP_Module {
 class WP_Performance_Pack {
 	const cache_group = 'wppp1.0'; 	// WPPP cache group name = wppp + version of last change to cache. 
 									// This way no cache conflicts occur while old cache entries just expire.
-	const wppp_version = '1.8.5';
+	const wppp_version = '1.8.6';
 	const wppp_options_name = 'wppp_option';
 
 	public static $options_default = array(
@@ -258,7 +258,7 @@ return $translations->translate( $text );';
 	public function deactivate() {
 		if ( $this->options['dynamic_images'] ) {
 			// Delete rewrite rules from htaccess
-			WPPP_Dynamic_Images::flush_rewrite_rules( false ); // hopefully WPPP_Dynamic_images didn't get initialized elsewhere. Not shure at which point deactivation occurs, but I think it's save to assume DynImg didn't get initialized so rewrite rules didn't get set.
+			WPPP_Dynamic_Images_Base::flush_rewrite_rules( false ); // hopefully WPPP_Dynamic_images didn't get initialized elsewhere. Not shure at which point deactivation occurs, but I think it's save to assume DynImg didn't get initialized so rewrite rules didn't get set.
 		}
 
 		if ( is_multisite() && isset( $_GET['networkwide'] ) && 1 == $_GET['networkwide'] ) {
@@ -307,7 +307,7 @@ return $translations->translate( $text );';
 	}
 	
 	function update_163 () {
-		WPPP_Dynamic_Images::flush_rewrite_rules( true );
+		WPPP_Dynamic_Images_Base::flush_rewrite_rules( true );
 	}
 } 
 

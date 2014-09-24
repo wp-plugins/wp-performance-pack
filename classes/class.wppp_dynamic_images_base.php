@@ -12,6 +12,16 @@
 class WPPP_Dynamic_Images_Base extends WPPP_Dynamic_Images {
 	private $dynimg_image_sizes = NULL;
 
+	public function load_renderer ( $view ) {
+		if ( $this->renderer == NULL ) {
+			if ( $view = 'advanced' ) {
+				$this->renderer = new WPPP_Dynamic_Images_Advanced ();
+			} else {
+				$this->renderer = new WPPP_Dynamic_Images_Simple ();
+			}
+		}
+	}
+
 	function early_init () {
 		add_action( 'setup_theme',  array( $this, 'replace_wp_rewrite' ) );
 	}

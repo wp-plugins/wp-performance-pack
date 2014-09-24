@@ -33,8 +33,13 @@ class WPPP_L10n_Improvements extends WPPP_Module {
 
 	public function is_available () { return true; }
 
-	public function spawn_base () { return new WPPP_L10n_Improvements_Base( $this->wppp ); }
-	public function spawn_user () { return new WPPP_L10n_Improvements_User ( $this->wppp ); }
+	public function spawn_module () { 
+		if ( is_admin() ) {
+			return new WPPP_L10n_Improvements_Admin ( $this->wppp );
+		} else {
+			return new WPPP_L10n_Improvements_Base( $this->wppp );
+		}
+	}
 
 	public function validate_options( &$input, $output ) {
 		$defopts = $this->get_default_options();

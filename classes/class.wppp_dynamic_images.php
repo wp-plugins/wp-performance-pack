@@ -27,7 +27,7 @@ class WPPP_Dynamic_Images extends WPPP_Module {
 		}
 	}
 
-	public function spawn_base () {
+	public function spawn_module () {
 		return new WPPP_Dynamic_Images_Base ( $this->wppp );
 	}
 

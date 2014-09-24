@@ -14,6 +14,16 @@
 class WPPP_CDN_Support_Base extends WPPP_CDN_Support {
 	private $cdn_fallback = false;
 
+	public function load_renderer ( $view ) {
+		if ( $this->renderer == NULL ) {
+			if ( $view = 'advanced' ) {
+				$this->renderer = new WPPP_CDN_Support_Advanced ();
+			} else {
+				$this->renderer = new WPPP_CDN_Support_Simple ();
+			}
+		}
+	}
+
 	function init () {
 		if ( $this->wppp->options['dyn_links'] ) {
 			// url substitution only if dynamic image links are activated

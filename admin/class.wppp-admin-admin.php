@@ -169,9 +169,11 @@ Loaded extensions: <?php
 			if ( $this->wppp->options['advanced_admin_view'] ) {
 				include( sprintf( "%s/class.renderer-advanced.php", dirname( __FILE__ ) ) );
 				$this->renderer = new WPPP_Admin_Renderer_Advanced( $this->wppp );
+				$this->renderer->view = 'advanced';
 			} else {
 				include( sprintf( "%s/class.renderer-simple.php", dirname( __FILE__ ) ) );
 				$this->renderer = new WPPP_Admin_Renderer_Simple( $this->wppp );
+				$this->renderer->view = 'simple';
 			}
 		}
 	}
@@ -186,6 +188,10 @@ Loaded extensions: <?php
 		$this->load_renderer();
 		$this->renderer->enqueue_scripts_and_styles();
 		$this->renderer->add_help_tab();
+		foreach ( $this->wppp->modules as $module ) {
+			$module->enqueue_scripts_and_styles( $this->renderer );
+			$module->add_help_tab( $this->renderer );
+		}
 	}
 
 	public function do_options_page() {

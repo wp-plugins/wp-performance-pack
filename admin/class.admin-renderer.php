@@ -8,9 +8,10 @@
  */
  
 abstract class WPPP_Admin_Renderer {
-	protected $wppp = NULL;
+	public $wppp = NULL;
 	private $admin = NULL;
-	
+	public $view = '';
+
 	public function __construct( $wppp_parent ) {
 		$this->wppp = $wppp_parent;
 	}
@@ -246,30 +247,30 @@ abstract class WPPP_Admin_Renderer {
 		<?php
 	}
 
-	protected function e_opt_name ( $opt_name ) {
+	public function e_opt_name ( $opt_name ) {
 		echo 'name="'.WP_Performance_Pack::wppp_options_name.'['.$opt_name.']"';
 	}
 
-	protected function e_checked ( $opt_name, $value = true ) {
+	public function e_checked ( $opt_name, $value = true ) {
 		echo $this->wppp->options[$opt_name] === $value ? 'checked="checked" ' : ' ';
 	}
 
-	protected function e_checked_or ( $opt_name, $value = true, $or_val = true ) {
+	public function e_checked_or ( $opt_name, $value = true, $or_val = true ) {
 		echo $this->wppp->options[$opt_name] === $value || $or_val ? 'checked="checked" ' : ' ';
 	}
 
-	protected function e_checked_and ( $opt_name, $value = true, $and_val = true ) {
+	public function e_checked_and ( $opt_name, $value = true, $and_val = true ) {
 		echo $this->wppp->options[$opt_name] === $value && $and_val ? 'checked="checked" ' : ' ';
 	}
 	
-	function e_radio_enable ( $id, $opt_name, $disabled = false ) {
+	public function e_radio_enable ( $id, $opt_name, $disabled = false ) {
 		?>
 		<label for="<?php echo $id; ?>-enabled"><input id="<?php echo $id; ?>-enabled" type="radio" <?php $this->e_opt_name( $opt_name ); ?> value="true" <?php if ( $disabled ) { echo 'disabled="true" '; } else { $this->e_checked( $opt_name ); } ?>/><?php _e( 'Enabled', 'wppp' ); ?></label>&nbsp;
 		<label for="<?php echo $id; ?>-disabled"><input id="<?php echo $id; ?>-disabled" type="radio" <?php $this->e_opt_name( $opt_name ); ?> value="false" <?php if( $disabled ) { echo 'disabled="true" checked="checked"'; } else { $this->e_checked( $opt_name, false ); } ?>/><?php _e( 'Disabled', 'wppp' ); ?></label>
 		<?php
 	}
 	
-	function e_checkbox ( $id, $opt_name, $label, $disabled = false ) {
+	public function e_checkbox ( $id, $opt_name, $label, $disabled = false ) {
 		?>
 		<label for="<?php echo $id; ?>"><input id="<?php echo $id; ?>" type="checkbox" <?php $this->e_opt_name( $opt_name ); ?> value="true" <?php if ( $disabled ) { echo 'disabled="true" '; } else { $this->e_checked( $opt_name ); } ?>/><?php echo $label; ?></label>
 		<?php

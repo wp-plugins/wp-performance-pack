@@ -17,7 +17,7 @@ class WPPP_CDN_Support extends WPPP_Module {
 
 	function is_available () { return true; } // always available
 
-	function spawn_base () {
+	function spawn_module () {
 		return new WPPP_CDN_Support_Base ( $this->wppp );
 	}
 

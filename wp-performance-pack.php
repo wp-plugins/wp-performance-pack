@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
 	Description: Performance optimizations for WordPress. Improve localization performance and image handling, serve images through CDN.  
-	Version: 1.8.6
+	Version: 1.8.7
 	Text Domain: wppp
 	Domain Path: /languages/
 	Author: Bj&ouml;rn Ahrens
@@ -28,15 +28,15 @@
 
 abstract class WPPP_Module {
 	protected $wppp = NULL;
+	protected $renderer = NULL;
+
 	public abstract function get_default_options ();
 	// return if module is activated
 	public abstract function is_active ();
 	// return if module is available, i.e. can be activated
 	public abstract function is_available ();
 
-	public abstract function spawn_base ();
-	public function spawn_user () { return $this; }
-	public function spawn_admin () { return $this; }
+	public abstract function spawn_module ();
 	// validate options
 	// input contains actual input
 	// output contains the output so far
@@ -50,12 +50,33 @@ abstract class WPPP_Module {
 	public function init () {}
 	// initializations done at admin_init action
 	public function admin_init () {}
+	
+	// admin render functions
+	public function load_renderer ( $view ) {}
+	public function enqueue_scripts_and_styles ( $renderer ) {
+		$this->load_renderer( $renderer->view );
+		if ( $this->renderer !== NULL ) {
+			$this->renderer->enqueue_scripts_and_styles();
+		}
+	}
+	public function add_help_tab ( $renderer ) {
+		$this->load_renderer( $renderer->view );
+		if ( $this->renderer !== NULL ) {
+			$this->renderer->add_help_tab();
+		}
+	}
+	public function render_options ( $renderer ) {
+		$this->load_renderer( $renderer->view );
+		if ( $this->renderer !== NULL ) {
+			$this->renderer->render_options( $renderer );
+		}
+	}
 }
 
 class WP_Performance_Pack {
 	const cache_group = 'wppp1.0'; 	// WPPP cache group name = wppp + version of last change to cache. 
 									// This way no cache conflicts occur while old cache entries just expire.
-	const wppp_version = '1.8.6';
+	const wppp_version = '1.8.7';
 	const wppp_options_name = 'wppp_option';
 
 	public static $options_default = array(
@@ -64,9 +85,9 @@ class WP_Performance_Pack {
 		'dynimg_quality' => 80,
 	);
 	private $available_modules = array(
-		'WPPP_CDN_Support',
-		'WPPP_Dynamic_Images',
 		'WPPP_L10n_Improvements',
+		'WPPP_Dynamic_Images',
+		'WPPP_CDN_Support',
 	);
 	private $admin_opts = NULL;
 	private $late_updates = array();
@@ -78,7 +99,7 @@ class WP_Performance_Pack {
 	public $plugin_dir = NULL;
 
 	function get_options_default () {
-		$def_opts = static::$options_default;
+		$def_opts = WP_Performance_Pack::$options_default;
 		foreach ( $this->modules as $module ) {
 			$def_opts = array_merge( $def_opts, $module->get_default_options() );
 		}
@@ -152,7 +173,7 @@ return $translations->translate( $text );';
 		// activate and initialize modules
 		foreach ( $this->modules as $modname => $module ) {
 			if ( $module->is_active() ) {
-				$this->modules[$modname] = $module->spawn_base();
+				$this->modules[$modname] = $module->spawn_module();
 			}
 			$this->modules[$modname]->early_init();
 		}
@@ -188,13 +209,6 @@ return $translations->translate( $text );';
 			if ( current_user_can ( 'manage_options' ) ) {
 				include( sprintf( "%s/admin/class.wppp-admin-admin.php", dirname( __FILE__ ) ) );
 				$this->admin_opts = new WPPP_Admin ($this);
-				foreach ( $this->modules as $modname => $module ) {
-					$this->modules[$modname] = $module->spawn_user();
-				}
-			} else {
-				foreach ( $this->modules as $modname => $module ) {
-					$this->modules[$modname] = $module->spawn_user();
-				}
 			}
 		}
 
@@ -270,7 +284,7 @@ return $translations->translate( $text );';
 		delete_option( 'wppp_version' );
 		
 		// restore static links
-		WPPP_CDN_Support::restore_static_links();
+		WPPP_CDN_Support_Base::restore_static_links();
 	}
 
 	function wppp_autoloader ( $class ) {

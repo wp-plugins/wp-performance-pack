@@ -7,7 +7,16 @@
  * @since 0.8
  */
  
-class WPPP_L10n_Improvements_User extends WPPP_L10n_Improvements_Base  {
+class WPPP_L10n_Improvements_Admin extends WPPP_L10n_Improvements_Base  {
+	public function load_renderer ( $view ) {
+		if ( $this->renderer == NULL ) {
+			if ( $view = 'advanced' ) {
+				$this->renderer = new WPPP_L10n_Improvements_Advanced ();
+			} else {
+				$this->renderer = new WPPP_L10n_Improvements_Simple ();
+			}
+		}
+	}
 
 	public function admin_init () {
 		if ( $this->wppp->options['disable_backend_translation'] && $this->wppp->options['dbt_allow_user_override'] ) {

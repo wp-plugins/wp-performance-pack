@@ -147,8 +147,8 @@ class WP_Performance_Pack {
 		$modules = glob( sprintf( "%s/modules/*", dirname( __FILE__ ) ), GLOB_ONLYDIR );
 		foreach ( $modules as $module ) {
 			$modname = basename( $module );
-			if ( file_exists( "$module/class.WPPP_$modname.php" ) ) {
-				include( "$module/class.WPPP_$modname.php" );
+			if ( file_exists( "$module/class.wppp_$modname.php" ) ) {
+				include( "$module/class.wppp_$modname.php" );
 				$modclass = 'WPPP_' . $modname;
 				$this->modules[ $modname ] = new $modclass ( $this );
 			}

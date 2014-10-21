@@ -12,16 +12,6 @@
 class WPPP_Dynamic_Images_Base extends WPPP_Dynamic_Images {
 	private $dynimg_image_sizes = NULL;
 
-	public function load_renderer ( $view ) {
-		if ( $this->renderer == NULL ) {
-			if ( $view = 'advanced' ) {
-				$this->renderer = new WPPP_Dynamic_Images_Advanced ();
-			} else {
-				$this->renderer = new WPPP_Dynamic_Images_Simple ();
-			}
-		}
-	}
-
 	function early_init () {
 		add_action( 'setup_theme',  array( $this, 'replace_wp_rewrite' ) );
 	}
@@ -47,14 +37,21 @@ class WPPP_Dynamic_Images_Base extends WPPP_Dynamic_Images {
 	}
 
 	public static function set_rewrite_rules () {
-		$path = substr( plugins_url( 'serve-dynamic-images.php', dirname( __FILE__ ) ), strlen( site_url() ) + 1 ); // cut wp-content including trailing slash
+		$path = substr( plugins_url( 'serve-dynamic-images.php', __FILE__ ), strlen( site_url() ) + 1 ); // cut wp-content including trailing slash
 		add_rewrite_rule( '(.*)-([0-9]+)x([0-9]+)?\.((?i)jpeg|jpg|png|gif)' , $path, 'top' );
 		add_filter ( 'mod_rewrite_rules', array ( 'WPPP_Dynamic_Images_Base', 'mod_rewrite_rules' ) );
 	}
 
 	public static function flush_rewrite_rules ( $enabled ) {
+		// init is called prior to options update
+		// so add or remove rules before flushing
 		if ( $enabled ) {
 			self::set_rewrite_rules();
+		} else {
+			global $wp_rewrite;
+			if ( $wp_rewrite && isset( $wp_rewrite->non_wp_rules['(.*)-([0-9]+)x([0-9]+)?\.((?i)jpeg|jpg|png|gif)'] ) ) {
+				unset( $wp_rewrite->non_wp_rules['(.*)-([0-9]+)x([0-9]+)?\.((?i)jpeg|jpg|png|gif)'] );
+			}
 		}
 		flush_rewrite_rules();
 	}

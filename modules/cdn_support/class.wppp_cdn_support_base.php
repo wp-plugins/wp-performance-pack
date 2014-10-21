@@ -14,23 +14,15 @@
 class WPPP_CDN_Support_Base extends WPPP_CDN_Support {
 	private $cdn_fallback = false;
 
-	public function load_renderer ( $view ) {
-		if ( $this->renderer == NULL ) {
-			if ( $view = 'advanced' ) {
-				$this->renderer = new WPPP_CDN_Support_Advanced ();
-			} else {
-				$this->renderer = new WPPP_CDN_Support_Simple ();
-			}
-		}
-	}
-
 	function init () {
 		if ( $this->wppp->options['dyn_links'] ) {
 			// url substitution only if dynamic image links are activated
-			add_filter( 'content_save_pre', array( $this, 'content_substitute_uploadbase' ), 99 );
+			if ( $this->wppp->options['dyn_links_subst'] ) {
+				add_filter( 'content_save_pre', array( $this, 'content_substitute_uploadbase' ), 99 );
+			}
 
-			add_filter( 'the_content', array( $this, 'front_end_rewrite_url' ), 99 );
 			add_filter( 'the_editor_content', array( $this, 'back_end_rewrite_url' ), 99 );
+			add_filter( 'the_content', array( $this, 'front_end_rewrite_url' ), 99 );
 			add_filter( 'the_content_rss', array( $this, 'front_end_rewrite_url' ), 99 );
 			add_filter( 'the_content_feed', array( $this, 'front_end_rewrite_url' ), 99 );
 		}
@@ -142,7 +134,7 @@ class WPPP_CDN_Support_Base extends WPPP_CDN_Support {
 	}
 
 	function verify_working_cdn () {
-		$url = plugins_url( 'cdn_test.php', dirname( __FILE__ ) );
+		$url = $this->wppp->plugin_url . 'cdn_test.php';
 		$cdn_parsed = $this->get_cdn_parsed();
 		if ( NULL !== $cdn_parsed ) {
 			$url_parsed = parse_url( $url );
@@ -208,9 +200,10 @@ class WPPP_CDN_Support_Base extends WPPP_CDN_Support {
 		return $cdn_parsed;
 	}
 
-	function content_substitute_uploadbase ($content) {
+	function content_substitute_uploadbase ( $content, $substitute = '{{wpppdynamic}}', $mark_post = true, $state = 0 ) {
 		// replace "wp_conent_url/path/to/image-file.ext" with "{{wpppdynamic}}/path/to/image-file.ext"
-
+		// $state: 0 = pre_save / 1 = live_subst / 2 = editor
+		
 		// get upload and cdn base
 		$uploads = wp_upload_dir();
 		$upbase = $uploads['baseurl'];
@@ -224,39 +217,64 @@ class WPPP_CDN_Support_Base extends WPPP_CDN_Support {
 			$cdnbase = NULL;
 		}
 
-		// search links to images
-		// content is escaped!
-		$pattern ="/<a(.*?)href=\\\\('|\")(.*?).(gif|jpeg|jpg|png)\\\\('|\")(.*?)>/i";
-		$content = preg_replace_callback( $pattern, 
-										function ( $m ) use ( $upbase, $cdnbase ) {
+		if ( $state < 2 ) {
+			// search links to images
+			switch ( $state ) {
+				case 0 : $pattern = "/<a(.*?)href=\\\\('|\")(.*?).(gif|jpeg|jpg|png)\\\\('|\")(.*?)>/i"; break; // content is escaped!
+				case 1 : $pattern = "/<a(.*?)href=('|\")(.*?).(gif|jpeg|jpg|png)('|\")(.*?)>/i"; break;
+			}
+			$content = preg_replace_callback( $pattern, 
+										function ( $m ) use ( $upbase, $cdnbase, $substitute, $state ) {
 											// test for upload base, cdn url, etc. and replace with {{wpppdynamic}}
-											$part1 = "<a{$m[1]}href=\\{$m[2]}";
-											$link = $m[3] . '.' . $m[4];
-											$part2 = "\\{$m[5]}{$m[6]}>";
+											if ( $state == 0 ) {
+												$part1 = "<a{$m[1]}href=\\{$m[2]}";
+												$link = $m[3] . '.' . $m[4];
+												$part2 = "\\{$m[5]}{$m[6]}>";
+											} else {
+												$part1 = "<a{$m[1]}href={$m[2]}";
+												$link = $m[3] . '.' . $m[4];
+												$part2 = "{$m[5]}{$m[6]}>";
+											}
 
 											if ( strncmp( $upbase, $link, strlen( $upbase ) ) === 0 ) {
-												$link = '{{wpppdynamic}}' . substr( $link, strlen( $upbase ) );
+												$link = $substitute . substr( $link, strlen( $upbase ) );
 											} else if ( NULL !== $cdnbase && strncmp( $cdnbase, $link, strlen( $cdnbase ) ) === 0 ) {
-												$link = '{{wpppdynamic}}' . substr( $link, strlen( $cdnbase ) );
+												$link = $substitute . substr( $link, strlen( $cdnbase ) );
 											}
 
 											return $part1 . $link . $part2;
 										},
 										$content );
+		}
 
 		// repeat with img src's...
-		$pattern ="/<img(.*?)src=\\\\('|\")(.*?).(gif|jpeg|jpg|png)\\\\('|\")(.*?)>/i";
+		switch ( $state ) {
+			case 0 : $pattern ="/<img(.*?)src=\\\\('|\")(.*?).(gif|jpeg|jpg|png)\\\\('|\")(.*?)>/i"; break;
+			case 1 : $pattern ="/<img(.*?)src=('|\")(.*?).(gif|jpeg|jpg|png)('|\")(.*?)>/i"; break;
+			case 2 : $pattern ="/&lt;img(.*?)src=('|\")(.*?).(gif|jpeg|jpg|png)('|\")(.*?)&gt;/i"; break;
+		}
 		$content = preg_replace_callback( $pattern, 
-										function ( $m ) use ( $upbase, $cdnbase ) {
+										function ( $m ) use ( $upbase, $cdnbase, $substitute, $state ) {
 											// test for upload base, cdn url, etc. and replace with {{wpppdynamic}}
-											$part1 = "<img{$m[1]}src=\\{$m[2]}";
-											$link = $m[3] . '.' . $m[4];
-											$part2 = "\\{$m[5]}{$m[6]}>";
+											switch ( $state ) {
+												case 0 :	$part1 = "<img{$m[1]}src=\\{$m[2]}";
+															$link = $m[3] . '.' . $m[4];
+															$part2 = "\\{$m[5]}{$m[6]}>";
+															break;
+												case 1 :	$part1 = "<img{$m[1]}src={$m[2]}";
+															$link = $m[3] . '.' . $m[4];
+															$part2 = "{$m[5]}{$m[6]}>";
+															break;
+												case 2 :	$part1 = "&lt;img{$m[1]}src={$m[2]}";
+															$link = $m[3] . '.' . $m[4];
+															$part2 = "{$m[5]}{$m[6]}&gt;";
+															break;
+											}
 
 											if ( strncmp( $upbase, $link, strlen( $upbase ) ) === 0 ) {
-												$link = '{{wpppdynamic}}' . substr( $link, strlen( $upbase ) );
+												$link = $substitute . substr( $link, strlen( $upbase ) );
 											} else if ( NULL !== $cdnbase && strncmp( $cdnbase, $link, strlen( $cdnbase ) ) === 0 ) {
-												$link = '{{wpppdynamic}}' . substr( $link, strlen( $cdnbase ) );
+												$link = $substitute . substr( $link, strlen( $cdnbase ) );
 											}
 
 											return $part1 . $link . $part2;
@@ -264,20 +282,22 @@ class WPPP_CDN_Support_Base extends WPPP_CDN_Support {
 										$content );
 
 		// mark post content as substituted
-		global $post;
-		if ( $post ) {
-			update_post_meta( $post->ID, 'wpppdynamic', '1' );
+		if ( $mark_post ) {
+			global $post;
+			if ( $post ) {
+				update_post_meta( $post->ID, 'wpppdynamic', '1' );
+			}
 		}
+
 		return $content;
 	}
 
-	function content_set_uploadbase ( $content, $force_upbase ) {
-		if ( $this->wppp->options['dyn_links'] ) {
+	function content_set_uploadbase ( $content, $force_upbase, $state ) {
+		if ( $this->wppp->options['dyn_links'] && $this->wppp->options['dyn_links_subst'] ) {
 			// check, if this posts content is already substituted
 			// only do so if dyn_links is enabled. substitution will be done always (for now)
 			// so once modified posts will still get displayed correctly, even when dyn_links is disabled
 			// (at least while WPPP is installed and activated).
-			// TODO: implement tools to (re)substitute upload base on all posts
 			global $post;
 			if ( '1' !== get_post_meta( $post->ID, 'wpppdynamic', true ) ) {
 				// if not update post, which in turn causes content_substitute_uploadbase to be called
@@ -298,19 +318,23 @@ class WPPP_CDN_Support_Base extends WPPP_CDN_Support {
 			}
 		}
 
-		$content = str_replace( '{{wpppdynamic}}', $upbase, $content );
+		if ( $this->wppp->options['dyn_links_subst'] ) {
+			$content = str_replace( '{{wpppdynamic}}', $upbase, $content );
+		} else {
+			$content = $this->content_substitute_uploadbase( $content, $upbase, false, $state );
+		}
 
 		return $content;
 	}
 
 	function front_end_rewrite_url ( $content ) {
 		// force uploadbase if cdn is only enabled for back end
-		return $this->content_set_uploadbase( $content, $this->wppp->options['cdn_images'] === 'back' );
+		return $this->content_set_uploadbase( $content, $this->wppp->options['cdn_images'] === 'back', 1 );
 	}
 
 	function back_end_rewrite_url ( $content ) {
 		// force uploadbase if cdn is only enabled for front end
-		return $this->content_set_uploadbase( $content, $this->wppp->options['cdn_images'] === 'front' );
+		return $this->content_set_uploadbase( $content, $this->wppp->options['cdn_images'] === 'front', 2 );
 	}
 
 	function cdn_get_attachment_url( $url, $post_id ) {

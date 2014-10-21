@@ -24,8 +24,9 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 	}
 	require( $folder . '/wp-load.php' ); // will fail if while loop didn't find wp-load.php
 
-	include( sprintf( "%s/wp-performance-pack.php", dirname( __FILE__ ) ) );
-	$wppp = new WP_Performance_Pack( false );
+	include( sprintf( "%s/wp-performance-pack.php", dirname( dirname( dirname( __FILE__ ) ) ) ) );
+	global $wp_performance_pack;
+	$wppp = $wp_performance_pack;
 	$wppp->load_options();
 	if ( $wppp->options['dynamic_images'] !== true ) {
 		header('HTTP/1.0 404 Not Found');
@@ -219,7 +220,7 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 				&& extension_loaded( 'exif' )
 				&& function_exists( 'exif_thumbnail' )
 				&& function_exists( 'imagecreatefromstring' ) ) {
-			include( sprintf( "%s/classes/class.wp-image-editor-gd-exif.php", dirname( __FILE__ ) ) );
+			include( sprintf( "%s/modules/dynamic_images/class.wp-image-editor-gd-exif.php", dirname( __FILE__ ) ) );
 			$image = new WP_Image_Editor_GD_EXIF( $basefile );
 			if ( is_wp_error( $image->load() ) ) {
 				// exif load failed (maybe no exif data or no thumb), so load full image

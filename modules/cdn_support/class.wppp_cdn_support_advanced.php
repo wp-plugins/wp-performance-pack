@@ -75,6 +75,9 @@ class WPPP_CDN_Support_Advanced {
 					<?php $renderer->e_radio_enable( 'dynlinks', 'dyn_links' ); ?>
 					<p class="description"><?php _e( 'Instead of inserting fixed image urls into posts, urls get build dynamically when displaying the content. <strong>Highly recommended when using a CDN for front end images.</strong>', 'wppp' );?></p>
 					<br>
+					<?php $renderer->e_checkbox( 'dynlinksubst', 'dyn_links_subst', __( 'Use substitution for faster dynamic links', 'wppp' ) ); ?>
+					<p class="description"><?php _e( 'Image links will be substituted by a placeholder in your posts to improve performance of dynamic links. <strong>This will alter your post content and might break your image links!</strong> To revert the changes see "<em>Restore static links</em>" below.', 'wppp' ); ?></p>
+					<br>
 					<p><a class="thickbox button" href="admin-ajax.php?action=wppp_restore_all_links&width=600&height=550" title="Restore static links"><?php _e( 'Restore static links', 'wppp' );?></a></p>
 					<p class="description"><?php _e('Use this to restore all dynamic links to static links if you deactivate dynamic linking. Links will be automatically restored when WPPP gets deactivated.', 'wppp' );?></p>
 				</td>

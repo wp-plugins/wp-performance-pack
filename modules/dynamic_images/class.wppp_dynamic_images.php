@@ -10,6 +10,16 @@ class WPPP_Dynamic_Images extends WPPP_Module {
 		'dynamic_images_exif_thumbs' => false,
 	);
 
+	public function load_renderer ( $view ) {
+		if ( $this->renderer == NULL ) {
+			if ( $view = 'advanced' ) {
+				$this->renderer = new WPPP_Dynamic_Images_Advanced ();
+			} else {
+				$this->renderer = new WPPP_Dynamic_Images_Simple ();
+			}
+		}
+	}
+
 	public function get_default_options () { return static::$options_default; }
 
 	public function is_active () { 

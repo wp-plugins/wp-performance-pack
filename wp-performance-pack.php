@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
 	Description: Performance optimizations for WordPress. Improve localization performance and image handling, serve images through CDN.  
-	Version: 1.8.7
+	Version: 1.9
 	Text Domain: wppp
 	Domain Path: /languages/
 	Author: Bj&ouml;rn Ahrens
@@ -50,7 +50,7 @@ abstract class WPPP_Module {
 	public function init () {}
 	// initializations done at admin_init action
 	public function admin_init () {}
-	
+
 	// admin render functions
 	public function load_renderer ( $view ) {}
 	public function enqueue_scripts_and_styles ( $renderer ) {
@@ -76,18 +76,13 @@ abstract class WPPP_Module {
 class WP_Performance_Pack {
 	const cache_group = 'wppp1.0'; 	// WPPP cache group name = wppp + version of last change to cache. 
 									// This way no cache conflicts occur while old cache entries just expire.
-	const wppp_version = '1.8.7';
+	const wppp_version = '1.9';
 	const wppp_options_name = 'wppp_option';
 
 	public static $options_default = array(
 		'debug' => false,
 		'advanced_admin_view' => false,
 		'dynimg_quality' => 80,
-	);
-	private $available_modules = array(
-		'WPPP_L10n_Improvements',
-		'WPPP_Dynamic_Images',
-		'WPPP_CDN_Support',
 	);
 	private $admin_opts = NULL;
 	private $late_updates = array();
@@ -97,6 +92,7 @@ class WP_Performance_Pack {
 	public $modules = array();
 	public $options = NULL;
 	public $plugin_dir = NULL;
+	public $plugin_url = NULL;
 
 	function get_options_default () {
 		$def_opts = WP_Performance_Pack::$options_default;
@@ -135,16 +131,27 @@ class WP_Performance_Pack {
 	}
 
 	public function __construct( $fullinit = true ) {
-		
 		/* $code = '$translations = get_translations_for_domain( $domain );
-return $translations->translate( $text );';
+					return $translations->translate( $text );';
 		runkit_function_redefine( 'translate', '$text, $domain = "default"', $code ); */
 
+		if ( $fullinit ) {
+			// pluings_dir and plugins_url are required for modules, but cause
+			// errors on server-dynamic-images/SHORTINIT
+			$this->plugin_dir = dirname( __FILE__ );
+			$this->plugin_url = plugin_dir_url( __FILE__ );
+		}
 		spl_autoload_register( array( $this, 'wppp_autoloader' ) );
 
 		// initialize module skeletons
-		foreach ( $this->available_modules as $module ) {
-			$this->modules[$module] = new $module ( $this );
+		$modules = glob( sprintf( "%s/modules/*", dirname( __FILE__ ) ), GLOB_ONLYDIR );
+		foreach ( $modules as $module ) {
+			$modname = basename( $module );
+			if ( file_exists( "$module/class.WPPP_$modname.php" ) ) {
+				include( "$module/class.WPPP_$modname.php" );
+				$modclass = 'WPPP_' . $modname;
+				$this->modules[ $modname ] = new $modclass ( $this );
+			}
 		}
 
 		// initialize fields
@@ -163,8 +170,6 @@ return $translations->translate( $text );';
 			return;
 		}
 
-		$this->plugin_dir = dirname( plugin_basename(__FILE__) );
-
 		// add actions
 		add_action( 'init', array ( $this, 'init' ) );
 		add_action( 'admin_init', array ( $this, 'admin_init' ) );
@@ -178,16 +183,17 @@ return $translations->translate( $text );';
 			$this->modules[$modname]->early_init();
 		}
 		
-		static::plugin_load_first(); // check WPPP is looaded as first plugin
+		self::plugin_load_first(); // check WPPP is loaded as first plugin
 	}
 
 	function do_options_changed( $old_value, $new_value )
 	{
 		// flush rewrite rules if dynamic images setting changed
-		if ( ( isset( $new_value['dynamic_images'] ) && $this->options['dynamic_images'] !== $new_value['dynamic_images'] )
-				|| ( !isset( $new_value['dynamic_images'] ) && $this->options['dynamic_images'] === true ) ) {
+		if ( ( isset( $new_value['dynamic_images'] ) && $old_value['dynamic_images'] !== $new_value['dynamic_images'] )
+				|| ( !isset( $new_value['dynamic_images'] ) && $old_value['dynamic_images'] === true ) ) {
 			WPPP_Dynamic_Images_Base::flush_rewrite_rules( $new_value['dynamic_images'] );
 		}
+
 	}
 
 	public function init () {
@@ -204,7 +210,7 @@ return $translations->translate( $text );';
 
 		if ( is_admin() ) {
 			// admin pages
-			load_plugin_textdomain( 'wppp', false, $this->plugin_dir . '/lang');
+			load_plugin_textdomain( 'wppp', false, dirname( plugin_basename( __FILE__ ) ) . '/lang');
 
 			if ( current_user_can ( 'manage_options' ) ) {
 				include( sprintf( "%s/admin/class.wppp-admin-admin.php", dirname( __FILE__ ) ) );
@@ -272,7 +278,7 @@ return $translations->translate( $text );';
 	public function deactivate() {
 		if ( $this->options['dynamic_images'] ) {
 			// Delete rewrite rules from htaccess
-			WPPP_Dynamic_Images_Base::flush_rewrite_rules( false ); // hopefully WPPP_Dynamic_images didn't get initialized elsewhere. Not shure at which point deactivation occurs, but I think it's save to assume DynImg didn't get initialized so rewrite rules didn't get set.
+			WPPP_Dynamic_Images_Base::flush_rewrite_rules( false ); // hopefully WPPP_Dynamic_images didn't get initialized elsewhere. Not sure at which point deactivation occurs, but I think it's save to assume DynImg didn't get initialized so rewrite rules didn't get set.
 		}
 
 		if ( is_multisite() && isset( $_GET['networkwide'] ) && 1 == $_GET['networkwide'] ) {
@@ -292,13 +298,24 @@ return $translations->translate( $text );';
 		if ( strncmp( $class, 'wppp_', 5 ) === 0 || $class == 'labelsobject' ) {
 			if ( file_exists( sprintf( "%s/classes/class.$class.php", dirname( __FILE__ ) ) ) ) {
 				include( sprintf( "%s/classes/class.$class.php", dirname( __FILE__ ) ) );
+				return;
+			} else if (  file_exists( sprintf( "%s/admin/class.$class.php", dirname( __FILE__ ) ) ) ) {
+				include( sprintf( "%s/admin/class.$class.php", dirname( __FILE__ ) ) );
+				return;
+			}
+			// search module folders
+			foreach ( $this->modules as $modname => $module ) {
+				if ( file_exists( sprintf( "%s/modules/$modname/class.$class.php", dirname( __FILE__ ) ) ) ) {
+					include( sprintf( "%s/modules/$modname/class.$class.php", dirname( __FILE__ ) ) );
+					return;
+				}
 			}
 		}
 	}
 
 	function check_update () {
 		if ( ! $opts = $this->get_option( self::wppp_options_name ) ) {
-			// if get_option fails, this is the activation, so no update necessary
+			// if get_option fails, this is activation, so no update necessary
 			return;
 		}
 	
@@ -314,6 +331,20 @@ return $translations->translate( $text );';
 					$this->late_updates[] = array( $this, 'update_163' );
 				}
 				$installed = '1.6.3';
+			}
+
+			if ( version_compare( $installed, '1.9' ) == -1 ) {
+				// new in version 1.9: url substitution when using dynamic links is optional
+				// if dynamic links were used, substitution was active, so keep it that way
+				if ( $opts['dyn_links'] ) {
+					$opts['dyn_links_subst'] = true;
+					$this->update_option( self::wppp_options_name, $opts );
+				}
+				// serve-dynamic-images.php location has changed, so update rewrite-rules
+				if ( isset( $opts['dynamic_images'] ) && $opts['dynamic_images'] ) {
+					$this->late_updates[] = array( $this, 'update_163' );
+				}
+				$installed = '1.9';
 			}
 
 			$this->update_option ( 'wppp_version', self::wppp_version );

@@ -16,13 +16,13 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 	 */
 
 	function enqueue_scripts_and_styles () {
-		wp_register_script( 'jquery-ui-slider-pips', plugin_dir_url( __FILE__ ) . 'js/jquery-ui-slider-pips.min.js', array ( 'jquery-ui-slider' ), false, true );
-		wp_register_script( 'wppp-admin-script', plugin_dir_url( __FILE__ ) . 'js/wppp_simple.js', array ( 'jquery-ui-slider-pips' ), false, true );
+		wp_register_script( 'jquery-ui-slider-pips', $this->wppp->plugin_url . 'common/js/jquery-ui-slider-pips.min.js', array ( 'jquery-ui-slider' ), false, true );
+		wp_register_script( 'wppp-admin-script', $this->wppp->plugin_url . 'common/js/wppp_simple.js', array ( 'jquery-ui-slider-pips' ), false, true );
 		wp_enqueue_script( 'wppp-admin-script' );
 
-		wp_register_style( 'jquery-ui-slider-pips-styles', plugin_dir_url( __FILE__ ) . 'css/jquery-ui-slider-pips.css' );
-		wp_register_style( 'wppp-admin-styles-jqueryui', plugin_dir_url( __FILE__ ) . 'css/styles.css' );
-		wp_register_style( 'wppp-admin-styles', plugin_dir_url( __FILE__ ) . 'css/wppp.css' );
+		wp_register_style( 'jquery-ui-slider-pips-styles', $this->wppp->plugin_url . 'common/css/jquery-ui-slider-pips.css' );
+		wp_register_style( 'wppp-admin-styles-jqueryui', $this->wppp->plugin_url . 'common/css/styles.css' );
+		wp_register_style( 'wppp-admin-styles', $this->wppp->plugin_url . 'common/css/wppp.css' );
 		wp_enqueue_style( 'jquery-ui-slider-pips-styles' );
 		wp_enqueue_style( 'wppp-admin-styles-jqueryui' );
 		wp_enqueue_style( 'wppp-admin-styles' );
@@ -147,9 +147,10 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 		<input type="hidden" <?php $this->e_opt_name('dynamic_images_rthook_force'); ?> value="<?php echo $this->wppp->options['dynamic_images_rthook_force'] ? 'true' : 'false' ?>" />
 		<input type="hidden" <?php $this->e_opt_name('dynamic_images_exif_thumbs'); ?> value="<?php echo $this->wppp->options['dynamic_images_exif_thumbs'] ? 'true' : 'false' ?>" />
 		<input type="hidden" <?php $this->e_opt_name('dynimg_quality'); ?> value="<?php echo $this->wppp->options['dynimg_quality']; ?>" />
-		<input id="dynamic-links" type="hidden" <?php $this->e_opt_name( 'dyn_links' ); ?> value="<?php echo $this->wppp->options['dyn_links'] ? 'true' : 'false'; ?>" />
-		<input id="cdn-url" type="hidden" <?php $this->e_opt_name( 'cdnurl' ); ?> value="<?php echo $this->wppp->options['cdnurl']; ?>"/>
+		<input type="hidden" id="dynamic-links" <?php $this->e_opt_name( 'dyn_links' ); ?> value="<?php echo $this->wppp->options['dyn_links'] ? 'true' : 'false'; ?>" />
+		<input type="hidden" id="cdn-url" <?php $this->e_opt_name( 'cdnurl' ); ?> value="<?php echo $this->wppp->options['cdnurl']; ?>"/>
 		<input type="hidden" <?php $this->e_opt_name('cdn_images'); ?> value="<?php echo $this->wppp->options['cdn_images']; ?>"/>
+		<input type="hidden" <?php $this->e_opt_name('dyn_links_subst'); ?> value="<?php echo $this->wppp->options['dyn_links_subst'] ? 'true' : 'false'; ?>" />
 
 		<hr/>
 		<h3 class="title"><?php _e( 'Improve localization performance', 'wppp' ); ?></h3>
@@ -257,7 +258,7 @@ class WPPP_Admin_Renderer_Simple extends WPPP_Admin_Renderer {
 		
 		<h3 class="title"><?php _e( 'Use CDN for images', 'wppp' );?></h3>
 		
-		<p class="description"><?php _e( 'Using a CDN for images improves loading times and eliminates the need to save intermediate images locally (select Webspace). The default settings when activating CDN support are activate dynamic image linking and serving images through CDN on both front and back end. These settings can be adjusted via advanced view. Dynamic links will be restored to static links when deactivating WPPP. If CDN support gets deactivated, links can be restored manually via advanced view.', 'wppp' );?></p>
+		<p class="description"><?php _e( 'Using a CDN for images improves loading times and eliminates the need to save intermediate images locally (select Webspace). The default settings when activating CDN support are activate dynamic image linking and serving images through CDN on both front and back end. These settings can be adjusted via advanced view.', 'wppp' );?></p>
 
 		<?php
 			if ( $this->wppp->options['cdn'] ) {

@@ -6,7 +6,18 @@ class WPPP_CDN_Support extends WPPP_Module {
 		'cdnurl' => '',
 		'cdn_images' => 'both',
 		'dyn_links' => false,
+		'dyn_links_subst' => false,
 	);
+
+	public function load_renderer ( $view ) {
+		if ( $this->renderer == NULL ) {
+			if ( $view = 'advanced' ) {
+				$this->renderer = new WPPP_CDN_Support_Advanced ();
+			} else {
+				$this->renderer = new WPPP_CDN_Support_Simple ();
+			}
+		}
+	}
 
 	public function get_default_options () { return static::$options_default; }
 
@@ -73,6 +84,13 @@ class WPPP_CDN_Support extends WPPP_Module {
 			unset( $input['dyn_links'] );
 		} else {
 			$output['dyn_links'] = static::$options_default['dyn_links'];
+		}
+
+		if ( isset( $input['dyn_links_subst'] ) ) {
+			$output['dyn_links_subst'] = ( $input['dyn_links_subst'] == 'true' ? true : false );
+			unset( $input['dyn_links_subst'] );
+		} else {
+			$output['dyn_links_subst'] = static::$options_default['dyn_links_subst'];
 		}
 
 		// postprocessing of values

@@ -135,7 +135,7 @@ abstract class WPPP_Admin_Renderer {
 	}
 
 	function is_dynamic_images_available () {
-		return $this->wppp->modules['WPPP_Dynamic_Images']->is_available();
+		return $this->wppp->modules['dynamic_images']->is_available();
 	}
 
 	function is_regen_thumbs_available () {

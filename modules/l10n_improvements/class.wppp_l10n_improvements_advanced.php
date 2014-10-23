@@ -1,7 +1,10 @@
 <?php
 
 class WPPP_L10n_Improvements_Advanced {
-	public function enqueue_scripts_and_styles () {}
+	public function enqueue_scripts_and_styles ( $renderer ) {
+		wp_register_style( 'wppp-admin-styles-jqueryui', $renderer->wppp->plugin_url . 'common/css/styles.css' );
+		wp_enqueue_style( 'wppp-admin-styles-jqueryui' );
+	}
 
 	public function add_help_tab () {
 		$screen = get_current_screen();

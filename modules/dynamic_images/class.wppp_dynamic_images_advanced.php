@@ -1,7 +1,17 @@
 <?php
 
 class WPPP_Dynamic_Images_Advanced {
-	public function enqueue_scripts_and_styles () {
+	public function enqueue_scripts_and_styles ( $renderer ) {
+		wp_register_script( 'jquery-ui-slider-pips', $renderer->wppp->plugin_url . 'common/js/jquery-ui-slider-pips.min.js', array ( 'jquery-ui-slider' ), false, true );
+		wp_register_script( 'wppp-admin-script', $renderer->wppp->plugin_url . 'common/js/wppp_advanced.js', array ( 'jquery-ui-slider-pips' ), false, true );
+		wp_enqueue_script( 'wppp-admin-script' );
+
+		wp_register_style( 'jquery-ui-slider-pips-styles', $renderer->wppp->plugin_url . 'common/css/jquery-ui-slider-pips.css' );
+		wp_register_style( 'wppp-admin-styles-jqueryui', $renderer->wppp->plugin_url . 'common/css/styles.css' );
+		wp_register_style( 'wppp-admin-styles', $renderer->wppp->plugin_url . 'common/css/wppp.css' );
+		wp_enqueue_style( 'jquery-ui-slider-pips-styles' );
+		wp_enqueue_style( 'wppp-admin-styles-jqueryui' );
+		wp_enqueue_style( 'wppp-admin-styles' );
 	}
 
 	public function add_help_tab () {

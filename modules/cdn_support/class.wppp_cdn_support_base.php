@@ -17,10 +17,7 @@ class WPPP_CDN_Support_Base extends WPPP_CDN_Support {
 	function init () {
 		if ( $this->wppp->options['dyn_links'] ) {
 			// url substitution only if dynamic image links are activated
-			if ( $this->wppp->options['dyn_links_subst'] ) {
-				add_filter( 'content_save_pre', array( $this, 'content_substitute_uploadbase' ), 99 );
-			}
-
+			add_filter( 'content_save_pre', array( $this, 'editor_presave_rewrite_url' ), 99 );
 			add_filter( 'the_editor_content', array( $this, 'back_end_rewrite_url' ), 99 );
 			add_filter( 'the_content', array( $this, 'front_end_rewrite_url' ), 99 );
 			add_filter( 'the_content_rss', array( $this, 'front_end_rewrite_url' ), 99 );
@@ -71,7 +68,7 @@ class WPPP_CDN_Support_Base extends WPPP_CDN_Support {
 		
 		$res = $wpdb->query(
 			$wpdb->prepare("
-				UPDATE wp_posts 
+				UPDATE $wpdb->posts 
 				SET post_content = REPLACE ( post_content, '{{wpppdynamic}}', %s );
 				",
 				$upbase
@@ -93,7 +90,7 @@ class WPPP_CDN_Support_Base extends WPPP_CDN_Support {
 
 		$res = $wpdb->query( 
 			$wpdb->prepare(
-				"DELETE FROM wp_postmeta WHERE meta_key = %s;",
+				"DELETE FROM $wpdb->postmeta WHERE meta_key = %s;",
 				'wpppdynamic'
 			)
 		);
@@ -271,7 +268,7 @@ class WPPP_CDN_Support_Base extends WPPP_CDN_Support {
 															break;
 											}
 
-											if ( strncmp( $upbase, $link, strlen( $upbase ) ) === 0 ) {
+											if ( $substitute && strncmp( $upbase, $link, strlen( $upbase ) ) === 0 ) {
 												$link = $substitute . substr( $link, strlen( $upbase ) );
 											} else if ( NULL !== $cdnbase && strncmp( $cdnbase, $link, strlen( $cdnbase ) ) === 0 ) {
 												$link = $substitute . substr( $link, strlen( $cdnbase ) );
@@ -325,6 +322,16 @@ class WPPP_CDN_Support_Base extends WPPP_CDN_Support {
 		}
 
 		return $content;
+	}
+
+	function editor_presave_rewrite_url ( $content ) {
+		if ( $this->wppp->options['dyn_links_subst'] ) {
+			return $this->content_substitute_uploadbase( $content, '{{wpppdynamic}}', true, 0 );
+		} else {
+			$uploads = wp_upload_dir();
+			$upbase = $uploads['baseurl'];
+			return $this->content_substitute_uploadbase( $content, $upbase, false, 0 );
+		}
 	}
 
 	function front_end_rewrite_url ( $content ) {

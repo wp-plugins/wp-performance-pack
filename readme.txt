@@ -3,7 +3,7 @@ Contributors: greencp, linushoppe
 Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext, thumbnails, images, intermediate, resize, quality, regenerate, exif, fast, upload, cdn, maxcdn, coralcdn, photon, dynamic links
 Requires at least: 3.8.1
 Tested up to: 4.0
-Stable tag: 1.9
+Stable tag: 1.9.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -111,12 +111,16 @@ When a none existend image is requested WPPP first checks if the full size versi
 
 == Changelog ==
 
+= 1.9.1 =
+
+* [cdn] Another fix in dynamic links and deactivated substitution. Image sources were changed to CDN URL in the database.
+* [cdn] Restore static links no longer uses hardcoded table names
+
 = 1.9 =
 
 * [cdn] Dynamic links don't alter post content by default anymore. Substituting base URLs to improve performance is now optional. When upgrading this option will be activated if dynamic links were enabled to keep the previous behaviour. For now manual restore of static URLs is required when deactivating substitution.
 * [dynimg] fixes in flushing rewrite rules
 * [general] more progress on modularization (haven't had much time lately to make the progress I had planned...)
-* 
 
 = 1.8.7 =
 

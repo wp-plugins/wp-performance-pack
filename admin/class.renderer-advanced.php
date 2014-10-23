@@ -16,16 +16,6 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 	 */
 
 	function enqueue_scripts_and_styles () {
-		wp_register_script( 'jquery-ui-slider-pips', $this->wppp->plugin_url . 'common/js/jquery-ui-slider-pips.min.js', array ( 'jquery-ui-slider' ), false, true );
-		wp_register_script( 'wppp-admin-script', $this->wppp->plugin_url . 'common/js/wppp_advanced.js', array ( 'jquery-ui-slider-pips' ), false, true );
-		wp_enqueue_script( 'wppp-admin-script' );
-
-		wp_register_style( 'jquery-ui-slider-pips-styles', $this->wppp->plugin_url . 'common/css/jquery-ui-slider-pips.css' );
-		wp_register_style( 'wppp-admin-styles-jqueryui', $this->wppp->plugin_url . 'common/css/styles.css' );
-		wp_register_style( 'wppp-admin-styles', $this->wppp->plugin_url . 'common/css/wppp.css' );
-		wp_enqueue_style( 'jquery-ui-slider-pips-styles' );
-		wp_enqueue_style( 'wppp-admin-styles-jqueryui' );
-		wp_enqueue_style( 'wppp-admin-styles' );
 	}
 
 	function add_help_tab () {
@@ -54,7 +44,7 @@ class WPPP_Admin_Renderer_Advanced extends WPPP_Admin_Renderer {
 	 * Setting page rendering functions
 	 */
 
-		public function on_do_options_page() {
+	public function on_do_options_page() {
 		wp_localize_script( 'wppp-admin-script', 'wpppData', array (
 			'dynimg-quality' => $this->wppp->options['dynimg_quality'],
 		));

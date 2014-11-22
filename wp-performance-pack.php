@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
 	Description: Performance optimizations for WordPress. Improve localization performance and image handling, serve images through CDN.  
-	Version: 1.9.1
+	Version: 1.9.2
 	Text Domain: wppp
 	Domain Path: /languages/
 	Author: Bj&ouml;rn Ahrens
@@ -76,7 +76,7 @@ abstract class WPPP_Module {
 class WP_Performance_Pack {
 	const cache_group = 'wppp1.0'; 	// WPPP cache group name = wppp + version of last change to cache. 
 									// This way no cache conflicts occur while old cache entries just expire.
-	const wppp_version = '1.9.1';
+	const wppp_version = '1.9.2';
 	const wppp_options_name = 'wppp_option';
 
 	public static $options_default = array(

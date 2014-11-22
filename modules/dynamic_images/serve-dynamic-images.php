@@ -220,7 +220,7 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 				&& extension_loaded( 'exif' )
 				&& function_exists( 'exif_thumbnail' )
 				&& function_exists( 'imagecreatefromstring' ) ) {
-			include( sprintf( "%s/modules/dynamic_images/class.wp-image-editor-gd-exif.php", dirname( __FILE__ ) ) );
+			include( sprintf( "%s/class.wp-image-editor-gd-exif.php", dirname( __FILE__ ) ) );
 			$image = new WP_Image_Editor_GD_EXIF( $basefile );
 			if ( is_wp_error( $image->load() ) ) {
 				// exif load failed (maybe no exif data or no thumb), so load full image

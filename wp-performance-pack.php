@@ -3,7 +3,7 @@
 	Plugin Name: WP Performance Pack
 	Plugin URI: http://wordpress.org/plugins/wp-performance-pack
 	Description: Performance optimizations for WordPress. Improve localization performance and image handling, serve images through CDN.  
-	Version: 1.10
+	Version: 1.10.1
 	Text Domain: wppp
 	Domain Path: /languages/
 	Author: Bj&ouml;rn Ahrens
@@ -75,7 +75,7 @@ abstract class WPPP_Module {
 class WP_Performance_Pack {
 	const cache_group = 'wppp1.0'; 	// WPPP cache group name = wppp + version of last change to cache. 
 									// This way no cache conflicts occur while old cache entries just expire.
-	const wppp_version = '1.10';
+	const wppp_version = '1.10.1';
 	const wppp_options_name = 'wppp_option';
 
 	public static $options_default = array(
@@ -95,7 +95,7 @@ class WP_Performance_Pack {
 	function get_options_default () {
 		$def_opts = WP_Performance_Pack::$options_default;
 		foreach ( $this->modules as $modname => $module ) {
-			$def_opts['mod_' . $modname] = false;
+			$def_opts['mod_' . $modname] = true;
 			$def_opts = array_merge( $def_opts, $module->get_default_options() );
 		}
 		return $def_opts;

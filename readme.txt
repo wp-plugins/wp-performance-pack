@@ -3,7 +3,7 @@ Contributors: greencp, linushoppe
 Tags: performance, speed, optimize, optimization, tuning, i18n, internationalization, translation, translate, l10n, localization, localize, language, languages, mo, gettext, thumbnails, images, intermediate, resize, quality, regenerate, exif, fast, upload, cdn, maxcdn, coralcdn, photon, dynamic links
 Requires at least: 3.8.1
 Tested up to: 4.1.1
-Stable tag: 1.10.2
+Stable tag: 1.10.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -111,10 +111,17 @@ When a none existend image is requested WPPP first checks if the full size versi
 
 == Changelog ==
 
+= 1.10.3 =
+
+* [dynimg] Multisite rewrite htaccess bugfix
+* [native gettext] Cached mo files now stored in wp-content/languages/wppp[...] prefixed with original file name
+* [jit] Bugfix: Some localizations resulted in requests to wp-admin/[Object%20object]
+* [general] More help texts for modules in advanced view.
+
 = 1.10.2 =
 
-*[dynimg] Multisite bug fix
-*[general] Multisite bug fix
+* [dynimg] Multisite bug fix
+* [general] Multisite bug fix
 
 
 = 1.10.1 =

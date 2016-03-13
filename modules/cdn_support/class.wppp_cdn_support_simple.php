@@ -38,7 +38,7 @@ class WPPP_CDN_Support_Simple {
 						<?php
 					} else {
 						?>
-						<div class="ui-state-error ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-alert" style="float:left; margin-right:.3em;"></span><strong><?php _e( 'CDN error!', 'wppp' );?></strong> <?php prinftf( __( "Either the CDN is down or CDN configuration isn't working. CDN will be retested every 15 minutes until the configuration is changed or the CDN is back up. CDN test error message: <em>%s</em>", 'wppp' ), $cdn_test );?></div>
+						<div class="ui-state-error ui-corner-all" style="padding:.5em"><span class="ui-icon ui-icon-alert" style="float:left; margin-right:.3em;"></span><strong><?php _e( 'CDN error!', 'wppp' );?></strong> <?php printf( __( "Either the CDN is down or CDN configuration isn't working. CDN will be retested every 15 minutes until the configuration is changed or the CDN is back up. CDN test error message: <em>%s</em>", 'wppp' ), $cdn_test );?></div>
 						<?php
 					}
 					?> <br/> <?php

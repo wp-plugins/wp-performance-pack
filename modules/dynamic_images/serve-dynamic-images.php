@@ -64,6 +64,7 @@ if ( preg_match( '/(.*)-([0-9]+)x([0-9]+)?\.(jpeg|jpg|png|gif)/i', $_SERVER['REQ
 	require( ABSPATH . 'wp-includes/link-template.php' );
 
 	// required for wp_get_attachment_metadata
+	require( ABSPATH . 'wp-includes/class-wp-post.php' );
 	require( ABSPATH . 'wp-includes/post.php' );
 	require( ABSPATH . 'wp-includes/meta.php' );
 
